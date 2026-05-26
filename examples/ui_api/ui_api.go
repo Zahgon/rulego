@@ -17,15 +17,16 @@
 package main
 
 import (
+	"os"
+	"os/signal"
+	"syscall"
+
 	"github.com/rulego/rulego"
 	"github.com/rulego/rulego/api/types"
 	endpointApi "github.com/rulego/rulego/api/types/endpoint"
 	"github.com/rulego/rulego/endpoint"
 	"github.com/rulego/rulego/endpoint/rest"
 	"github.com/rulego/rulego/utils/json"
-	"os"
-	"os/signal"
-	"syscall"
 )
 
 //演示获取所有组件配置表单列表接口

@@ -39,22 +39,18 @@ type BreakNode struct {
 }
 
 // Type 返回组件类型
-func (x *BreakNode) Type() string {
-	return "break"
-}
+func (x *BreakNode) Type() string { _ = "STUB: not implemented"; return "" }
 
-func (x *BreakNode) New() types.Node {
-	return &BreakNode{}
-}
+func (x *BreakNode) New() types.Node { _ = "STUB: not implemented"; return *new(types.Node) }
 
 func (x *BreakNode) Init(_ types.Config, _ types.Configuration) error {
+	_ = "STUB: not implemented"
 	return nil
 }
 
 func (x *BreakNode) OnMsg(ctx types.RuleContext, msg types.RuleMsg) {
-	msg.GetMetadata().PutValue(MdKeyBreak, MdValueBreak)
-	ctx.TellSuccess(msg)
+	_ = "STUB: not implemented"
+	return
 }
 
-func (x *BreakNode) Destroy() {
-}
+func (x *BreakNode) Destroy() { _ = "STUB: not implemented"; return }

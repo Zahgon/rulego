@@ -18,7 +18,6 @@ package common
 
 import (
 	"github.com/rulego/rulego/api/types"
-	"github.com/rulego/rulego/components/base"
 	"github.com/rulego/rulego/components/filter"
 )
 
@@ -37,55 +36,32 @@ type InclusiveNode struct {
 // Type 返回组件类型标识
 // Type returns the component type identifier.
 func (x *InclusiveNode) Type() string {
-	return "inclusive"
+	_ = "STUB: not implemented"
+
+	// New 创建组件实例
+	// New creates a new component instance with default demo cases.
+	return ""
 }
 
-// New 创建组件实例
-// New creates a new component instance with default demo cases.
-func (x *InclusiveNode) New() types.Node {
-	return &InclusiveNode{SwitchNode: SwitchNode{Config: SwitchNodeConfiguration{
-		Cases: []Case{
-			{Case: "msg.temperature>=20 && msg.temperature<=50", Then: "Case1"},
-			{Case: "msg.temperature>50", Then: "Case2"},
-		},
-	}}}
-}
+func (x *InclusiveNode) New() types.Node { _ = "STUB: not implemented"; return *new(types.Node) }
 
 // Init 初始化组件，编译所有 case 表达式
 // Init initializes the component by compiling all case expressions into programs.
 // Init 复用 SwitchNode 的初始化逻辑
 // Init reuses SwitchNode.Init for compiling case expressions.
 func (x *InclusiveNode) Init(ruleConfig types.Config, configuration types.Configuration) error {
-	return x.SwitchNode.Init(ruleConfig, configuration)
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // OnMsg 处理消息：评估所有 case，将消息路由到所有匹配的关系；若无匹配则路由到默认关系
 // OnMsg processes the incoming message by evaluating all case expressions.
 // It routes to each relation whose expression evaluates to true. If none matches, routes to Default.
 func (x *InclusiveNode) OnMsg(ctx types.RuleContext, msg types.RuleMsg) {
-	evn := base.NodeUtils.GetEvn(ctx, msg)
-
-	matched := false
-	var relationTypes []string
-	for _, p := range x.Cases {
-		out, err := p.template.Execute(evn)
-		if err != nil {
-			ctx.TellFailure(msg, err)
-			return
-		}
-		if result, ok := out.(bool); ok && result {
-			matched = true
-			relationTypes = append(relationTypes, p.relationType)
-		}
-	}
-	if matched {
-		ctx.TellNext(msg, relationTypes...)
-	} else {
-		ctx.TellNext(msg, types.DefaultRelationType)
-	}
+	_ = "STUB: not implemented"
+	return
 }
 
 // Destroy 清理资源
 // Destroy cleans up resources.
-func (x *InclusiveNode) Destroy() {
-}
+func (x *InclusiveNode) Destroy() { _ = "STUB: not implemented"; return }

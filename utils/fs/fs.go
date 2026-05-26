@@ -23,35 +23,23 @@ package fs
 var storage File = DefaultFile
 
 // SaveFile A function that saves a file to a given path, overwriting it if it exists
-func SaveFile(path string, data []byte) error {
-	return storage.Save(path, data)
-}
+func SaveFile(path string, data []byte) error { _ = "STUB: not implemented"; return nil }
 
 // LoadFile 加载文件
-func LoadFile(filePath string) []byte {
-	data, _ := storage.Get(filePath)
-	return data
-}
+func LoadFile(filePath string) []byte { _ = "STUB: not implemented"; return nil }
 
 // GetFilePaths 返回匹配的文件路径列表
 func GetFilePaths(loadFilePattern string, excludedPatterns ...string) ([]string, error) {
-	return storage.GetFilePaths(loadFilePattern, excludedPatterns...)
+	_ = "STUB: not implemented"
+	return nil, nil
 }
 
 // IsExist 判断路径是否存在
-func IsExist(path string) bool {
-	return storage.IsExist(path)
-}
+func IsExist(path string) bool { _ = "STUB: not implemented"; return false }
 
 // CreateDirs 创建文件夹
-func CreateDirs(path string) error {
-	return storage.CreateDirs(path)
-}
+func CreateDirs(path string) error { _ = "STUB: not implemented"; return nil }
 
-func SetStorage(fs File) {
-	storage = fs
-}
+func SetStorage(fs File) { _ = "STUB: not implemented"; return }
 
-func GetStorage() File {
-	return storage
-}
+func GetStorage() File { _ = "STUB: not implemented"; return *new(File) }

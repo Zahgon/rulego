@@ -17,9 +17,6 @@
 package endpoint
 
 import (
-	"fmt"
-	"strings"
-
 	"github.com/rulego/rulego/api/types"
 	"github.com/rulego/rulego/api/types/endpoint"
 	"github.com/rulego/rulego/endpoint/mqtt"
@@ -28,7 +25,6 @@ import (
 	"github.com/rulego/rulego/endpoint/schedule"
 	"github.com/rulego/rulego/endpoint/websocket"
 	"github.com/rulego/rulego/engine"
-	"github.com/rulego/rulego/utils/maps"
 )
 
 // init registers all built-in endpoint components with the default Registry.
@@ -97,7 +93,8 @@ type ComponentRegistry struct {
 //	    log.Fatal("Failed to register endpoint:", err)
 //	}
 func (r *ComponentRegistry) Register(component endpoint.Endpoint) error {
-	return r.RuleComponentRegistry.Register(component)
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // New creates a new instance of an endpoint based on the component type.
@@ -137,37 +134,16 @@ func (r *ComponentRegistry) Register(component endpoint.Endpoint) error {
 //	    "server": ":9090",
 //	})
 func (r *ComponentRegistry) New(componentType string, ruleConfig types.Config, configuration interface{}) (endpoint.Endpoint, error) {
+	_ = "STUB: not implemented"
 	// Handle backward compatibility for legacy type names
 	// 处理旧类型名称的向后兼容性
-	if strings.Contains("http,ws,mqtt,net,schedule,kafka,nats", componentType) {
-		//Compatible with older versions  兼容旧版本
-		componentType = types.EndpointTypePrefix + componentType
-	}
-
-	// Create new node instance from registry  从注册表创建新节点实例
-	newNode, err := r.RuleComponentRegistry.NewNode(componentType)
-	if err != nil {
-		return nil, err
-	}
-
-	// Process configuration parameter  处理配置参数
-	var config = make(types.Configuration)
-	if configuration != nil {
-		if c, ok := configuration.(types.Configuration); ok {
-			config = c
-		} else if err = maps.Map2Struct(configuration, &config); err != nil {
-			return nil, err
-		}
-	}
-
-	// Initialize endpoint with configuration  使用配置初始化端点
-	if ep, ok := newNode.(endpoint.Endpoint); ok {
-		if err = ep.Init(ruleConfig, config); err != nil {
-			return nil, err
-		} else {
-			return ep, nil
-		}
-	} else {
-		return nil, fmt.Errorf("%s not type of Net", componentType)
-	}
+	return *new(endpoint.Endpoint), nil
 }
+
+//Compatible with older versions  兼容旧版本
+
+// Create new node instance from registry  从注册表创建新节点实例
+
+// Process configuration parameter  处理配置参数
+
+// Initialize endpoint with configuration  使用配置初始化端点

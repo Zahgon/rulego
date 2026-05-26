@@ -27,7 +27,6 @@
 package pool
 
 import (
-	"errors"
 	"runtime"
 	"sync"
 	"time"
@@ -162,46 +161,25 @@ type workerChan struct {
 //     删除空闲时间超过 MaxIdleWorkerDuration 的工作者
 //   - Maintains optimal pool size based on workload  基于工作负载维护最佳池大小
 //   - Prevents memory leaks from unused workers  防止未使用工作者造成的内存泄漏
-func (wp *WorkerPool) Start() {
-	if wp.stopCh != nil {
-		return
-	}
-	wp.startOnce.Do(func() {
-		// Create stop channel for cleanup coordination
-		// 创建用于清理协调的停止通道
-		wp.stopCh = make(chan struct{})
-		stopCh := wp.stopCh
+func (wp *WorkerPool) Start() { _ = "STUB: not implemented"; return }
 
-		// Initialize worker channel pool with factory function
-		// 使用工厂函数初始化工作者通道池
-		wp.workerChanPool.New = func() interface{} {
-			return &workerChan{
-				ch: make(chan func(), workerChanCap),
-			}
-		}
+// Create stop channel for cleanup coordination
+// 创建用于清理协调的停止通道
 
-		// Start background cleanup goroutine
-		// 启动后台清理协程
-		go func() {
-			var scratch []*workerChan
-			for {
-				// Clean up idle workers
-				// 清理空闲工作者
-				wp.clean(&scratch)
-				select {
-				case <-stopCh:
-					// Pool has been stopped, exit cleanup loop
-					// 池已停止，退出清理循环
-					return
-				default:
-					// Wait for next cleanup cycle
-					// 等待下一个清理周期
-					time.Sleep(wp.getMaxIdleWorkerDuration())
-				}
-			}
-		}()
-	})
-}
+// Initialize worker channel pool with factory function
+// 使用工厂函数初始化工作者通道池
+
+// Start background cleanup goroutine
+// 启动后台清理协程
+
+// Clean up idle workers
+// 清理空闲工作者
+
+// Pool has been stopped, exit cleanup loop
+// 池已停止，退出清理循环
+
+// Wait for next cleanup cycle
+// 等待下一个清理周期
 
 // Stop gracefully shuts down the worker pool.
 // It stops accepting new tasks and signals all idle workers to terminate.
@@ -224,33 +202,19 @@ func (wp *WorkerPool) Start() {
 //
 // 注意：此方法不等待忙碌工作者完成。
 // 对于需要优雅关闭的应用程序，考虑实现单独的机制来等待任务完成。
-func (wp *WorkerPool) Stop() {
-	if wp.stopCh == nil {
-		return
-	}
+func (wp *WorkerPool) Stop() { _ = "STUB: not implemented"; return }
 
-	// Signal cleanup goroutine to stop
-	// 向清理协程发送停止信号
-	close(wp.stopCh)
-	wp.stopCh = nil
+// Signal cleanup goroutine to stop
+// 向清理协程发送停止信号
 
-	// Stop all the workers waiting for incoming connections.
-	// Do not wait for busy workers - they will stop after
-	// serving the connection and noticing wp.mustStop = true.
-	// 停止所有等待传入连接的工作者。
-	// 不等待忙碌的工作者 - 它们将在服务连接后停止并注意到 wp.mustStop = true。
-	wp.lock.Lock()
-	ready := wp.ready
-	for i := range ready {
-		// Send termination signal to each idle worker
-		// 向每个空闲工作者发送终止信号
-		ready[i].ch <- nil
-		ready[i] = nil
-	}
-	wp.ready = ready[:0]
-	wp.mustStop = true
-	wp.lock.Unlock()
-}
+// Stop all the workers waiting for incoming connections.
+// Do not wait for busy workers - they will stop after
+// serving the connection and noticing wp.mustStop = true.
+// 停止所有等待传入连接的工作者。
+// 不等待忙碌的工作者 - 它们将在服务连接后停止并注意到 wp.mustStop = true。
+
+// Send termination signal to each idle worker
+// 向每个空闲工作者发送终止信号
 
 // Release is an alias for Stop() provided for compatibility.
 // It performs the same shutdown operation as Stop().
@@ -258,24 +222,24 @@ func (wp *WorkerPool) Stop() {
 // Release 是为兼容性提供的 Stop() 的别名。
 // 它执行与 Stop() 相同的关闭操作。
 func (wp *WorkerPool) Release() {
-	wp.Stop()
+	_ = "STUB: not implemented"
+
+	// getMaxIdleWorkerDuration returns the configured idle duration or a default value.
+	// It provides a sensible default of 10 seconds if no duration is specified.
+	//
+	// getMaxIdleWorkerDuration 返回配置的空闲持续时间或默认值。
+	// 如果未指定持续时间，它提供 10 秒的合理默认值。
+	//
+	// Returns:
+	// 返回：
+	//   - time.Duration: The idle duration after which workers are cleaned up
+	//     工作者被清理的空闲持续时间
+	return
 }
 
-// getMaxIdleWorkerDuration returns the configured idle duration or a default value.
-// It provides a sensible default of 10 seconds if no duration is specified.
-//
-// getMaxIdleWorkerDuration 返回配置的空闲持续时间或默认值。
-// 如果未指定持续时间，它提供 10 秒的合理默认值。
-//
-// Returns:
-// 返回：
-//   - time.Duration: The idle duration after which workers are cleaned up
-//     工作者被清理的空闲持续时间
 func (wp *WorkerPool) getMaxIdleWorkerDuration() time.Duration {
-	if wp.MaxIdleWorkerDuration <= 0 {
-		return 10 * time.Second
-	}
-	return wp.MaxIdleWorkerDuration
+	_ = "STUB: not implemented"
+	return *new(time.Duration)
 }
 
 // clean removes idle workers that have exceeded the maximum idle duration.
@@ -298,60 +262,28 @@ func (wp *WorkerPool) getMaxIdleWorkerDuration() time.Duration {
 //
 // Performance: O(log n + m) where n is ready workers and m is workers to clean
 // 性能：O(log n + m)，其中 n 是就绪工作者数，m 是要清理的工作者数
-func (wp *WorkerPool) clean(scratch *[]*workerChan) {
-	maxIdleWorkerDuration := wp.getMaxIdleWorkerDuration()
+func (wp *WorkerPool) clean(scratch *[]*workerChan) { _ = "STUB: not implemented"; return }
 
-	// Clean least recently used workers if they didn't serve connections
-	// for more than maxIdleWorkerDuration.
-	// 清理最近最少使用的工作者，如果它们超过 maxIdleWorkerDuration 没有服务连接。
-	criticalTime := time.Now().Add(-maxIdleWorkerDuration)
+// Clean least recently used workers if they didn't serve connections
+// for more than maxIdleWorkerDuration.
+// 清理最近最少使用的工作者，如果它们超过 maxIdleWorkerDuration 没有服务连接。
 
-	wp.lock.Lock()
-	ready := wp.ready
-	n := len(ready)
+// Use binary-search algorithm to find out the index of the least recently worker which can be cleaned up.
+// 使用二分搜索算法找出可以清理的最近最少使用工作者的索引。
 
-	// Use binary-search algorithm to find out the index of the least recently worker which can be cleaned up.
-	// 使用二分搜索算法找出可以清理的最近最少使用工作者的索引。
-	l, r, mid := 0, n-1, 0
-	for l <= r {
-		mid = (l + r) / 2
-		if criticalTime.After(wp.ready[mid].lastUseTime) {
-			l = mid + 1
-		} else {
-			r = mid - 1
-		}
-	}
-	i := r
-	if i == -1 {
-		// No workers to clean up
-		// 没有工作者需要清理
-		wp.lock.Unlock()
-		return
-	}
+// No workers to clean up
+// 没有工作者需要清理
 
-	// Move workers to be cleaned to scratch slice
-	// 将要清理的工作者移到临时切片
-	*scratch = append((*scratch)[:0], ready[:i+1]...)
-	m := copy(ready, ready[i+1:])
-	for i = m; i < n; i++ {
-		ready[i] = nil
-	}
-	wp.ready = ready[:m]
-	wp.lock.Unlock()
+// Move workers to be cleaned to scratch slice
+// 将要清理的工作者移到临时切片
 
-	// Notify obsolete workers to stop.
-	// This notification must be outside the wp.lock, since ch.ch
-	// may be blocking and may consume a lot of time if many workers
-	// are located on non-local CPUs.
-	// 通知过时的工作者停止。
-	// 此通知必须在 wp.lock 之外，因为 ch.ch 可能阻塞，
-	// 如果许多工作者位于非本地 CPU 上，可能会消耗大量时间。
-	tmp := *scratch
-	for i := range tmp {
-		tmp[i].ch <- nil
-		tmp[i] = nil
-	}
-}
+// Notify obsolete workers to stop.
+// This notification must be outside the wp.lock, since ch.ch
+// may be blocking and may consume a lot of time if many workers
+// are located on non-local CPUs.
+// 通知过时的工作者停止。
+// 此通知必须在 wp.lock 之外，因为 ch.ch 可能阻塞，
+// 如果许多工作者位于非本地 CPU 上，可能会消耗大量时间。
 
 // Submit submits a function for execution by the worker pool.
 // It returns an error if no idle workers are available and the maximum
@@ -387,14 +319,7 @@ func (wp *WorkerPool) clean(scratch *[]*workerChan) {
 //
 //	This method is thread-safe and can be called concurrently
 //	此方法是线程安全的，可以并发调用
-func (wp *WorkerPool) Submit(fn func()) error {
-	ch := wp.getCh()
-	if ch == nil {
-		return errors.New("no idle workers")
-	}
-	ch.ch <- fn
-	return nil
-}
+func (wp *WorkerPool) Submit(fn func()) error { _ = "STUB: not implemented"; return nil }
 
 // workerChanCap determines the capacity of worker channels based on GOMAXPROCS.
 // It optimizes performance by using different channel capacities for different CPU configurations.
@@ -448,50 +373,25 @@ var workerChanCap = func() int {
 //   - New workers are started in separate goroutines  新工作者在单独的协程中启动
 //   - Worker channels are pooled to reduce allocations  工作者通道被池化以减少分配
 //   - Worker count is tracked for limit enforcement  跟踪工作者数量以执行限制
-func (wp *WorkerPool) getCh() *workerChan {
-	var ch *workerChan
-	createWorker := false
+func (wp *WorkerPool) getCh() *workerChan { _ = "STUB: not implemented"; return nil }
 
-	wp.lock.Lock()
-	ready := wp.ready
-	n := len(ready) - 1
-	if n < 0 {
-		// No idle workers available, check if we can create a new one
-		// 没有空闲工作者可用，检查是否可以创建新工作者
-		if wp.workersCount < wp.MaxWorkersCount {
-			createWorker = true
-			wp.workersCount++
-		}
-	} else {
-		// Reuse the most recently used worker (FILO order)
-		// 重用最近使用的工作者（FILO 顺序）
-		ch = ready[n]
-		ready[n] = nil
-		wp.ready = ready[:n]
-	}
-	wp.lock.Unlock()
+// No idle workers available, check if we can create a new one
+// 没有空闲工作者可用，检查是否可以创建新工作者
 
-	if ch == nil {
-		if !createWorker {
-			// Cannot create new worker and no idle workers available
-			// 无法创建新工作者且没有空闲工作者可用
-			return nil
-		}
-		// Create new worker channel from pool
-		// 从池中创建新的工作者通道
-		vch := wp.workerChanPool.Get()
-		ch = vch.(*workerChan)
-		go func() {
-			// Start worker goroutine
-			// 启动工作者协程
-			wp.workerFunc(ch)
-			// Return worker channel to pool when done
-			// 完成时将工作者通道返回到池
-			wp.workerChanPool.Put(vch)
-		}()
-	}
-	return ch
-}
+// Reuse the most recently used worker (FILO order)
+// 重用最近使用的工作者（FILO 顺序）
+
+// Cannot create new worker and no idle workers available
+// 无法创建新工作者且没有空闲工作者可用
+
+// Create new worker channel from pool
+// 从池中创建新的工作者通道
+
+// Start worker goroutine
+// 启动工作者协程
+
+// Return worker channel to pool when done
+// 完成时将工作者通道返回到池
 
 // release returns a worker channel to the pool of available workers.
 // It updates the worker's last use time and adds it to the ready list.
@@ -515,23 +415,17 @@ func (wp *WorkerPool) getCh() *workerChan {
 //  3. If not stopping, add worker to ready list  如果没有停止，将工作者添加到就绪列表
 //  4. Return success/failure status  返回成功/失败状态
 func (wp *WorkerPool) release(ch *workerChan) bool {
+	_ = "STUB: not implemented"
 	// Update last use time for cleanup purposes
 	// 更新最后使用时间以用于清理目的
-	ch.lastUseTime = time.Now()
-
-	wp.lock.Lock()
-	if wp.mustStop {
-		// Pool is stopping, don't reuse this worker
-		// 池正在停止，不要重用此工作者
-		wp.lock.Unlock()
-		return false
-	}
-	// Add worker back to ready list (will be used in FILO order)
-	// 将工作者添加回就绪列表（将以 FILO 顺序使用）
-	wp.ready = append(wp.ready, ch)
-	wp.lock.Unlock()
-	return true
+	return false
 }
+
+// Pool is stopping, don't reuse this worker
+// 池正在停止，不要重用此工作者
+
+// Add worker back to ready list (will be used in FILO order)
+// 将工作者添加回就绪列表（将以 FILO 顺序使用）
 
 // workerFunc is the main worker goroutine function.
 // It continuously processes functions sent through the worker channel
@@ -564,32 +458,19 @@ func (wp *WorkerPool) release(ch *workerChan) bool {
 //	The worker goroutine itself does not perform error handling for user functions.
 //	工作者函数应该处理自己的错误。
 //	工作者协程本身不为用户函数执行错误处理。
-func (wp *WorkerPool) workerFunc(ch *workerChan) {
-	var fn func()
-	for fn = range ch.ch {
-		if fn == nil {
-			// Termination signal received
-			// 收到终止信号
-			break
-		}
+func (wp *WorkerPool) workerFunc(ch *workerChan) { _ = "STUB: not implemented"; return }
 
-		// Execute the user function
-		// 执行用户函数
-		fn()
-		fn = nil
+// Termination signal received
+// 收到终止信号
 
-		// Try to release the worker back to the pool
-		// 尝试将工作者释放回池
-		if !wp.release(ch) {
-			// Pool is stopping, exit worker goroutine
-			// 池正在停止，退出工作者协程
-			break
-		}
-	}
+// Execute the user function
+// 执行用户函数
 
-	// Decrement worker count when exiting
-	// 退出时减少工作者计数
-	wp.lock.Lock()
-	wp.workersCount--
-	wp.lock.Unlock()
-}
+// Try to release the worker back to the pool
+// 尝试将工作者释放回池
+
+// Pool is stopping, exit worker goroutine
+// 池正在停止，退出工作者协程
+
+// Decrement worker count when exiting
+// 退出时减少工作者计数

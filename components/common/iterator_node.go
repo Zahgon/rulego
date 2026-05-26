@@ -17,17 +17,7 @@
 package common
 
 import (
-	"errors"
-	"fmt"
-	"strings"
-
-	"github.com/rulego/rulego/utils/js"
-
 	"github.com/rulego/rulego/api/types"
-	"github.com/rulego/rulego/components/base"
-	"github.com/rulego/rulego/utils/json"
-	"github.com/rulego/rulego/utils/maps"
-	"github.com/rulego/rulego/utils/str"
 )
 
 // init 注册IteratorNode组件
@@ -90,97 +80,51 @@ type IteratorNode struct {
 // Type 返回组件类型
 // Type returns the component type identifier.
 func (x *IteratorNode) Type() string {
-	return "iterator"
+	_ = "STUB: not implemented"
+
+	// New 创建新实例
+	// New creates a new instance.
+	return ""
 }
 
-// New 创建新实例
-// New creates a new instance.
-func (x *IteratorNode) New() types.Node {
-	return &IteratorNode{Config: IteratorNodeConfiguration{}}
-}
+func (x *IteratorNode) New() types.Node { _ = "STUB: not implemented"; return *new(types.Node) }
 
 // Init 初始化组件
 // Init initializes the component.
 func (x *IteratorNode) Init(ruleConfig types.Config, configuration types.Configuration) error {
-	err := maps.Map2Struct(configuration, &x.Config)
-	x.Config.JsScript = strings.TrimSpace(x.Config.JsScript)
-	x.Config.FieldName = strings.TrimSpace(x.Config.FieldName)
-	if err == nil && x.Config.JsScript != "" {
-		jsScript := fmt.Sprintf("function ItemFilter(item,index,metadata) { %s }", x.Config.JsScript)
-		x.jsEngine, err = js.NewGojaJsEngine(ruleConfig, jsScript, base.NodeUtils.GetVars(configuration))
-	}
-	return err
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // OnMsg 处理消息，遍历指定字段或整个消息，应用JavaScript过滤器
 // OnMsg processes incoming messages by iterating over the specified field or entire message.
 func (x *IteratorNode) OnMsg(ctx types.RuleContext, msg types.RuleMsg) {
-	var data interface{} = msg.GetData()
-	if msg.DataType == types.JSON {
-		var dataMap interface{}
-		if err := json.Unmarshal([]byte(msg.GetData()), &dataMap); err == nil {
-			data = dataMap
-		}
-	}
-
-	// 遍历指定字段
-	if x.Config.FieldName != "" {
-		data = maps.Get(data, x.Config.FieldName)
-		if data == nil {
-			ctx.TellFailure(msg, errors.New("field="+x.Config.FieldName+" not found"))
-			return
-		}
-	}
-
-	if arrayValue, ok := data.([]interface{}); ok {
-		oldMsg := msg.Copy()
-		for index, item := range arrayValue {
-			if err := x.executeItem(ctx, msg, item, index); err != nil {
-				//出现错误中断遍历
-				return
-			}
-		}
-		ctx.TellSuccess(oldMsg)
-	} else if mapValue, ok := data.(map[string]interface{}); ok {
-		oldMsg := msg.Copy()
-		for k, item := range mapValue {
-			if err := x.executeItem(ctx, msg, item, k); err != nil {
-				//出现错误中断遍历
-				return
-			}
-		}
-		ctx.TellSuccess(oldMsg)
-	} else {
-		ctx.TellFailure(msg, errors.New("value is not array or {key:value} type"))
-	}
+	_ = "STUB: not implemented"
+	return
 }
+
+// 遍历指定字段
+
+//出现错误中断遍历
+
+//出现错误中断遍历
 
 // Destroy 清理资源
 // Destroy cleans up resources.
 func (x *IteratorNode) Destroy() {
+	_ = "STUB: not implemented"
 	// 无资源需要清理
 	// No resources to clean up
+	return
 }
 
 // executeItem 处理每个遍历项，应用JavaScript过滤器并路由
 // executeItem processes each individual item during iteration.
 func (x *IteratorNode) executeItem(ctx types.RuleContext, msg types.RuleMsg, item interface{}, index interface{}) error {
-	if x.jsEngine != nil {
-		// 使用零拷贝GetReadOnlyValues，JS引擎只读取metadata
-		if out, err := x.jsEngine.Execute(ctx, "ItemFilter", item, index, msg.Metadata.GetReadOnlyValues()); err != nil {
-			ctx.TellFailure(msg, err)
-			//出现错误中断遍历
-			return err
-		} else if formatData, ok := out.(bool); ok && formatData {
-			msg.SetData(str.ToString(item))
-			ctx.TellNext(msg, types.True)
-		} else {
-			msg.SetData(str.ToString(item))
-			ctx.TellNext(msg, types.False)
-		}
-	} else {
-		msg.SetData(str.ToString(item))
-		ctx.TellNext(msg, types.True)
-	}
+	_ = "STUB: not implemented"
 	return nil
+
+	// 使用零拷贝GetReadOnlyValues，JS引擎只读取metadata
 }
+
+//出现错误中断遍历

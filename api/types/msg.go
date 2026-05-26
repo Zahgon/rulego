@@ -17,15 +17,7 @@
 package types
 
 import (
-	"encoding/hex"
 	"sync"
-	"sync/atomic"
-	"time"
-	"unicode/utf8"
-
-	"github.com/gofrs/uuid/v5"
-	"github.com/rulego/rulego/utils/json"
-	"github.com/rulego/rulego/utils/str"
 )
 
 // DataType defines the type of data contained in a message.
@@ -83,68 +75,54 @@ type Properties map[string]string
 // NewProperties 创建一个新的空 Properties 实例。
 // 返回一个已初始化的 Properties 映射，可立即使用。
 func NewProperties() Properties {
-	return make(Properties)
+	_ = "STUB: not implemented"
+	return *
+
+	// BuildProperties creates a new Properties instance from existing data.
+	// If the input data is nil, returns an empty Properties instance.
+	// The function creates a deep copy of the input data to ensure isolation.
+	//
+	// BuildProperties 从现有数据创建新的 Properties 实例。
+	// 如果输入数据为 nil，返回空的 Properties 实例。
+	// 该函数创建输入数据的深度副本以确保隔离。
+	new(Properties)
 }
 
-// BuildProperties creates a new Properties instance from existing data.
-// If the input data is nil, returns an empty Properties instance.
-// The function creates a deep copy of the input data to ensure isolation.
-//
-// BuildProperties 从现有数据创建新的 Properties 实例。
-// 如果输入数据为 nil，返回空的 Properties 实例。
-// 该函数创建输入数据的深度副本以确保隔离。
 func BuildProperties(data Properties) Properties {
-	if data == nil {
-		return make(Properties)
-	}
-	// Pre-allocate with known capacity to reduce map resizing
-	// 预分配已知容量以减少映射重新调整大小
-	metadata := make(Properties, len(data))
-	for k, v := range data {
-		metadata[k] = v
-	}
-	return metadata
+	_ = "STUB: not implemented"
+	return *new(Properties)
 }
+
+// Pre-allocate with known capacity to reduce map resizing
+// 预分配已知容量以减少映射重新调整大小
 
 // Copy creates a deep copy of the Properties.
 // This ensures that modifications to the copy do not affect the original.
 //
 // Copy 创建 Properties 的深度副本。
 // 这确保对副本的修改不会影响原始数据。
-func (md Properties) Copy() Properties {
-	return BuildProperties(md)
-}
+func (md Properties) Copy() Properties { _ = "STUB: not implemented"; return *new(Properties) }
 
 // Has checks if a key exists in the metadata.
 // Returns true if the key exists, false otherwise.
 //
 // Has 检查元数据中是否存在键。
 // 如果键存在返回 true，否则返回 false。
-func (md Properties) Has(key string) bool {
-	_, ok := md[key]
-	return ok
-}
+func (md Properties) Has(key string) bool { _ = "STUB: not implemented"; return false }
 
 // GetValue retrieves a value by key from the metadata.
 // Returns the value if the key exists, or an empty string if not found.
 //
 // GetValue 通过键从元数据中检索值。
 // 如果键存在返回值，如果未找到返回空字符串。
-func (md Properties) GetValue(key string) string {
-	v, _ := md[key]
-	return v
-}
+func (md Properties) GetValue(key string) string { _ = "STUB: not implemented"; return "" }
 
 // PutValue sets a value in the metadata.
 // If the key is empty, the operation is ignored to prevent invalid entries.
 //
 // PutValue 在元数据中设置值。
 // 如果键为空，操作将被忽略以防止无效条目。
-func (md Properties) PutValue(key, value string) {
-	if key != "" {
-		md[key] = value
-	}
-}
+func (md Properties) PutValue(key, value string) { _ = "STUB: not implemented"; return }
 
 // Values returns the underlying map containing all key-value pairs.
 // Note: This returns a direct reference to the internal map, so modifications
@@ -153,21 +131,23 @@ func (md Properties) PutValue(key, value string) {
 // Values 返回包含所有键值对的底层映射。
 // 注意：这返回内部映射的直接引用，因此修改会影响原始 Properties 实例。
 func (md Properties) Values() map[string]string {
-	return md
+	_ = "STUB: not implemented"
+
+	// Metadata is a type for message metadata within the rule engine.
+	// It uses Copy-on-Write mechanism to optimize performance in multi-node scenarios.
+	//
+	// Metadata 是规则引擎中消息元数据的类型。
+	// 它使用写时复制机制来优化多节点场景下的性能。
+	//
+	// Key Features:
+	// 主要特性：
+	//   - Copy-on-Write optimization for better performance  写时复制优化以获得更好的性能
+	//   - Thread-safe operations with mutex protection  使用互斥锁保护的线程安全操作
+	//   - Efficient sharing between multiple rule nodes  多个规则节点间的高效共享
+	//   - JSON marshaling/unmarshaling support  JSON 序列化/反序列化支持
+	return nil
 }
 
-// Metadata is a type for message metadata within the rule engine.
-// It uses Copy-on-Write mechanism to optimize performance in multi-node scenarios.
-//
-// Metadata 是规则引擎中消息元数据的类型。
-// 它使用写时复制机制来优化多节点场景下的性能。
-//
-// Key Features:
-// 主要特性：
-//   - Copy-on-Write optimization for better performance  写时复制优化以获得更好的性能
-//   - Thread-safe operations with mutex protection  使用互斥锁保护的线程安全操作
-//   - Efficient sharing between multiple rule nodes  多个规则节点间的高效共享
-//   - JSON marshaling/unmarshaling support  JSON 序列化/反序列化支持
 type Metadata struct {
 	// data holds the actual metadata key-value pairs
 	// data 保存实际的元数据键值对
@@ -183,165 +163,63 @@ type Metadata struct {
 }
 
 // NewMetadata creates a new instance of rule engine message metadata.
-func NewMetadata() *Metadata {
-	return &Metadata{
-		data:   make(map[string]string),
-		shared: false,
-	}
-}
+func NewMetadata() *Metadata { _ = "STUB: not implemented"; return nil }
 
 // BuildMetadata creates a new instance of rule engine message metadata from a map.
-func BuildMetadata(data map[string]string) *Metadata {
-	if data == nil {
-		return NewMetadata()
-	}
-	// Pre-allocate with known capacity to reduce map resizing
-	metadata := make(map[string]string, len(data))
-	for k, v := range data {
-		metadata[k] = v
-	}
-	return &Metadata{
-		data:   metadata,
-		shared: false,
-	}
-}
+func BuildMetadata(data map[string]string) *Metadata { _ = "STUB: not implemented"; return nil }
+
+// Pre-allocate with known capacity to reduce map resizing
 
 // BuildMetadataFromMetadata creates a new instance from existing Metadata (for backward compatibility).
-func BuildMetadataFromMetadata(md *Metadata) *Metadata {
-	if md == nil || md.data == nil {
-		return NewMetadata()
-	}
-	return BuildMetadata(md.data)
-}
+func BuildMetadataFromMetadata(md *Metadata) *Metadata { _ = "STUB: not implemented"; return nil }
 
 // Copy creates a copy of the metadata using Copy-on-Write optimization.
-func (md *Metadata) Copy() *Metadata {
-	md.mu.Lock()
-	defer md.mu.Unlock()
+func (md *Metadata) Copy() *Metadata { _ = "STUB: not implemented"; return nil }
 
-	// Mark current instance as shared
-	md.shared = true
+// Mark current instance as shared
 
-	// Return a new instance that shares the same data initially
-	// Note: The new instance gets its own mutex (zero value is ready to use)
-	return &Metadata{
-		data:   md.data,
-		shared: true,
-		// mu is automatically initialized as zero value (ready to use)
-	}
-}
+// Return a new instance that shares the same data initially
+// Note: The new instance gets its own mutex (zero value is ready to use)
+
+// mu is automatically initialized as zero value (ready to use)
 
 // ensureUnique ensures the metadata has its own copy of data before modification.
-func (md *Metadata) ensureUnique() {
-	md.mu.Lock()
-	defer md.mu.Unlock()
+func (md *Metadata) ensureUnique() { _ = "STUB: not implemented"; return }
 
-	if md.shared {
-		// Create a new copy of the data
-		newData := make(map[string]string, len(md.data))
-		for k, v := range md.data {
-			newData[k] = v
-		}
-		md.data = newData
-		md.shared = false
-	}
-}
+// Create a new copy of the data
 
 // MarshalJSON implements the json.Marshaler interface for Metadata
-func (md *Metadata) MarshalJSON() ([]byte, error) {
-	md.mu.RLock()
-	defer md.mu.RUnlock()
-	return json.Marshal(md.data)
-}
+func (md *Metadata) MarshalJSON() ([]byte, error) { _ = "STUB: not implemented"; return nil, nil }
 
 // UnmarshalJSON implements the json.Unmarshaler interface for Metadata
-func (md *Metadata) UnmarshalJSON(data []byte) error {
-	var m map[string]string
-	if err := json.Unmarshal(data, &m); err != nil {
-		return err
-	}
-	md.mu.Lock()
-	defer md.mu.Unlock()
+func (md *Metadata) UnmarshalJSON(data []byte) error { _ = "STUB: not implemented"; return nil }
 
-	// Ensure unique copy before replacing all data
-	if md.shared {
-		// We need to create a new data map since we're shared
-		md.shared = false
-	}
+// Ensure unique copy before replacing all data
 
-	md.data = m
-	return nil
-}
+// We need to create a new data map since we're shared
 
 // Has checks if a key exists in the metadata.
-func (md *Metadata) Has(key string) bool {
-	md.mu.RLock()
-	defer md.mu.RUnlock()
-	_, ok := md.data[key]
-	return ok
-}
+func (md *Metadata) Has(key string) bool { _ = "STUB: not implemented"; return false }
 
 // GetValue retrieves a value by key from the metadata.
-func (md *Metadata) GetValue(key string) string {
-	md.mu.RLock()
-	defer md.mu.RUnlock()
-	v, _ := md.data[key]
-	return v
-}
+func (md *Metadata) GetValue(key string) string { _ = "STUB: not implemented"; return "" }
 
 // PutValue sets a value in the metadata.
-func (md *Metadata) PutValue(key, value string) {
-	if key == "" {
-		return
-	}
+func (md *Metadata) PutValue(key, value string) { _ = "STUB: not implemented"; return }
 
-	md.mu.Lock()
-	defer md.mu.Unlock()
+// Ensure unique copy within the same lock
 
-	// Ensure unique copy within the same lock
-	if md.shared {
-		// Create a new copy of the data
-		newData := make(map[string]string, len(md.data))
-		for k, v := range md.data {
-			newData[k] = v
-		}
-		md.data = newData
-		md.shared = false
-	}
-
-	md.data[key] = value
-}
+// Create a new copy of the data
 
 // Delete removes the specified key and its value with Copy-on-Write semantics
-func (md *Metadata) Delete(key string) {
+func (md *Metadata) Delete(key string) { _ = "STUB: not implemented"; return }
 
-	md.mu.Lock()
-	defer md.mu.Unlock()
-
-	if md.shared {
-		// Create a new copy of the data
-		newData := make(map[string]string, len(md.data))
-		for k, v := range md.data {
-			newData[k] = v
-		}
-		md.data = newData
-		md.shared = false
-	}
-
-	delete(md.data, key)
-}
+// Create a new copy of the data
 
 // Values returns all key-value pairs in the metadata.
-func (md *Metadata) Values() map[string]string {
-	md.mu.RLock()
-	defer md.mu.RUnlock()
-	// Return a copy to prevent external modification
-	result := make(map[string]string, len(md.data))
-	for k, v := range md.data {
-		result[k] = v
-	}
-	return result
-}
+func (md *Metadata) Values() map[string]string { _ = "STUB: not implemented"; return nil }
+
+// Return a copy to prevent external modification
 
 // GetReadOnlyValues returns the underlying metadata map without copying.
 // WARNING: The returned map MUST NOT be modified. It's intended for read-only access only.
@@ -356,11 +234,9 @@ func (md *Metadata) Values() map[string]string {
 //	for k, v := range values { // Read-only iteration is safe
 //		fmt.Printf("%s: %s\n", k, v)
 //	}
-func (md *Metadata) GetReadOnlyValues() map[string]string {
-	md.mu.RLock()
-	defer md.mu.RUnlock()
-	return md.data // Zero-copy, but caller must not modify
-}
+func (md *Metadata) GetReadOnlyValues() map[string]string { _ = "STUB: not implemented"; return nil }
+
+// Zero-copy, but caller must not modify
 
 // ForEach iterates over all key-value pairs in the metadata using a callback function.
 // This method provides zero-copy iteration without exposing the internal map.
@@ -374,55 +250,28 @@ func (md *Metadata) GetReadOnlyValues() map[string]string {
 //		fmt.Printf("%s: %s\n", key, value)
 //		return true // Continue iteration
 //	})
-func (md *Metadata) ForEach(fn func(key, value string) bool) {
-	md.mu.RLock()
-	defer md.mu.RUnlock()
-	for k, v := range md.data {
-		if !fn(k, v) {
-			break
-		}
-	}
-}
+func (md *Metadata) ForEach(fn func(key, value string) bool) { _ = "STUB: not implemented"; return }
 
 // ReplaceAll replaces all metadata with new data.
-func (md *Metadata) ReplaceAll(newData map[string]string) {
-	md.mu.Lock()
-	defer md.mu.Unlock()
+func (md *Metadata) ReplaceAll(newData map[string]string) { _ = "STUB: not implemented"; return }
 
-	// Ensure unique copy before replacing all data
-	if md.shared {
-		// We need to create a new data map since we're shared
-		md.shared = false
-	}
+// Ensure unique copy before replacing all data
 
-	// Create new data map
-	md.data = make(map[string]string, len(newData))
-	for k, v := range newData {
-		md.data[k] = v
-	}
-}
+// We need to create a new data map since we're shared
+
+// Create new data map
 
 // Clear clears all metadata.
-func (md *Metadata) Clear() {
-	md.mu.Lock()
-	defer md.mu.Unlock()
+func (md *Metadata) Clear() { _ = "STUB: not implemented"; return }
 
-	// Ensure unique copy before clearing all data
-	if md.shared {
-		// We need to create a new data map since we're shared
-		md.shared = false
-	}
+// Ensure unique copy before clearing all data
 
-	// Create new empty data map
-	md.data = make(map[string]string)
-}
+// We need to create a new data map since we're shared
+
+// Create new empty data map
 
 // Len returns the number of key-value pairs in the metadata.
-func (md *Metadata) Len() int {
-	md.mu.RLock()
-	defer md.mu.RUnlock()
-	return len(md.data)
-}
+func (md *Metadata) Len() int { _ = "STUB: not implemented"; return 0 }
 
 // RuleMsg represents a message within the rule engine system.
 // It encapsulates all the information needed for message processing, including
@@ -501,59 +350,35 @@ type RuleMsg struct {
 
 // NewMsg creates a new message instance and generates a message ID using UUID.
 func NewMsg(ts int64, msgType string, dataType DataType, metaData *Metadata, data string) RuleMsg {
-	uuId, _ := uuid.NewV4()
-	return newMsg(uuId.String(), ts, msgType, dataType, metaData, str.UnsafeBytesFromString(data))
+	_ = "STUB: not implemented"
+	return *new(RuleMsg)
 }
 
 // NewMsgFromBytes creates a new message instance from []byte data and generates a message ID using UUID.
 func NewMsgFromBytes(ts int64, msgType string, dataType DataType, metaData *Metadata, data []byte) RuleMsg {
-	uuId, _ := uuid.NewV4()
-	return newMsg(uuId.String(), ts, msgType, dataType, metaData, data)
+	_ = "STUB: not implemented"
+	return *new(RuleMsg)
 }
 
-func NewMsgWithJsonData(data string) RuleMsg {
-	uuId, _ := uuid.NewV4()
-	return newMsg(uuId.String(), 0, "", JSON, NewMetadata(), str.UnsafeBytesFromString(data))
-}
+func NewMsgWithJsonData(data string) RuleMsg { _ = "STUB: not implemented"; return *new(RuleMsg) }
 
 // NewMsgWithJsonDataFromBytes creates a new message instance with JSON data from []byte.
 func NewMsgWithJsonDataFromBytes(data []byte) RuleMsg {
-	uuId, _ := uuid.NewV4()
-	return newMsg(uuId.String(), 0, "", JSON, NewMetadata(), data)
+	_ = "STUB: not implemented"
+	return *new(RuleMsg)
 }
 
 // newMsg is a helper function to create a new RuleMsg from []byte data.
 func newMsg(id string, ts int64, msgType string, dataType DataType, metaData *Metadata, data []byte) RuleMsg {
-	if ts <= 0 {
-		ts = time.Now().UnixMilli()
-	}
-	if id == "" {
-		uuId, _ := uuid.NewV4()
-		id = uuId.String()
-	}
-	var metadata *Metadata
-	if metaData != nil {
-		metadata = metaData
-	} else {
-		metadata = NewMetadata()
-	}
-
-	// Create the message
-	msg := RuleMsg{
-		Ts:       ts,
-		Id:       id,
-		Type:     msgType,
-		DataType: dataType,
-		Data:     NewSharedDataFromBytesWithType(data, dataType),
-		Metadata: metadata,
-	}
-
-	// Note: We cannot set the callback here because when the function returns,
-	// it returns a copy of the message, and the callback would point to the wrong instance.
-	// The callback will be set in SetData method when needed.
-
-	return msg
+	_ = "STUB: not implemented"
+	return *new(RuleMsg)
 }
+
+// Create the message
+
+// Note: We cannot set the callback here because when the function returns,
+// it returns a copy of the message, and the callback would point to the wrong instance.
+// The callback will be set in SetData method when needed.
 
 // SetData sets the message data from string with zero-copy optimization.
 // This method uses zero-copy conversion for optimal performance while maintaining
@@ -561,35 +386,18 @@ func newMsg(id string, ts int64, msgType string, dataType DataType, metaData *Me
 //
 // Performance: Zero-copy, optimal performance
 // Safety: Protected by Copy-on-Write mechanism
-func (m *RuleMsg) SetData(data string) {
-	if m.Data == nil {
-		m.Data = NewSharedDataWithType(data, m.DataType)
-	} else {
-		m.Data.SetUnsafe(data)
-	}
-}
+func (m *RuleMsg) SetData(data string) { _ = "STUB: not implemented"; return }
 
 // SetBytes sets the message data from []byte.
 // The input []byte will be copied to ensure data isolation.
-func (m *RuleMsg) SetBytes(data []byte) {
-	if m.Data == nil {
-		m.Data = NewSharedDataFromBytesWithType(data, m.DataType)
-	} else {
-		m.Data.SetBytes(data)
-	}
-}
+func (m *RuleMsg) SetBytes(data []byte) { _ = "STUB: not implemented"; return }
 
 // GetData returns the message data as string using zero-copy conversion.
 // This method is optimized for performance while maintaining safety through Copy-on-Write mechanism.
 //
 // Performance: Zero-copy, optimal performance
 // Safety: Protected by Copy-on-Write mechanism in SharedData
-func (m *RuleMsg) GetData() string {
-	if m.Data == nil {
-		return ""
-	}
-	return m.Data.GetUnsafe()
-}
+func (m *RuleMsg) GetData() string { _ = "STUB: not implemented"; return "" }
 
 // GetBytes returns the message data as []byte.
 //
@@ -598,12 +406,7 @@ func (m *RuleMsg) GetData() string {
 // cause data races. If you need to modify the data, use GetMutableBytes() instead.
 //
 // For string data, use GetData() which is safer and more efficient.
-func (m *RuleMsg) GetBytes() []byte {
-	if m.Data == nil {
-		return nil
-	}
-	return m.Data.GetBytes()
-}
+func (m *RuleMsg) GetBytes() []byte { _ = "STUB: not implemented"; return nil }
 
 // GetSharedData returns the underlying SharedData instance.
 // This provides direct access to the SharedData for advanced operations.
@@ -623,11 +426,10 @@ func (m *RuleMsg) GetBytes() []byte {
 //	// modify mutableBytes...
 //	sharedData.SetBytes(mutableBytes)
 func (m *RuleMsg) GetSharedData() *SharedData {
-	if m.Data == nil {
-		// Return a new empty SharedData to avoid nil pointer issues
-		m.Data = NewSharedDataWithType("", m.DataType)
-	}
-	return m.Data
+	_ = "STUB: not implemented"
+
+	// Return a new empty SharedData to avoid nil pointer issues
+	return nil
 }
 
 // SetSharedData sets the underlying SharedData instance.
@@ -644,115 +446,88 @@ func (m *RuleMsg) GetSharedData() *SharedData {
 //
 //	sharedData := someOtherMsg.GetSharedData().Copy()
 //	msg.SetSharedData(sharedData)
-func (m *RuleMsg) SetSharedData(data *SharedData) {
-	if data == nil {
-		m.Data = NewSharedDataWithType("", m.DataType)
-	} else {
-		m.Data = data
-	}
-}
+func (m *RuleMsg) SetSharedData(data *SharedData) { _ = "STUB: not implemented"; return }
 
 // GetJsonData returns the message data parsed as JSON with caching.
 // If the data has already been parsed, returns cached result.
 // If the data is not valid JSON, it returns an error.
 // Returns map[string]interface{} for JSON objects or []interface{} for JSON arrays.
 // This method now delegates to SharedData for better concurrency control and unified caching.
-func (m *RuleMsg) GetJsonData() (interface{}, error) {
-	if m.Data == nil {
-		return make(map[string]interface{}), nil
-	}
-	return m.Data.GetJsonData()
-}
+func (m *RuleMsg) GetJsonData() (interface{}, error) { _ = "STUB: not implemented"; return nil, nil }
 
 // Copy creates a deep copy of the message.
 // This method ensures that the copied message is completely independent
 // from the original, including its metadata.
-func (m *RuleMsg) Copy() RuleMsg {
-	var copiedMetadata *Metadata
-	if m.Metadata != nil {
-		copiedMetadata = m.Metadata.Copy()
-	} else {
-		copiedMetadata = NewMetadata()
-	}
+func (m *RuleMsg) Copy() RuleMsg { _ = "STUB: not implemented"; return *new(RuleMsg) }
 
-	// Create a copy with shared data for COW optimization
-	var copiedData *SharedData
-	if m.Data != nil {
-		copiedData = m.Data.Copy()
-	} else {
-		copiedData = NewSharedDataWithType("", m.DataType)
-	}
+// Create a copy with shared data for COW optimization
 
-	copiedMsg := RuleMsg{
-		Ts:       m.Ts,
-		Id:       m.Id,
-		Type:     m.Type,
-		DataType: m.DataType,
-		Data:     copiedData,
-		Metadata: copiedMetadata,
-	}
-
-	// Note: Cannot set callback here for the same reason as in newMsg.
-	// The callback will be set when SetData is called on the copied message.
-
-	return copiedMsg
-}
+// Note: Cannot set callback here for the same reason as in newMsg.
+// The callback will be set when SetData is called on the copied message.
 
 // GetTs returns the timestamp of the message.
 func (m *RuleMsg) GetTs() int64 {
-	return m.Ts
+	_ = "STUB: not implemented"
+
+	// SetTs sets the timestamp of the message.
+	return 0
 }
 
-// SetTs sets the timestamp of the message.
 func (m *RuleMsg) SetTs(ts int64) {
-	m.Ts = ts
+	_ = "STUB: not implemented"
+
+	// GetId returns the unique identifier of the message.
+	return
 }
 
-// GetId returns the unique identifier of the message.
 func (m *RuleMsg) GetId() string {
-	return m.Id
+	_ = "STUB: not implemented"
+
+	// SetId sets the unique identifier of the message.
+	return ""
 }
 
-// SetId sets the unique identifier of the message.
 func (m *RuleMsg) SetId(id string) {
-	m.Id = id
+	_ = "STUB: not implemented"
+
+	// GetDataType returns the data type of the message.
+	return
 }
 
-// GetDataType returns the data type of the message.
 func (m *RuleMsg) GetDataType() DataType {
-	return m.DataType
+	_ = "STUB: not implemented"
+
+	// SetDataType sets the data type of the message.
+	return *new(DataType)
 }
 
-// SetDataType sets the data type of the message.
-func (m *RuleMsg) SetDataType(dataType DataType) {
-	m.DataType = dataType
-}
+func (m *RuleMsg) SetDataType(dataType DataType) { _ = "STUB: not implemented"; return }
 
 // GetType returns the message type used for routing and categorization.
 func (m *RuleMsg) GetType() string {
-	return m.Type
+	_ = "STUB: not implemented"
+
+	// SetType sets the message type used for routing and categorization.
+	return ""
 }
 
-// SetType sets the message type used for routing and categorization.
 func (m *RuleMsg) SetType(msgType string) {
-	m.Type = msgType
+	_ = "STUB: not implemented"
+
+	// GetMetadata returns the metadata associated with the message.
+	// Returns nil if no metadata is set.
+	return
 }
 
-// GetMetadata returns the metadata associated with the message.
-// Returns nil if no metadata is set.
 func (m *RuleMsg) GetMetadata() *Metadata {
-	return m.Metadata
+	_ = "STUB: not implemented"
+
+	// SetMetadata sets the metadata for the message.
+	// If metadata is nil, a new empty Metadata instance will be created.
+	return nil
 }
 
-// SetMetadata sets the metadata for the message.
-// If metadata is nil, a new empty Metadata instance will be created.
-func (m *RuleMsg) SetMetadata(metadata *Metadata) {
-	if metadata == nil {
-		m.Metadata = NewMetadata()
-	} else {
-		m.Metadata = metadata
-	}
-}
+func (m *RuleMsg) SetMetadata(metadata *Metadata) { _ = "STUB: not implemented"; return }
 
 // WrapperMsg is a container type for wrapping the results of node execution.
 // It encapsulates the processed message along with execution context information,
@@ -793,149 +568,84 @@ type SharedData struct {
 }
 
 // NewSharedData creates a new SharedData instance from string.
-func NewSharedData(data string) *SharedData {
-	refCount := int64(1)
-	return &SharedData{
-		data:     str.UnsafeBytesFromString(data),
-		dataType: TEXT,      // Default to TEXT for string data
-		refCount: &refCount, // Initial reference count is 1
-	}
-}
+func NewSharedData(data string) *SharedData { _ = "STUB: not implemented"; return nil }
+
+// Default to TEXT for string data
+// Initial reference count is 1
 
 // NewSharedDataWithType creates a new SharedData instance from string with specified data type.
 func NewSharedDataWithType(data string, dataType DataType) *SharedData {
-	refCount := int64(1)
-	return &SharedData{
-		data:     str.UnsafeBytesFromString(data),
-		dataType: dataType,
-		refCount: &refCount,
-	}
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // NewSharedDataFromBytes creates a new SharedData instance from []byte.
-func NewSharedDataFromBytes(data []byte) *SharedData {
-	refCount := int64(1)
-	return &SharedData{
-		data:     data,
-		dataType: BINARY, // Default to BINARY for byte data
-		refCount: &refCount,
-	}
-}
+func NewSharedDataFromBytes(data []byte) *SharedData { _ = "STUB: not implemented"; return nil }
+
+// Default to BINARY for byte data
 
 // NewSharedDataFromBytesWithType creates a new SharedData instance from []byte with specified data type.
 func NewSharedDataFromBytesWithType(data []byte, dataType DataType) *SharedData {
-	refCount := int64(1)
-	return &SharedData{
-		data:     data,
-		dataType: dataType,
-		refCount: &refCount,
-	}
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // Copy creates a copy of the SharedData using improved Copy-on-Write optimization.
-func (sd *SharedData) Copy() *SharedData {
-	sd.mu.RLock()
-	defer sd.mu.RUnlock()
+func (sd *SharedData) Copy() *SharedData { _ = "STUB: not implemented"; return nil }
 
-	// Both reading the data/refCount pointer and incrementing the reference count
-	// must be done atomically under the same lock to prevent race conditions
-	data := sd.data
-	dataType := sd.dataType
-	refCountPtr := sd.refCount
-	parsedData := sd.parsedData
-	dataVersion := sd.dataVersion
+// Both reading the data/refCount pointer and incrementing the reference count
+// must be done atomically under the same lock to prevent race conditions
 
-	// Increment reference count atomically while still holding the read lock
-	// This prevents ensureUnique() from replacing the refCount pointer between
-	// reading and incrementing
-	atomic.AddInt64(refCountPtr, 1)
+// Increment reference count atomically while still holding the read lock
+// This prevents ensureUnique() from replacing the refCount pointer between
+// reading and incrementing
 
-	// Return a new instance that shares the same data, refCount pointer, and parsed cache
-	// Safe to share parsedData because:
-	// 1. JSON parsing results are typically read-only
-	// 2. When data is modified (SetData/SetBytes), COW mechanism ensures isolation
-	// 3. ensureUnique() will clear parsedData when creating unique copies
-	return &SharedData{
-		data:        data,
-		dataType:    dataType,
-		refCount:    refCountPtr, // Share the same reference count pointer
-		parsedData:  parsedData,  // Share parsed cache for performance (protected by COW)
-		dataVersion: dataVersion, // Copy the data version to maintain consistency
-	}
-}
+// Return a new instance that shares the same data, refCount pointer, and parsed cache
+// Safe to share parsedData because:
+// 1. JSON parsing results are typically read-only
+// 2. When data is modified (SetData/SetBytes), COW mechanism ensures isolation
+// 3. ensureUnique() will clear parsedData when creating unique copies
+
+// Share the same reference count pointer
+// Share parsed cache for performance (protected by COW)
+// Copy the data version to maintain consistency
 
 // ensureUnique ensures the data is unique before modification using atomic operations
-func (sd *SharedData) ensureUnique() {
-	sd.mu.Lock()
-	defer sd.mu.Unlock()
+func (sd *SharedData) ensureUnique() { _ = "STUB: not implemented"; return }
 
-	// Use atomic Compare-And-Swap to safely check and decrement reference count
-	// This prevents race conditions where multiple goroutines could pass the > 1 check
-	// and then all decrement the counter
-	for {
-		currentRefCount := atomic.LoadInt64(sd.refCount)
-		if currentRefCount <= 1 {
-			// Already unique or only one reference, no need to copy
-			return
-		}
+// Use atomic Compare-And-Swap to safely check and decrement reference count
+// This prevents race conditions where multiple goroutines could pass the > 1 check
+// and then all decrement the counter
 
-		// Try to atomically decrement the reference count
-		// If CAS fails, another goroutine modified the refCount, so retry
-		if atomic.CompareAndSwapInt64(sd.refCount, currentRefCount, currentRefCount-1) {
-			// Successfully decremented, now create a unique copy
-			break
-		}
-		// CAS failed, retry with the updated value
-	}
+// Already unique or only one reference, no need to copy
 
-	// Create a new copy of the data
-	newData := make([]byte, len(sd.data))
-	copy(newData, sd.data)
+// Try to atomically decrement the reference count
+// If CAS fails, another goroutine modified the refCount, so retry
 
-	// Set new data and create new reference count
-	sd.data = newData
-	newRefCount := int64(1)
-	sd.refCount = &newRefCount
-	// Note: Do NOT increment dataVersion here, as we're just creating a unique copy
-	// with the same content. Version should only increment when data content changes.
-	// Clear parsed data cache since we're creating a unique copy
-	sd.parsedData = nil
-}
+// Successfully decremented, now create a unique copy
+
+// CAS failed, retry with the updated value
+
+// Create a new copy of the data
+
+// Set new data and create new reference count
+
+// Note: Do NOT increment dataVersion here, as we're just creating a unique copy
+// with the same content. Version should only increment when data content changes.
+// Clear parsed data cache since we're creating a unique copy
 
 // Get returns the data value as string using safe conversion.
-func (sd *SharedData) Get() string {
-	sd.mu.RLock()
-	defer sd.mu.RUnlock()
-
-	if len(sd.data) == 0 {
-		return ""
-	}
-
-	return str.SafeStringFromBytes(sd.data)
-}
+func (sd *SharedData) Get() string { _ = "STUB: not implemented"; return "" }
 
 // GetUnsafe returns the data as string using zero-copy conversion.
-func (sd *SharedData) GetUnsafe() string {
-	sd.mu.RLock()
-	defer sd.mu.RUnlock()
-
-	if len(sd.data) == 0 {
-		return ""
-	}
-
-	return str.UnsafeStringFromBytes(sd.data)
-}
+func (sd *SharedData) GetUnsafe() string { _ = "STUB: not implemented"; return "" }
 
 // GetBytes returns the data as []byte.
 //
 // IMPORTANT: The returned []byte slice shares memory with the internal data and
 // MUST NOT be modified. Any modification will corrupt the shared data and may
 // cause data races. If you need to modify the data, use GetMutableBytes() instead.
-func (sd *SharedData) GetBytes() []byte {
-	sd.mu.RLock()
-	defer sd.mu.RUnlock()
-	return sd.data
-}
+func (sd *SharedData) GetBytes() []byte { _ = "STUB: not implemented"; return nil }
 
 // GetMutableBytes returns a mutable copy of the data as []byte.
 // This method ensures copy-on-write semantics and returns a []byte that can be safely modified
@@ -947,305 +657,159 @@ func (sd *SharedData) GetBytes() []byte {
 //	data[0] = 'X' // Safe to modify
 //	sharedData.SetBytes(data) // Optional: set the modified data back
 func (sd *SharedData) GetMutableBytes() []byte {
+	_ = "STUB: not implemented"
 	// First ensure we have a unique copy
-	sd.ensureUnique()
-
-	sd.mu.RLock()
-	defer sd.mu.RUnlock()
-
-	// Return a copy to prevent direct modification of internal data
-	result := make([]byte, len(sd.data))
-	copy(result, sd.data)
-	return result
+	return nil
 }
+
+// Return a copy to prevent direct modification of internal data
 
 // String implements the fmt.Stringer interface.
 func (sd *SharedData) String() string {
-	return sd.Get()
+	_ = "STUB: not implemented"
+
+	// Set sets the data value, ensuring copy-on-write semantics.
+	return ""
 }
 
-// Set sets the data value, ensuring copy-on-write semantics.
 func (sd *SharedData) Set(data string) {
+	_ = "STUB: not implemented"
 	// Ensure unique copy first
-	sd.ensureUnique()
-
-	sd.mu.Lock()
-	defer sd.mu.Unlock()
-
-	// Use zero-copy conversion for better performance
-	sd.data = str.UnsafeBytesFromString(data)
-
-	// Increment data version to invalidate cached parsed data
-	sd.dataVersion++
-	// Clear parsed data cache since data has changed
-	sd.parsedData = nil
-
-	// Notify data change if callback is set
-	if sd.onDataChanged != nil {
-		sd.onDataChanged()
-	}
+	return
 }
+
+// Use zero-copy conversion for better performance
+
+// Increment data version to invalidate cached parsed data
+
+// Clear parsed data cache since data has changed
+
+// Notify data change if callback is set
 
 // SetUnsafe sets the data value using zero-copy conversion (use with caution).
 func (sd *SharedData) SetUnsafe(data string) {
+	_ = "STUB: not implemented"
 	// Ensure unique copy first
-	sd.ensureUnique()
-
-	sd.mu.Lock()
-	defer sd.mu.Unlock()
-
-	// Use zero-copy conversion for performance
-	sd.data = str.UnsafeBytesFromString(data)
-
-	// Increment data version to invalidate cached parsed data
-	sd.dataVersion++
-	// Clear parsed data cache since data has changed
-	sd.parsedData = nil
-
-	// Notify data change if callback is set
-	if sd.onDataChanged != nil {
-		sd.onDataChanged()
-	}
+	return
 }
+
+// Use zero-copy conversion for performance
+
+// Increment data version to invalidate cached parsed data
+
+// Clear parsed data cache since data has changed
+
+// Notify data change if callback is set
 
 // SetBytes sets the data from []byte.
 func (sd *SharedData) SetBytes(data []byte) {
+	_ = "STUB: not implemented"
 	// Ensure unique copy first
-	sd.ensureUnique()
-
-	sd.mu.Lock()
-	defer sd.mu.Unlock()
-
-	// Directly use the provided data
-	sd.data = data
-
-	// Increment data version to invalidate cached parsed data
-	sd.dataVersion++
-	// Clear parsed data cache since data has changed
-	sd.parsedData = nil
-
-	// Notify data change if callback is set
-	if sd.onDataChanged != nil {
-		sd.onDataChanged()
-	}
+	return
 }
+
+// Directly use the provided data
+
+// Increment data version to invalidate cached parsed data
+
+// Clear parsed data cache since data has changed
+
+// Notify data change if callback is set
 
 // Len returns the length of the data.
-func (sd *SharedData) Len() int {
-	sd.mu.RLock()
-	defer sd.mu.RUnlock()
-	return len(sd.data)
-}
+func (sd *SharedData) Len() int { _ = "STUB: not implemented"; return 0 }
 
 // IsEmpty checks if the data is empty.
-func (sd *SharedData) IsEmpty() bool {
-	sd.mu.RLock()
-	defer sd.mu.RUnlock()
-	return len(sd.data) == 0
-}
+func (sd *SharedData) IsEmpty() bool { _ = "STUB: not implemented"; return false }
 
 // GetRefCount returns the current reference count (for debugging/testing).
-func (sd *SharedData) GetRefCount() int64 {
-	return atomic.LoadInt64(sd.refCount)
-}
+func (sd *SharedData) GetRefCount() int64 { _ = "STUB: not implemented"; return 0 }
 
 // MarshalJSON implements the json.Marshaler interface.
 // For binary data, it uses hex encoding to ensure data integrity and readability.
-func (sd *SharedData) MarshalJSON() ([]byte, error) {
-	sd.mu.RLock()
-	defer sd.mu.RUnlock()
+func (sd *SharedData) MarshalJSON() ([]byte, error) { _ = "STUB: not implemented"; return nil, nil }
 
-	// For BINARY data type, always use hex encoding
-	if sd.dataType == BINARY {
-		encoded := hex.EncodeToString(sd.data)
-		return json.Marshal(encoded)
-	}
+// For BINARY data type, always use hex encoding
 
-	// For TEXT and JSON data types, check if data is valid UTF-8
-	if utf8.Valid(sd.data) {
-		// Data is valid UTF-8, marshal as string
-		return json.Marshal(str.UnsafeStringFromBytes(sd.data))
-	} else {
-		// Data contains invalid UTF-8 bytes, encode as hex even for TEXT/JSON
-		encoded := hex.EncodeToString(sd.data)
-		return json.Marshal(encoded)
-	}
-}
+// For TEXT and JSON data types, check if data is valid UTF-8
+
+// Data is valid UTF-8, marshal as string
+
+// Data contains invalid UTF-8 bytes, encode as hex even for TEXT/JSON
 
 // UnmarshalJSON implements the json.Unmarshaler interface.
-func (sd *SharedData) UnmarshalJSON(data []byte) error {
-	var s string
-	if err := json.Unmarshal(data, &s); err != nil {
-		return err
-	}
+func (sd *SharedData) UnmarshalJSON(data []byte) error { _ = "STUB: not implemented"; return nil }
 
-	sd.mu.Lock()
-	defer sd.mu.Unlock()
+// Initialize refCount if it's nil (during JSON unmarshaling)
 
-	// Initialize refCount if it's nil (during JSON unmarshaling)
-	if sd.refCount == nil {
-		newRefCount := int64(1)
-		sd.refCount = &newRefCount
-	} else {
-		// If refCount exists, ensure unique copy before replacing data
-		if atomic.LoadInt64(sd.refCount) > 1 {
-			atomic.AddInt64(sd.refCount, -1)
-			newRefCount := int64(1)
-			sd.refCount = &newRefCount
-		}
-	}
+// If refCount exists, ensure unique copy before replacing data
 
-	// Try to detect and decode hex-encoded data that was encoded by MarshalJSON
-	if isLikelyHexEncoded(s) {
-		if decoded, err := hex.DecodeString(s); err == nil {
-			sd.data = decoded
-			sd.dataType = BINARY
-		} else {
-			// Decoding failed, treat as regular string
-			sd.data = str.UnsafeBytesFromString(s)
-			sd.dataType = inferDataTypeFromContent(sd.data)
-		}
-	} else {
-		// Use string as-is and infer data type
-		sd.data = str.UnsafeBytesFromString(s)
-		sd.dataType = inferDataTypeFromContent(sd.data)
-	}
+// Try to detect and decode hex-encoded data that was encoded by MarshalJSON
 
-	// Increment data version to invalidate cached parsed data
-	sd.dataVersion++
-	// Clear parsed data cache since data has changed
-	sd.parsedData = nil
-	return nil
-}
+// Decoding failed, treat as regular string
+
+// Use string as-is and infer data type
+
+// Increment data version to invalidate cached parsed data
+
+// Clear parsed data cache since data has changed
 
 // isLikelyHexEncoded uses heuristics to determine if a string represents hex-encoded data
 // that was generated by MarshalJSON. This helps distinguish between legitimate strings
 // that happen to contain hex characters and actual hex-encoded binary data.
 func isLikelyHexEncoded(s string) bool {
+	_ = "STUB: not implemented"
 	// Empty string is not hex-encoded
-	if len(s) == 0 {
-		return false
-	}
-
-	// Hex encoding requires even number of characters (each byte = 2 hex chars)
-	if len(s)%2 != 0 {
-		return false
-	}
-
-	// Must contain only valid hex characters
-	for _, r := range s {
-		if !((r >= '0' && r <= '9') || (r >= 'a' && r <= 'f') || (r >= 'A' && r <= 'F')) {
-			return false
-		}
-	}
-
-	// Use length-based heuristic to avoid false positives:
-	// Short strings like "cafe", "dead", "beef" could be legitimate words
-	// Longer strings are more likely to be hex-encoded binary data
-	if len(s) < 8 {
-		return false
-	}
-
-	// Additional heuristic: if the string contains common patterns that suggest
-	// it's hex-encoded binary data rather than a legitimate hex string
-	return true
+	return false
 }
+
+// Hex encoding requires even number of characters (each byte = 2 hex chars)
+
+// Must contain only valid hex characters
+
+// Use length-based heuristic to avoid false positives:
+// Short strings like "cafe", "dead", "beef" could be legitimate words
+// Longer strings are more likely to be hex-encoded binary data
+
+// Additional heuristic: if the string contains common patterns that suggest
+// it's hex-encoded binary data rather than a legitimate hex string
 
 // inferDataTypeFromContent attempts to determine the appropriate DataType
 // based on the content of the data bytes with performance optimizations.
 func inferDataTypeFromContent(data []byte) DataType {
+	_ = "STUB: not implemented"
 	// If data contains invalid UTF-8 sequences, it's likely binary
-	if !utf8.Valid(data) {
-		return BINARY
-	}
-
-	// For valid UTF-8 data, try to determine if it's JSON
-	// Skip empty data to avoid false JSON detection
-	if len(data) == 0 {
-		return TEXT
-	}
-
-	// Fast JSON detection without full parsing to avoid performance penalty
-	// Only check for basic JSON patterns to minimize overhead
-	if isLikelyJSON(data) {
-		return JSON
-	}
-
-	// Default to TEXT for valid UTF-8 that's not JSON
-	return TEXT
+	return *new(DataType)
 }
+
+// For valid UTF-8 data, try to determine if it's JSON
+// Skip empty data to avoid false JSON detection
+
+// Fast JSON detection without full parsing to avoid performance penalty
+// Only check for basic JSON patterns to minimize overhead
+
+// Default to TEXT for valid UTF-8 that's not JSON
 
 // isLikelyJSON performs fast heuristic JSON detection without full parsing
 // to avoid the performance penalty of json.Unmarshal during inference.
 func isLikelyJSON(data []byte) bool {
+	_ = "STUB: not implemented"
 	// Find first non-whitespace character
-	start := 0
-	for start < len(data) {
-		char := data[start]
-		if char != ' ' && char != '\t' && char != '\n' && char != '\r' {
-			break
-		}
-		start++
-	}
-
-	if start >= len(data) {
-		return false
-	}
-
-	// Find last non-whitespace character
-	end := len(data) - 1
-	for end >= start {
-		char := data[end]
-		if char != ' ' && char != '\t' && char != '\n' && char != '\r' {
-			break
-		}
-		end--
-	}
-
-	if end < start {
-		return false
-	}
-
-	firstChar := data[start]
-	lastChar := data[end]
-
-	// Quick pattern matching for JSON objects and arrays
-	if (firstChar == '{' && lastChar == '}') || (firstChar == '[' && lastChar == ']') {
-		// Additional heuristic: check for common JSON patterns
-		// Look for quotes, colons, commas which are common in JSON
-		hasQuotes := false
-		hasColons := false
-		hasCommas := false
-
-		// Sample a few characters to avoid scanning the entire content
-		sampleSize := 50
-		if len(data) < sampleSize {
-			sampleSize = len(data)
-		}
-
-		for i := start; i < start+sampleSize && i <= end; i++ {
-			switch data[i] {
-			case '"':
-				hasQuotes = true
-			case ':':
-				hasColons = true
-			case ',':
-				hasCommas = true
-			}
-		}
-
-		// For objects, expect quotes and colons
-		if firstChar == '{' {
-			return hasQuotes && hasColons
-		}
-		// For arrays, quotes or commas are good indicators
-		if firstChar == '[' {
-			return hasQuotes || hasCommas
-		}
-	}
-
 	return false
 }
+
+// Find last non-whitespace character
+
+// Quick pattern matching for JSON objects and arrays
+
+// Additional heuristic: check for common JSON patterns
+// Look for quotes, colons, commas which are common in JSON
+
+// Sample a few characters to avoid scanning the entire content
+
+// For objects, expect quotes and colons
+
+// For arrays, quotes or commas are good indicators
 
 // GetJsonData returns the data parsed as JSON with caching.
 // If the data has already been parsed, returns cached result.
@@ -1253,46 +817,23 @@ func isLikelyJSON(data []byte) bool {
 // Returns map[string]interface{} for JSON objects or []interface{} for JSON arrays.
 // This method is thread-safe and uses version-based validation to prevent caching stale data.
 func (sd *SharedData) GetJsonData() (interface{}, error) {
+	_ = "STUB: not implemented"
 	// First check if we have cached data (with read lock)
-	sd.mu.RLock()
-	if sd.parsedData != nil {
-		cachedData := sd.parsedData
-		sd.mu.RUnlock()
-		return cachedData, nil
-	}
-
-	// Get data and version snapshot for parsing while still holding read lock
-	dataStr := str.UnsafeStringFromBytes(sd.data)
-	dataVersion := sd.dataVersion
-	sd.mu.RUnlock()
-
-	if dataStr == "" {
-		return make(map[string]interface{}), nil
-	}
-
-	// Parse the JSON data outside of lock to reduce lock contention
-	// Use the dataStr snapshot to avoid race conditions with concurrent modifications
-	var result interface{}
-	err := json.Unmarshal([]byte(dataStr), &result)
-	if err != nil {
-		return nil, err
-	}
-
-	// Cache the parsed data (with write lock) only if data version matches
-	sd.mu.Lock()
-	defer sd.mu.Unlock()
-
-	// Version-based validation: only cache if the data hasn't changed since we read it
-	if sd.dataVersion == dataVersion && sd.parsedData == nil {
-		// Data version matches and no one else cached it, safe to cache our result
-		sd.parsedData = result
-		return result, nil
-	} else if sd.parsedData != nil {
-		// Someone else cached it while we were parsing, use the cached version
-		return sd.parsedData, nil
-	} else {
-		// Data was modified while we were parsing (version mismatch)
-		// Return our parsed result but don't cache it as it's based on stale data
-		return result, nil
-	}
+	return nil, nil
 }
+
+// Get data and version snapshot for parsing while still holding read lock
+
+// Parse the JSON data outside of lock to reduce lock contention
+// Use the dataStr snapshot to avoid race conditions with concurrent modifications
+
+// Cache the parsed data (with write lock) only if data version matches
+
+// Version-based validation: only cache if the data hasn't changed since we read it
+
+// Data version matches and no one else cached it, safe to cache our result
+
+// Someone else cached it while we were parsing, use the cached version
+
+// Data was modified while we were parsing (version mismatch)
+// Return our parsed result but don't cache it as it's based on stale data

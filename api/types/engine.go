@@ -42,11 +42,12 @@ type RuleEngineOption func(RuleEngine) error
 // WithConfig 创建一个 RuleEngineOption 来设置 RuleEngine 的配置。
 // 这允许自定义引擎的行为、日志记录、缓存和其他设置。
 func WithConfig(config Config) RuleEngineOption {
-	return func(re RuleEngine) error {
-		re.SetConfig(config) // Apply the provided configuration to the RuleEngine.
-		return nil           // Return no error.
-	}
+	_ = "STUB: not implemented"
+	return *new(RuleEngineOption)
 }
+
+// Apply the provided configuration to the RuleEngine.
+// Return no error.
 
 // WithAspects creates a RuleEngineOption to set the aspects of a RuleEngine.
 // Aspects provide AOP (Aspect-Oriented Programming) capabilities for cross-cutting concerns
@@ -55,11 +56,12 @@ func WithConfig(config Config) RuleEngineOption {
 // WithAspects 创建一个 RuleEngineOption 来设置 RuleEngine 的切面。
 // 切面为日志记录、指标、验证和调试等横切关注点提供 AOP（面向切面编程）功能。
 func WithAspects(aspects ...Aspect) RuleEngineOption {
-	return func(re RuleEngine) error {
-		re.SetAspects(aspects...) // Apply the provided aspects to the RuleEngine.
-		return nil                // Return no error.
-	}
+	_ = "STUB: not implemented"
+	return *new(RuleEngineOption)
 }
+
+// Apply the provided aspects to the RuleEngine.
+// Return no error.
 
 // WithRuleEnginePool creates a RuleEngineOption to set the rule engine pool.
 // This enables the engine to manage sub-rule chains and cross-chain communication.
@@ -67,10 +69,8 @@ func WithAspects(aspects ...Aspect) RuleEngineOption {
 // WithRuleEnginePool 创建一个 RuleEngineOption 来设置规则引擎池。
 // 这使引擎能够管理子规则链和跨链通信。
 func WithRuleEnginePool(ruleEnginePool RuleEnginePool) RuleEngineOption {
-	return func(re RuleEngine) error {
-		re.SetRuleEnginePool(ruleEnginePool)
-		return nil
-	}
+	_ = "STUB: not implemented"
+	return *new(RuleEngineOption)
 }
 
 // WithMaxReloadWaiters creates a RuleEngineOption to limit concurrent goroutines waiting for reload completion.
@@ -111,10 +111,8 @@ func WithRuleEnginePool(ruleEnginePool RuleEnginePool) RuleEngineOption {
 //	// 使用默认限制（1000 个等待者）
 //	engine, err := NewRuleEngine("myEngine", dsl, WithMaxReloadWaiters(-1))
 func WithMaxReloadWaiters(maxWaiters int64) RuleEngineOption {
-	return func(re RuleEngine) error {
-		re.SetMaxReloadWaiters(maxWaiters)
-		return nil
-	}
+	_ = "STUB: not implemented"
+	return *new(RuleEngineOption)
 }
 
 // RuleEngine is the core interface for a rule engine instance.

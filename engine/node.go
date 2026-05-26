@@ -17,13 +17,9 @@
 package engine
 
 import (
-	"errors"
-	"fmt"
 	"sync"
 
 	"github.com/rulego/rulego/api/types"
-	"github.com/rulego/rulego/utils/dsl"
-	"github.com/rulego/rulego/utils/str"
 )
 
 const (
@@ -111,7 +107,8 @@ type RuleNodeCtx struct {
 //   - *RuleNodeCtx: Initialized node context  已初始化的节点上下文
 //   - error: Initialization error if any  如果有的话，初始化错误
 func InitRuleNodeCtx(config types.Config, chainCtx *RuleChainCtx, aspects types.AspectList, selfDefinition *types.RuleNode) (*RuleNodeCtx, error) {
-	return initRuleNodeCtx(config, chainCtx, aspects, selfDefinition, false)
+	_ = "STUB: not implemented"
+	return nil, nil
 }
 
 // InitNetResourceNodeCtx initializes a RuleNodeCtx with network resources.
@@ -132,7 +129,8 @@ func InitRuleNodeCtx(config types.Config, chainCtx *RuleChainCtx, aspects types.
 //   - *RuleNodeCtx: Initialized node context with network resources  已初始化的带网络资源的节点上下文
 //   - error: Initialization error if any  如果有的话，初始化错误
 func InitNetResourceNodeCtx(config types.Config, chainCtx *RuleChainCtx, aspects types.AspectList, selfDefinition *types.RuleNode) (*RuleNodeCtx, error) {
-	return initRuleNodeCtx(config, chainCtx, aspects, selfDefinition, true)
+	_ = "STUB: not implemented"
+	return nil, nil
 }
 
 // initRuleNodeCtx is the core initialization function for RuleNodeCtx.
@@ -171,103 +169,41 @@ func InitNetResourceNodeCtx(config types.Config, chainCtx *RuleChainCtx, aspects
 //   - Configuration processing failures  配置处理失败
 //   - Node initialization errors  节点初始化错误
 func initRuleNodeCtx(config types.Config, chainCtx *RuleChainCtx, aspects types.AspectList, selfDefinition *types.RuleNode, isInitNetResource bool) (*RuleNodeCtx, error) {
+	_ = "STUB: not implemented"
 	// Retrieve aspects for the engine.
-	_, nodeBeforeInitAspects, _, _, _ := aspects.GetEngineAspects()
-	for _, aspect := range nodeBeforeInitAspects {
-		if err := aspect.OnNodeBeforeInit(config, selfDefinition); err != nil {
-			return nil, fmt.Errorf("nodeType:%s for id:%s OnNodeBeforeInit error:%s", selfDefinition.Type, selfDefinition.Id, err.Error())
-		}
-	}
-
-	node, err := config.ComponentsRegistry.NewNode(selfDefinition.Type)
-	if err != nil {
-		return &RuleNodeCtx{
-			ChainCtx:          chainCtx,
-			SelfDefinition:    selfDefinition,
-			config:            config,
-			aspects:           aspects,
-			isInitNetResource: isInitNetResource,
-		}, fmt.Errorf("nodeType:%s for id:%s new error:%s", selfDefinition.Type, selfDefinition.Id, err.Error())
-	} else {
-		// If selfDefinition.Configuration is nil, initialize it as an empty configuration.
-		if selfDefinition.Configuration == nil {
-			selfDefinition.Configuration = make(types.Configuration)
-		}
-		// Process variables within the configuration.
-		configuration, err := processVariables(config, chainCtx, selfDefinition.Configuration)
-		if err != nil {
-			return &RuleNodeCtx{}, fmt.Errorf("nodeType:%s for id:%s process variables error:%s", selfDefinition.Type, selfDefinition.Id, err.Error())
-		}
-		if isInitNetResource {
-			configuration[types.NodeConfigurationKeyIsInitNetResource] = true
-		}
-		// Add the chain context to the configuration.
-		configuration[types.NodeConfigurationKeyChainCtx] = chainCtx
-		configuration[types.NodeConfigurationKeySelfDefinition] = *selfDefinition
-		// Initialize the node with the processed configuration.
-		if err = node.Init(config, configuration); err != nil {
-			return &RuleNodeCtx{}, fmt.Errorf("nodeType:%s for id:%s init error:%s", selfDefinition.Type, selfDefinition.Id, err.Error())
-		} else {
-			// Parse and add node dependencies during initialization
-			// 在初始化时解析并添加节点依赖
-			if chainCtx != nil {
-				referencedNodeIds := dsl.ExtractReferencedNodeIds(selfDefinition.Configuration)
-				for _, dependentNodeId := range referencedNodeIds {
-					// Only add dependencies for nodes that exist in the rule chain
-					// 只为规则链中存在的节点添加依赖
-					if dsl.IsNodeIdDefined(*chainCtx.SelfDefinition, dependentNodeId) {
-						chainCtx.AddNodeDependency(selfDefinition.Id, dependentNodeId)
-					}
-				}
-			}
-			
-			// Return a RuleNodeCtx with the initialized node and provided context and definition.
-			return &RuleNodeCtx{
-				Node:              node,
-				ChainCtx:          chainCtx,
-				SelfDefinition:    selfDefinition,
-				config:            config,
-				aspects:           aspects,
-				isInitNetResource: isInitNetResource,
-			}, nil
-		}
-	}
+	return nil, nil
 }
+
+// If selfDefinition.Configuration is nil, initialize it as an empty configuration.
+
+// Process variables within the configuration.
+
+// Add the chain context to the configuration.
+
+// Initialize the node with the processed configuration.
+
+// Parse and add node dependencies during initialization
+// 在初始化时解析并添加节点依赖
+
+// Only add dependencies for nodes that exist in the rule chain
+// 只为规则链中存在的节点添加依赖
+
+// Return a RuleNodeCtx with the initialized node and provided context and definition.
 
 // Config returns the configuration of the rule engine.
-func (rn *RuleNodeCtx) Config() types.Config {
-	rn.RLock()
-	defer rn.RUnlock()
-	return rn.config
-}
+func (rn *RuleNodeCtx) Config() types.Config { _ = "STUB: not implemented"; return *new(types.Config) }
 
 // IsDebugMode returns whether the node is in debug mode.
-func (rn *RuleNodeCtx) IsDebugMode() bool {
-	rn.RLock()
-	defer rn.RUnlock()
-	return rn.SelfDefinition.DebugMode
-}
+func (rn *RuleNodeCtx) IsDebugMode() bool { _ = "STUB: not implemented"; return false }
 
 // GetNodeId returns the ID of the node.
 func (rn *RuleNodeCtx) GetNodeId() types.RuleNodeId {
-	rn.RLock()
-	defer rn.RUnlock()
-	return types.RuleNodeId{Id: rn.SelfDefinition.Id, Type: types.NODE}
+	_ = "STUB: not implemented"
+	return *new(types.RuleNodeId)
 }
 
 // ReloadSelf reloads the node from a byte slice definition.
-func (rn *RuleNodeCtx) ReloadSelf(def []byte) error {
-	rn.RLock()
-	parser := rn.config.Parser
-	rn.RUnlock()
-
-	node, err := parser.DecodeRuleNode(def)
-	if err != nil {
-		return err
-	}
-
-	return rn.ReloadSelfFromDef(node)
-}
+func (rn *RuleNodeCtx) ReloadSelf(def []byte) error { _ = "STUB: not implemented"; return nil }
 
 // ReloadSelfFromDef reloads the node from a RuleNode definition.
 // This method implements hot reloading for individual nodes, allowing dynamic
@@ -284,63 +220,38 @@ func (rn *RuleNodeCtx) ReloadSelf(def []byte) error {
 // 返回：
 //   - error: Reload error if any  如果有的话，重载错误
 func (rn *RuleNodeCtx) ReloadSelfFromDef(def types.RuleNode) error {
+	_ = "STUB: not implemented"
 	// 阶段1：快速读取当前配置（最小读锁时间）
-	rn.RLock()
-	chainCtx := rn.ChainCtx
-	config := rn.config
-	isInitNetResource := rn.isInitNetResource
-	rn.RUnlock()
-
-	// 阶段2：在锁外执行耗时的新节点创建和初始化
-	var newNodeCtx *RuleNodeCtx
-	var err error
-	if chainCtx == nil {
-		newNodeCtx, err = initRuleNodeCtx(config, nil, nil, &def, isInitNetResource)
-	} else {
-		newNodeCtx, err = initRuleNodeCtx(config, chainCtx, chainCtx.aspects, &def, isInitNetResource)
-	}
-
-	if err != nil {
-		return err
-	}
-
-	// 阶段3：快速原子替换（最小写锁时间）
-	rn.Lock()
-	oldNode := rn.Node                            // 保存旧节点引用，锁外销毁
-	rn.Node = newNodeCtx.Node                     // 原子替换最关键的Node字段
-	rn.config = newNodeCtx.config                 // 更新配置
-	rn.aspects = newNodeCtx.aspects               // 更新切面
-	rn.SelfDefinition = newNodeCtx.SelfDefinition // 更新节点定义
-	rn.Unlock()
-
-	// 阶段4：锁外清理旧资源（避免在锁内执行耗时的清理操作）
-	if oldNode != nil {
-		oldNode.Destroy()
-	}
-
 	return nil
 }
 
+// 阶段2：在锁外执行耗时的新节点创建和初始化
+
+// 阶段3：快速原子替换（最小写锁时间）
+
+// 保存旧节点引用，锁外销毁
+// 原子替换最关键的Node字段
+// 更新配置
+// 更新切面
+// 更新节点定义
+
+// 阶段4：锁外清理旧资源（避免在锁内执行耗时的清理操作）
+
 // ReloadChild is not supported for RuleNodeCtx.
 func (rn *RuleNodeCtx) ReloadChild(_ types.RuleNodeId, _ []byte) error {
-	return errors.New("not support this func")
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // GetNodeById is not supported for RuleNodeCtx.
 func (rn *RuleNodeCtx) GetNodeById(_ types.RuleNodeId) (types.NodeCtx, bool) {
-	return nil, false
+	_ = "STUB: not implemented"
+
+	// DSL returns the DSL representation of the node.
+	return *new(types.NodeCtx), false
 }
 
-// DSL returns the DSL representation of the node.
-func (rn *RuleNodeCtx) DSL() []byte {
-	rn.RLock()
-	parser := rn.config.Parser
-	selfDefinition := rn.SelfDefinition
-	rn.RUnlock()
-
-	result, _ := parser.EncodeRuleNode(selfDefinition)
-	return result
-}
+func (rn *RuleNodeCtx) DSL() []byte { _ = "STUB: not implemented"; return nil }
 
 // OnMsg 提供并发安全的消息处理，保护内嵌Node访问
 // OnMsg provides concurrent-safe message processing with protected access to the embedded Node.
@@ -355,14 +266,9 @@ func (rn *RuleNodeCtx) DSL() []byte {
 //   - ctx: Rule context for message processing  用于消息处理的规则上下文
 //   - msg: Message to be processed  要处理的消息
 func (rn *RuleNodeCtx) OnMsg(ctx types.RuleContext, msg types.RuleMsg) {
+	_ = "STUB: not implemented"
 	// 使用读锁保护Node字段的访问，与ReloadSelfFromDef的写锁互斥
-	rn.RLock()
-	node := rn.Node
-	rn.RUnlock()
-
-	if node != nil {
-		node.OnMsg(ctx, msg)
-	}
+	return
 }
 
 // Copy copies the contents of a new RuleNodeCtx into this one.
@@ -374,98 +280,31 @@ func (rn *RuleNodeCtx) OnMsg(ctx types.RuleContext, msg types.RuleMsg) {
 // Parameters:
 // 参数：
 //   - newCtx: New node context to copy from  要复制的新节点上下文
-func (rn *RuleNodeCtx) Copy(newCtx *RuleNodeCtx) {
-	rn.Lock()
-	defer rn.Unlock()
-	rn.Node = newCtx.Node
-	rn.config = newCtx.config
-	rn.aspects = newCtx.aspects
-	rn.SelfDefinition = newCtx.SelfDefinition
-}
+func (rn *RuleNodeCtx) Copy(newCtx *RuleNodeCtx) { _ = "STUB: not implemented"; return }
 
 // processVariables replaces placeholders in the node configuration with global and chain-specific variables.
 // It now recursively processes nested maps and slices.
 func processVariables(config types.Config, chainCtx *RuleChainCtx, configuration types.Configuration) (types.Configuration, error) {
-	result := make(types.Configuration)
-	globalEnv := make(map[string]string)
-
-	if config.Properties != nil {
-		globalEnv = config.Properties.Values()
-	}
-
-	var varsEnv, decryptSecrets map[string]string
-	var ruleChainEnv *types.RuleChainBaseInfo
-
-	if chainCtx != nil {
-		varsEnv = copyMap(chainCtx.vars)
-		decryptSecrets = copyMap(chainCtx.decryptSecrets)
-		// 注入规则链定义，支持通过 ${ruleChain.id} 等方式访问规则链属性
-		if chainCtx.SelfDefinition != nil {
-			ruleChainEnv = &chainCtx.SelfDefinition.RuleChain
-		}
-	}
-
-	env := map[string]interface{}{
-		types.Global:       globalEnv,
-		types.Vars:         varsEnv,
-		types.RuleChainKey: ruleChainEnv,
-	}
-
-	// 递归处理所有配置值
-	for key, value := range configuration {
-		result[key] = processValueRecursive(env, value)
-	}
-
-	if varsEnv != nil {
-		result[types.Vars] = varsEnv
-	}
-	if decryptSecrets != nil {
-		result[types.Secrets] = decryptSecrets
-	}
-
-	return result, nil
+	_ = "STUB: not implemented"
+	return *new(types.Configuration), nil
 }
 
-	// processValueRecursive 递归处理配置值，替换模板变量
+// 注入规则链定义，支持通过 ${ruleChain.id} 等方式访问规则链属性
+
+// 递归处理所有配置值
+
+// processValueRecursive 递归处理配置值，替换模板变量
 func processValueRecursive(env map[string]interface{}, value interface{}) interface{} {
-	switch v := value.(type) {
-	case string:
-		return str.ExecuteTemplate(v, env)
-	case map[string]interface{}:
-		// 递归处理 map
-		subResult := make(map[string]interface{})
-		for k, subV := range v {
-			subResult[k] = processValueRecursive(env, subV)
-        }
-        return subResult
-	case []interface{}:
-        // 递归处理 slice
-        resultList := make([]interface{}, len(v))
-        for i, item := range v {
-            resultList[i] = processValueRecursive(env, item)
-        }
-        return resultList
-    default:
-        return value
-    }
+	_ = "STUB: not implemented"
+	return nil
 }
+
+// 递归处理 map
+
+// 递归处理 slice
 
 // copyMap creates a shallow copy of a string map.
-func copyMap(inputMap map[string]string) map[string]string {
-	result := make(map[string]string)
-	for key, value := range inputMap {
-		result[key] = value
-	}
-	return result
-}
+func copyMap(inputMap map[string]string) map[string]string { _ = "STUB: not implemented"; return nil }
 
 // Destroy safely destroys the embedded node
-func (rn *RuleNodeCtx) Destroy() {
-	rn.RLock()
-	node := rn.Node
-	rn.RUnlock()
-
-	if node != nil {
-		node.Destroy()
-	}
-}
+func (rn *RuleNodeCtx) Destroy() { _ = "STUB: not implemented"; return }

@@ -28,14 +28,8 @@ package filter
 //      }
 import (
 	"errors"
-	"fmt"
-
-	"github.com/rulego/rulego/utils/js"
 
 	"github.com/rulego/rulego/api/types"
-	"github.com/rulego/rulego/components/base"
-	"github.com/rulego/rulego/utils/maps"
-	"github.com/rulego/rulego/utils/str"
 )
 
 // JsSwitchReturnFormatErr JavaScript脚本必须返回数组
@@ -76,52 +70,26 @@ type JsSwitchNode struct {
 
 // Type 返回组件类型
 func (x *JsSwitchNode) Type() string {
-	return "jsSwitch"
+	_ = "STUB: not implemented"
+
+	// New 创建新实例
+	return ""
 }
 
-// New 创建新实例
-func (x *JsSwitchNode) New() types.Node {
-	return &JsSwitchNode{Config: JsSwitchNodeConfiguration{
-		JsScript: `return ['msgType1','msgType2'];`,
-	}}
-}
+func (x *JsSwitchNode) New() types.Node { _ = "STUB: not implemented"; return *new(types.Node) }
 
 // Init 初始化节点
 func (x *JsSwitchNode) Init(ruleConfig types.Config, configuration types.Configuration) error {
-	err := maps.Map2Struct(configuration, &x.Config)
-	if err == nil {
-		jsScript := fmt.Sprintf("function Switch(msg, metadata, msgType, dataType) { %s }", x.Config.JsScript)
-		x.jsEngine, err = js.NewGojaJsEngine(ruleConfig, jsScript, base.NodeUtils.GetVars(configuration))
-		if v := ruleConfig.Properties.GetValue(types.DefaultRelationTypeKey); v != "" {
-			x.defaultRelationType = v
-		} else {
-			x.defaultRelationType = types.DefaultRelationType
-		}
-	}
-	return err
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // OnMsg 处理消息，执行JavaScript脚本确定路由路径
 func (x *JsSwitchNode) OnMsg(ctx types.RuleContext, msg types.RuleMsg) {
+	_ = "STUB: not implemented"
 	// 准备传递给JS脚本的数据
-	data := base.NodeUtils.GetDataByType(msg, true)
-
-	out, err := x.jsEngine.Execute(ctx, "Switch", data, msg.Metadata.Values(), msg.Type, msg.DataType)
-
-	if err != nil {
-		ctx.TellFailure(msg, err)
-	} else {
-		if formatData, ok := out.([]interface{}); ok {
-			for _, relationType := range formatData {
-				ctx.TellNextOrElse(msg, x.defaultRelationType, str.ToString(relationType))
-			}
-		} else {
-			ctx.TellFailure(msg, JsSwitchReturnFormatErr)
-		}
-	}
+	return
 }
 
 // Destroy 清理资源
-func (x *JsSwitchNode) Destroy() {
-	x.jsEngine.Stop()
-}
+func (x *JsSwitchNode) Destroy() { _ = "STUB: not implemented"; return }

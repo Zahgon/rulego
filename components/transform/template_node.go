@@ -27,14 +27,9 @@ package transform
 //}
 
 import (
-	"bytes"
-	"github.com/rulego/rulego/api/types"
-	"github.com/rulego/rulego/builtin/funcs"
-	"github.com/rulego/rulego/components/base"
-	"github.com/rulego/rulego/utils/maps"
-	"path/filepath"
-	"strings"
 	"text/template"
+
+	"github.com/rulego/rulego/api/types"
 )
 
 // TemplateName 默认模板名称
@@ -65,57 +60,25 @@ type TemplateNode struct {
 }
 
 // Type 组件类型
-func (x *TemplateNode) Type() string {
-	return "text/template"
-}
+func (x *TemplateNode) Type() string { _ = "STUB: not implemented"; return "" }
 
-func (x *TemplateNode) New() types.Node {
-	return &TemplateNode{
-		Config: TemplateNodeConfiguration{
-			Template: `"id": "{{ .id}}"
-"ts": "{{ .ts}}"
-"type": "{{ .type}}"
-"msgType": "{{ .msgType}}"
-"data": "{{ .data | escape}}"
-"dataType": "{{ .dataType}}"
-`,
-		},
-	}
-}
+func (x *TemplateNode) New() types.Node { _ = "STUB: not implemented"; return *new(types.Node) }
 
 // Init 初始化
 func (x *TemplateNode) Init(ruleConfig types.Config, configuration types.Configuration) error {
-	err := maps.Map2Struct(configuration, &x.Config)
-	if err == nil {
-		if strings.HasPrefix(x.Config.Template, "file:") {
-			// 从文件路径加载模板
-			filePath := strings.TrimPrefix(x.Config.Template, "file:")
-			x.templateName = filepath.Base(filePath)
-			x.templateEngine, err = template.New(x.templateName).Funcs(funcs.TemplateFunc.GetAll()).ParseFiles(filePath)
-		} else {
-			x.templateName = TemplateName
-			// 使用模板内容
-			x.templateEngine, err = template.New(x.templateName).Funcs(funcs.TemplateFunc.GetAll()).Parse(x.Config.Template)
-		}
-	}
-	return err
+	_ = "STUB: not implemented"
+	return nil
 }
+
+// 从文件路径加载模板
+
+// 使用模板内容
 
 // OnMsg 处理消息
 func (x *TemplateNode) OnMsg(ctx types.RuleContext, msg types.RuleMsg) {
-	var err error
-	evn := base.NodeUtils.GetEvn(ctx, msg)
-
-	var buf bytes.Buffer
-	err = x.templateEngine.ExecuteTemplate(&buf, x.templateName, evn)
-	if err != nil {
-		ctx.TellFailure(msg, err)
-		return
-	}
-	msg.SetData(buf.String())
-	ctx.TellSuccess(msg)
+	_ = "STUB: not implemented"
+	return
 }
 
 // Destroy 销毁
-func (x *TemplateNode) Destroy() {
-}
+func (x *TemplateNode) Destroy() { _ = "STUB: not implemented"; return }

@@ -51,17 +51,12 @@ package impl
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"net/textproto"
-	"strings"
 	"sync"
-	"sync/atomic"
 
 	"github.com/rulego/rulego/api/types"
 	"github.com/rulego/rulego/api/types/endpoint"
-	"github.com/rulego/rulego/engine"
-	"github.com/rulego/rulego/utils/str"
 )
 
 const (
@@ -108,32 +103,36 @@ type From struct {
 // ToString 返回 From 路径的字符串表示。
 // 用于标识和日志记录目的。
 func (f *From) ToString() string {
-	return f.From
+	_ = "STUB: not implemented"
+
+	// GetConfiguration returns the configuration for this From source.
+	// Processors can use this to access configuration values.
+	//
+	// GetConfiguration 返回此 From 源的配置。
+	// 处理器可以使用此方法访问配置值。
+	return ""
 }
 
-// GetConfiguration returns the configuration for this From source.
-// Processors can use this to access configuration values.
-//
-// GetConfiguration 返回此 From 源的配置。
-// 处理器可以使用此方法访问配置值。
 func (f *From) GetConfiguration() types.Configuration {
-	return f.Config
+	_ = "STUB: not implemented"
+
+	// Transform adds a transformation processor to the From processing pipeline.
+	// Transformations are applied to incoming data before routing to the destination.
+	//
+	// Transform 向 From 处理管道添加转换处理器。
+	// 转换在路由到目标之前应用于传入数据。
+	//
+	// Parameters / 参数：
+	// • transform: The transformation function to apply  要应用的转换函数
+	//
+	// Returns / 返回值：
+	// • endpoint.From: Returns self for method chaining  返回自身以支持方法链
+	return *new(types.Configuration)
 }
 
-// Transform adds a transformation processor to the From processing pipeline.
-// Transformations are applied to incoming data before routing to the destination.
-//
-// Transform 向 From 处理管道添加转换处理器。
-// 转换在路由到目标之前应用于传入数据。
-//
-// Parameters / 参数：
-// • transform: The transformation function to apply  要应用的转换函数
-//
-// Returns / 返回值：
-// • endpoint.From: Returns self for method chaining  返回自身以支持方法链
 func (f *From) Transform(transform endpoint.Process) endpoint.From {
-	f.processList = append(f.processList, transform)
-	return f
+	_ = "STUB: not implemented"
+	return *new(endpoint.From)
 }
 
 // Process adds a processing function to the From processing pipeline.
@@ -148,8 +147,8 @@ func (f *From) Transform(transform endpoint.Process) endpoint.From {
 // Returns / 返回值：
 // • endpoint.From: Returns self for method chaining  返回自身以支持方法链
 func (f *From) Process(process endpoint.Process) endpoint.From {
-	f.processList = append(f.processList, process)
-	return f
+	_ = "STUB: not implemented"
+	return *new(endpoint.From)
 }
 
 // GetProcessList returns the list of processing functions in the pipeline.
@@ -157,9 +156,7 @@ func (f *From) Process(process endpoint.Process) endpoint.From {
 //
 // GetProcessList 返回管道中的处理函数列表。
 // 用于内部执行和检查目的。
-func (f *From) GetProcessList() []endpoint.Process {
-	return f.processList
-}
+func (f *From) GetProcessList() []endpoint.Process { _ = "STUB: not implemented"; return nil }
 
 // ExecuteProcess executes all processing functions in the pipeline sequentially.
 // If any processing function returns false, the pipeline stops and returns false.
@@ -174,14 +171,8 @@ func (f *From) GetProcessList() []endpoint.Process {
 // Returns / 返回值：
 // • bool: true if all processing succeeded, false otherwise  如果所有处理成功返回 true，否则返回 false
 func (f *From) ExecuteProcess(router endpoint.Router, exchange *endpoint.Exchange) bool {
-	result := true
-	for _, process := range f.GetProcessList() {
-		if !process(router, exchange) {
-			result = false
-			break
-		}
-	}
-	return result
+	_ = "STUB: not implemented"
+	return false
 }
 
 // To creates and configures the destination endpoint for message routing.
@@ -209,55 +200,24 @@ func (f *From) ExecuteProcess(router endpoint.Router, exchange *endpoint.Exchang
 // The path can contain variables like "${userId}" that will be resolved at runtime
 // 路径可以包含如 "${userId}" 的变量，将在运行时解析
 func (f *From) To(to string, configs ...types.Configuration) endpoint.To {
-	var toConfig = make(types.Configuration)
-	for _, item := range configs {
-		for k, v := range item {
-			toConfig[k] = v
-		}
-	}
-	f.to = &To{Router: f.Router, To: to, Config: toConfig}
-
-	//路径中是否有变量，如：chain:${userId}  Check if path contains variables like: chain:${userId}
-	if strings.Contains(to, "${") && strings.Contains(to, "}") {
-		f.to.HasVars = true
-	}
-
-	//获取To执行器类型  Get To executor type
-	executorType := strings.Split(to, pathSplitFlag)[0]
-
-	//获取To执行器  Get To executor
-	if executor, ok := DefaultExecutorFactory.New(executorType); ok {
-		if f.to.HasVars && !executor.IsPathSupportVar() {
-			f.Router.err = fmt.Errorf("executor=%s, path not support variables", executorType)
-			return f.to
-		}
-		f.to.ToPath = strings.TrimSpace(to[len(executorType)+1:])
-		toConfig[pathKey] = f.to.ToPath
-		//初始化组件  Initialize component
-		err := executor.Init(f.Router.Config, toConfig)
-		if err != nil {
-			f.Router.err = err
-			return f.to
-		}
-		f.to.executor = executor
-	} else {
-		f.to.executor = &ChainExecutor{}
-		f.to.ToPath = to
-	}
-	return f.to
+	_ = "STUB: not implemented"
+	return *new(endpoint.To)
 }
+
+//路径中是否有变量，如：chain:${userId}  Check if path contains variables like: chain:${userId}
+
+//获取To执行器类型  Get To executor type
+
+//获取To执行器  Get To executor
+
+//初始化组件  Initialize component
 
 // GetTo returns the configured destination endpoint.
 // Returns nil if no destination has been configured.
 //
 // GetTo 返回配置的目标端点。
 // 如果没有配置目标则返回 nil。
-func (f *From) GetTo() endpoint.To {
-	if f.to == nil {
-		return nil
-	}
-	return f.to
-}
+func (f *From) GetTo() endpoint.To { _ = "STUB: not implemented"; return *new(endpoint.To) }
 
 // ToComponent creates a destination that routes directly to a specific component node.
 // This bypasses the executor factory and uses the component directly.
@@ -271,10 +231,8 @@ func (f *From) GetTo() endpoint.To {
 // Returns / 返回值：
 // • endpoint.To: The configured component destination  配置的组件目标
 func (f *From) ToComponent(node types.Node) endpoint.To {
-	component := &ComponentExecutor{component: node, config: f.Router.Config}
-	f.to = &To{Router: f.Router, To: node.Type(), ToPath: node.Type()}
-	f.to.executor = component
-	return f.to
+	_ = "STUB: not implemented"
+	return *new(endpoint.To)
 }
 
 // End completes the From configuration and returns the parent router.
@@ -283,24 +241,26 @@ func (f *From) ToComponent(node types.Node) endpoint.To {
 // End 完成 From 配置并返回父路由器。
 // 用于方法链以继续路由器配置。
 func (f *From) End() endpoint.Router {
-	return f.Router
+	_ = "STUB: not implemented"
+
+	// To represents the destination endpoint for message processing.
+	// It handles the execution of target logic and post-processing of results.
+	//
+	// To 表示消息处理的目标端点。
+	// 它处理目标逻辑的执行和结果的后处理。
+	//
+	// Architecture / 架构：
+	// • Variable Resolution: Supports dynamic path variables  变量解析：支持动态路径变量
+	// • Executor Integration: Pluggable execution strategies  执行器集成：可插拔的执行策略
+	// • Process Pipeline: Post-processing functions for results  处理管道：结果的后处理函数
+	// • Synchronous Support: Optional blocking execution for responses  同步支持：响应的可选阻塞执行
+	//
+	// Execution Modes / 执行模式：
+	// • Asynchronous: Fire-and-forget message processing  异步：发送即忘的消息处理
+	// • Synchronous: Wait for execution completion and results  同步：等待执行完成和结果
+	return *new(endpoint.Router)
 }
 
-// To represents the destination endpoint for message processing.
-// It handles the execution of target logic and post-processing of results.
-//
-// To 表示消息处理的目标端点。
-// 它处理目标逻辑的执行和结果的后处理。
-//
-// Architecture / 架构：
-// • Variable Resolution: Supports dynamic path variables  变量解析：支持动态路径变量
-// • Executor Integration: Pluggable execution strategies  执行器集成：可插拔的执行策略
-// • Process Pipeline: Post-processing functions for results  处理管道：结果的后处理函数
-// • Synchronous Support: Optional blocking execution for responses  同步支持：响应的可选阻塞执行
-//
-// Execution Modes / 执行模式：
-// • Asynchronous: Fire-and-forget message processing  异步：发送即忘的消息处理
-// • Synchronous: Wait for execution completion and results  同步：等待执行完成和结果
 type To struct {
 	//toPath是否有占位符变量  Whether toPath has placeholder variables  toPath 是否有占位符变量
 	HasVars bool
@@ -334,12 +294,7 @@ type To struct {
 //
 // Returns / 返回值：
 // • string: Resolved path with variables substituted  替换变量后的解析路径
-func (t *To) ToStringByDict(dict map[string]string) string {
-	if t.HasVars {
-		return str.SprintfDict(t.ToPath, dict)
-	}
-	return t.ToPath
-}
+func (t *To) ToStringByDict(dict map[string]string) string { _ = "STUB: not implemented"; return "" }
 
 // ToString returns the string representation of the To path.
 // Used for identification and logging purposes.
@@ -347,22 +302,23 @@ func (t *To) ToStringByDict(dict map[string]string) string {
 // ToString 返回 To 路径的字符串表示。
 // 用于标识和日志记录目的。
 func (t *To) ToString() string {
-	return t.ToPath
+	_ = "STUB: not implemented"
+
+	// Execute executes the To endpoint logic using the configured executor.
+	// This is the main entry point for processing messages at the destination.
+	//
+	// Execute 使用配置的执行器执行 To 端点逻辑。
+	// 这是在目标处理消息的主要入口点。
+	//
+	// Parameters / 参数：
+	// • ctx: Execution context  执行上下文
+	// • exchange: Message exchange containing input/output data  包含输入/输出数据的消息交换
+	return ""
 }
 
-// Execute executes the To endpoint logic using the configured executor.
-// This is the main entry point for processing messages at the destination.
-//
-// Execute 使用配置的执行器执行 To 端点逻辑。
-// 这是在目标处理消息的主要入口点。
-//
-// Parameters / 参数：
-// • ctx: Execution context  执行上下文
-// • exchange: Message exchange containing input/output data  包含输入/输出数据的消息交换
 func (t *To) Execute(ctx context.Context, exchange *endpoint.Exchange) {
-	if t.executor != nil {
-		t.executor.Execute(ctx, t.Router, exchange)
-	}
+	_ = "STUB: not implemented"
+	return
 }
 
 // Transform adds a transformation processor to the To post-processing pipeline.
@@ -373,8 +329,8 @@ func (t *To) Execute(ctx context.Context, exchange *endpoint.Exchange) {
 // 这些转换在 To 逻辑执行后应用于结果。
 // 如果规则链有多个结束点，则会执行多次。
 func (t *To) Transform(transform endpoint.Process) endpoint.To {
-	t.processList = append(t.processList, transform)
-	return t
+	_ = "STUB: not implemented"
+	return *new(endpoint.To)
 }
 
 // Process adds a processing function to the To post-processing pipeline.
@@ -385,8 +341,8 @@ func (t *To) Transform(transform endpoint.Process) endpoint.To {
 // 这些处理器在 To 逻辑执行后处理结果。
 // 如果规则链有多个结束点，则会执行多次。
 func (t *To) Process(process endpoint.Process) endpoint.To {
-	t.processList = append(t.processList, process)
-	return t
+	_ = "STUB: not implemented"
+	return *new(endpoint.To)
 }
 
 // Wait enables synchronous execution mode for the To endpoint.
@@ -399,50 +355,58 @@ func (t *To) Process(process endpoint.Process) endpoint.To {
 // 用于需要规则链执行结果并且要保留父进程的场景。
 // 使用示例：HTTP 响应处理。
 func (t *To) Wait() endpoint.To {
-	t.wait = true
-	return t
+	_ = "STUB: not implemented"
+	return *
+
+	// SetWait configures the synchronous execution mode.
+	//
+	// SetWait 配置同步执行模式。
+	new(endpoint.To)
 }
 
-// SetWait configures the synchronous execution mode.
-//
-// SetWait 配置同步执行模式。
 func (t *To) SetWait(wait bool) endpoint.To {
-	t.wait = wait
-	return t
+	_ = "STUB: not implemented"
+	return *
+
+	// IsWait returns whether synchronous execution mode is enabled.
+	//
+	// IsWait 返回是否启用了同步执行模式。
+	new(endpoint.To)
 }
 
-// IsWait returns whether synchronous execution mode is enabled.
-//
-// IsWait 返回是否启用了同步执行模式。
 func (t *To) IsWait() bool {
-	return t.wait
+	_ = "STUB: not implemented"
+
+	// SetOpts configures rule context options for the To execution.
+	// These options are passed to the rule engine when executing rule chains.
+	//
+	// SetOpts 为 To 执行配置规则上下文选项。
+	// 这些选项在执行规则链时传递给规则引擎。
+	return false
 }
 
-// SetOpts configures rule context options for the To execution.
-// These options are passed to the rule engine when executing rule chains.
-//
-// SetOpts 为 To 执行配置规则上下文选项。
-// 这些选项在执行规则链时传递给规则引擎。
 func (t *To) SetOpts(opts ...types.RuleContextOption) endpoint.To {
-	t.opts = opts
-	return t
+	_ = "STUB: not implemented"
+	return *
+
+	// GetOpts returns the configured rule context options.
+	//
+	// GetOpts 返回配置的规则上下文选项。
+	new(endpoint.To)
 }
 
-// GetOpts returns the configured rule context options.
-//
-// GetOpts 返回配置的规则上下文选项。
 func (t *To) GetOpts() []types.RuleContextOption {
-	return t.opts
+	_ = "STUB: not implemented"
+
+	// GetProcessList returns the list of post-processing functions.
+	// Used internally for execution and inspection purposes.
+	//
+	// GetProcessList 返回后处理函数列表。
+	// 用于内部执行和检查目的。
+	return nil
 }
 
-// GetProcessList returns the list of post-processing functions.
-// Used internally for execution and inspection purposes.
-//
-// GetProcessList 返回后处理函数列表。
-// 用于内部执行和检查目的。
-func (t *To) GetProcessList() []endpoint.Process {
-	return t.processList
-}
+func (t *To) GetProcessList() []endpoint.Process { _ = "STUB: not implemented"; return nil }
 
 // End completes the To configuration and returns the parent router.
 // Used for method chaining to continue router configuration.
@@ -450,41 +414,43 @@ func (t *To) GetProcessList() []endpoint.Process {
 // End 完成 To 配置并返回父路由器。
 // 用于方法链以继续路由器配置。
 func (t *To) End() endpoint.Router {
-	return t.Router
+	_ = "STUB: not implemented"
+
+	// Router provides message routing abstraction for different input sources.
+	// It manages the flow of messages from input endpoints (From), through transformation/processing,
+	// to target destinations (To) such as rule chains or components.
+	//
+	// Router 为不同输入源提供消息路由抽象。
+	// 它管理消息从输入端点（From）通过转换/处理到目标目的地（To）（如规则链或组件）的流程。
+	//
+	// Architecture / 架构：
+	// • Fluent API: Chain method calls for intuitive configuration  流式 API：链式方法调用便于直观配置
+	// • Context Management: Handles execution context and lifecycle  上下文管理：处理执行上下文和生命周期
+	// • Pool Integration: Manages rule engine pool access  池集成：管理规则引擎池访问
+	// • State Management: Tracks router state and configuration  状态管理：跟踪路由器状态和配置
+	//
+	// Usage Patterns / 使用模式：
+	//
+	// HTTP Endpoint Examples / HTTP 端点示例：
+	//
+	//	router.From("/api/v1/msg/").Transform().To("chain:xx")
+	//	router.From("/api/v1/msg/").Transform().Process().To("chain:xx")
+	//	router.From("/api/v1/msg/").Transform().Process().To("component:nodeType")
+	//	router.From("/api/v1/msg/").Transform().Process()
+	//
+	// MQTT Endpoint Examples / MQTT 端点示例：
+	//
+	//	router.From("#").Transform().Process().To("chain:xx")
+	//	router.From("device/+/msg").Transform().Process().To("chain:xx")
+	//
+	// Configuration / 配置：
+	// • Dynamic Rule Engine Pool: Support for runtime pool selection  动态规则引擎池：支持运行时池选择
+	// • Context Customization: Custom context creation for each exchange  上下文自定义：为每个交换创建自定义上下文
+	// • Error Handling: Centralized error tracking and reporting  错误处理：集中错误跟踪和报告
+	// • State Control: Enable/disable routing dynamically  状态控制：动态启用/禁用路由
+	return *new(endpoint.Router)
 }
 
-// Router provides message routing abstraction for different input sources.
-// It manages the flow of messages from input endpoints (From), through transformation/processing,
-// to target destinations (To) such as rule chains or components.
-//
-// Router 为不同输入源提供消息路由抽象。
-// 它管理消息从输入端点（From）通过转换/处理到目标目的地（To）（如规则链或组件）的流程。
-//
-// Architecture / 架构：
-// • Fluent API: Chain method calls for intuitive configuration  流式 API：链式方法调用便于直观配置
-// • Context Management: Handles execution context and lifecycle  上下文管理：处理执行上下文和生命周期
-// • Pool Integration: Manages rule engine pool access  池集成：管理规则引擎池访问
-// • State Management: Tracks router state and configuration  状态管理：跟踪路由器状态和配置
-//
-// Usage Patterns / 使用模式：
-//
-// HTTP Endpoint Examples / HTTP 端点示例：
-//
-//	router.From("/api/v1/msg/").Transform().To("chain:xx")
-//	router.From("/api/v1/msg/").Transform().Process().To("chain:xx")
-//	router.From("/api/v1/msg/").Transform().Process().To("component:nodeType")
-//	router.From("/api/v1/msg/").Transform().Process()
-//
-// MQTT Endpoint Examples / MQTT 端点示例：
-//
-//	router.From("#").Transform().Process().To("chain:xx")
-//	router.From("device/+/msg").Transform().Process().To("chain:xx")
-//
-// Configuration / 配置：
-// • Dynamic Rule Engine Pool: Support for runtime pool selection  动态规则引擎池：支持运行时池选择
-// • Context Customization: Custom context creation for each exchange  上下文自定义：为每个交换创建自定义上下文
-// • Error Handling: Centralized error tracking and reporting  错误处理：集中错误跟踪和报告
-// • State Control: Enable/disable routing dynamically  状态控制：动态启用/禁用路由
 type Router struct {
 	//创建上下文回调函数  Context creation callback function  创建上下文回调函数
 	ContextFunc func(ctx context.Context, exchange *endpoint.Exchange) context.Context
@@ -538,138 +504,106 @@ type RouterOption = endpoint.RouterOption
 //	    RouterOptions.WithRuleEnginePool(customPool),
 //	)
 func NewRouter(opts ...RouterOption) endpoint.Router {
-	router := &Router{RuleGo: engine.DefaultPool, Config: engine.NewConfig()}
-	// 设置选项值  Apply option values  设置选项值
-	for _, opt := range opts {
-		_ = opt(router)
-	}
-	return router
+	_ = "STUB: not implemented"
+	return *new(endpoint.Router)
 }
 
-func (r *Router) SetConfig(config types.Config) {
-	r.Config = config
-}
+// 设置选项值  Apply option values  设置选项值
 
-func (r *Router) SetRuleEnginePool(pool types.RuleEnginePool) {
-	r.RuleGo = pool
-}
+func (r *Router) SetConfig(config types.Config) { _ = "STUB: not implemented"; return }
+
+func (r *Router) SetRuleEnginePool(pool types.RuleEnginePool) { _ = "STUB: not implemented"; return }
 
 func (r *Router) SetRuleEnginePoolFunc(f func(exchange *endpoint.Exchange) types.RuleEnginePool) {
-	r.ruleGoFunc = f
+	_ = "STUB: not implemented"
+	return
 }
 
 func (r *Router) SetContextFunc(f func(ctx context.Context, exchange *endpoint.Exchange) context.Context) {
-	r.ContextFunc = f
+	_ = "STUB: not implemented"
+	return
 }
 
 func (r *Router) GetContextFunc() func(ctx context.Context, exchange *endpoint.Exchange) context.Context {
-	return r.ContextFunc
+	_ = "STUB: not implemented"
+	return nil
 }
 
 func (r *Router) SetDefinition(def *types.RouterDsl) {
-	r.def = def
+	_ = "STUB: not implemented"
+
+	// Definition 返回路由定义，如果没设置会返回nil
+	return
 }
 
-// Definition 返回路由定义，如果没设置会返回nil
-func (r *Router) Definition() *types.RouterDsl {
-	return r.def
-}
+func (r *Router) Definition() *types.RouterDsl { _ = "STUB: not implemented"; return nil }
 
 func (r *Router) SetId(id string) endpoint.Router {
-	r.id = id
-	return r
+	_ = "STUB: not implemented"
+	return *new(endpoint.Router)
 }
 
-func (r *Router) GetId() string {
-	return r.id
-}
-func (r *Router) FromToString() string {
-	if r.from == nil {
-		return ""
-	} else {
-		return r.from.ToString()
-	}
-}
+func (r *Router) GetId() string { _ = "STUB: not implemented"; return "" }
+
+func (r *Router) FromToString() string { _ = "STUB: not implemented"; return "" }
 
 func (r *Router) From(from string, configs ...types.Configuration) endpoint.From {
-	var fromConfig = make(types.Configuration)
-	for _, item := range configs {
-		for k, v := range item {
-			fromConfig[k] = v
-		}
-	}
-	r.from = &From{Router: r, From: from, Config: fromConfig}
-
-	return r.from
+	_ = "STUB: not implemented"
+	return *new(endpoint.From)
 }
 
-func (r *Router) GetFrom() endpoint.From {
-	if r.from == nil {
-		return nil
-	}
-	return r.from
-}
+func (r *Router) GetFrom() endpoint.From { _ = "STUB: not implemented"; return *new(endpoint.From) }
 
 func (r *Router) GetRuleGo(exchange *endpoint.Exchange) types.RuleEnginePool {
-	if r.ruleGoFunc != nil {
-		return r.ruleGoFunc(exchange)
-	} else {
-		return r.RuleGo
-	}
+	_ = "STUB: not implemented"
+	return *new(types.RuleEnginePool)
 }
 
 // Disable 设置状态 true:不可用，false:可以
 func (r *Router) Disable(disable bool) endpoint.Router {
-	if disable {
-		atomic.StoreUint32(&r.disable, 1)
-	} else {
-		atomic.StoreUint32(&r.disable, 0)
-	}
-	return r
+	_ = "STUB: not implemented"
+	return *new(endpoint.Router)
 }
 
 // IsDisable 是否是不可用状态 true:不可用，false:可以
-func (r *Router) IsDisable() bool {
-	return atomic.LoadUint32(&r.disable) == 1
-}
+func (r *Router) IsDisable() bool { _ = "STUB: not implemented"; return false }
 
-func (r *Router) SetParams(args ...interface{}) {
-	r.params = args
-}
+func (r *Router) SetParams(args ...interface{}) { _ = "STUB: not implemented"; return }
 
-func (r *Router) GetParams() []interface{} {
-	return r.params
-}
+func (r *Router) GetParams() []interface{} { _ = "STUB: not implemented"; return nil }
+
 func (r *Router) Err() error {
-	return r.err
+	_ = "STUB: not implemented"
+
+	// BaseEndpoint provides the fundamental implementation for all endpoint types.
+	// It implements common functionality including global interceptors, router management,
+	// and thread-safe operations for endpoint lifecycle management.
+	//
+	// BaseEndpoint 为所有端点类型提供基础实现。
+	// 它实现了通用功能，包括全局拦截器、路由器管理和端点生命周期管理的线程安全操作。
+	//
+	// Architecture / 架构：
+	// • Router Management: Thread-safe storage and retrieval of routers  路由器管理：路由器的线程安全存储和检索
+	// • Global Interceptors: Cross-cutting concerns for all message processing  全局拦截器：所有消息处理的横切关注点
+	// • Event Handling: Callback mechanism for endpoint lifecycle events  事件处理：端点生命周期事件的回调机制
+	// • Thread Safety: RWMutex protection for concurrent access  线程安全：RWMutex 保护并发访问
+	//
+	// Interceptor Pipeline / 拦截器管道：
+	// The BaseEndpoint processes messages through the following pipeline:
+	// BaseEndpoint 通过以下管道处理消息：
+	//
+	// 1. Global interceptors execution  全局拦截器执行
+	// 2. From endpoint processing  From 端点处理
+	// 3. To endpoint execution  To 端点执行
+	// 4. Post-processing and response handling  后处理和响应处理
+	//
+	// Concurrency / 并发性：
+	// • Safe for concurrent router addition/removal  安全的并发路由器添加/删除
+	// • Lock-free interceptor access using exported field  使用导出字段的无锁拦截器访问
+	// • Context creation and lifecycle management  上下文创建和生命周期管理
+	return nil
 }
 
-// BaseEndpoint provides the fundamental implementation for all endpoint types.
-// It implements common functionality including global interceptors, router management,
-// and thread-safe operations for endpoint lifecycle management.
-//
-// BaseEndpoint 为所有端点类型提供基础实现。
-// 它实现了通用功能，包括全局拦截器、路由器管理和端点生命周期管理的线程安全操作。
-//
-// Architecture / 架构：
-// • Router Management: Thread-safe storage and retrieval of routers  路由器管理：路由器的线程安全存储和检索
-// • Global Interceptors: Cross-cutting concerns for all message processing  全局拦截器：所有消息处理的横切关注点
-// • Event Handling: Callback mechanism for endpoint lifecycle events  事件处理：端点生命周期事件的回调机制
-// • Thread Safety: RWMutex protection for concurrent access  线程安全：RWMutex 保护并发访问
-//
-// Interceptor Pipeline / 拦截器管道：
-// The BaseEndpoint processes messages through the following pipeline:
-// BaseEndpoint 通过以下管道处理消息：
-//
-// 1. Global interceptors execution  全局拦截器执行
-// 2. From endpoint processing  From 端点处理
-// 3. To endpoint execution  To 端点执行
-// 4. Post-processing and response handling  后处理和响应处理
-//
-// Concurrency / 并发性：
-// • Safe for concurrent router addition/removal  安全的并发路由器添加/删除
-// • Lock-free interceptor access using exported field  使用导出字段的无锁拦截器访问
-// • Context creation and lifecycle management  上下文创建和生命周期管理
 type BaseEndpoint struct {
 	//endpoint 路由存储器  Router storage for the endpoint  端点的路由器存储
 	RouterStorage map[string]endpoint.Router
@@ -681,12 +615,11 @@ type BaseEndpoint struct {
 }
 
 func (e *BaseEndpoint) OnMsg(ctx types.RuleContext, msg types.RuleMsg) {
-	panic("not support this method")
+	_ = "STUB: not implemented"
+	return
 }
 
-func (e *BaseEndpoint) SetOnEvent(onEvent endpoint.OnEvent) {
-	e.OnEvent = onEvent
-}
+func (e *BaseEndpoint) SetOnEvent(onEvent endpoint.OnEvent) { _ = "STUB: not implemented"; return }
 
 // AddInterceptors adds global interceptors to the endpoint processing pipeline.
 // These interceptors are executed for all incoming messages before routing logic.
@@ -703,7 +636,8 @@ func (e *BaseEndpoint) SetOnEvent(onEvent endpoint.OnEvent) {
 // This method is not thread-safe and should be called during initialization.
 // 此方法不是线程安全的，应在初始化期间调用。
 func (e *BaseEndpoint) AddInterceptors(interceptors ...endpoint.Process) {
-	e.Interceptors = append(e.Interceptors, interceptors...)
+	_ = "STUB: not implemented"
+	return
 }
 
 // DoProcess executes the complete message processing pipeline for the endpoint.
@@ -740,127 +674,54 @@ func (e *BaseEndpoint) AddInterceptors(interceptors ...endpoint.Process) {
 // during concurrent interceptor modifications.
 // 此方法创建拦截器的线程安全副本，以避免并发拦截器修改期间的竞态条件。
 func (e *BaseEndpoint) DoProcess(baseCtx context.Context, router endpoint.Router, exchange *endpoint.Exchange) {
+	_ = "STUB: not implemented"
 	// Check if context is already cancelled before starting processing
 	// 在开始处理前检查上下文是否已被取消
-	if baseCtx != nil {
-		select {
-		case <-baseCtx.Done():
-			// Context cancelled, set error and return early
-			// 上下文已取消，设置错误并提前返回
-			exchange.Out.SetError(fmt.Errorf("processing cancelled: %w", baseCtx.Err()))
-			return
-		default:
-		}
-	}
-
-	//创建上下文  Create context  创建上下文
-	ctx := e.createContext(baseCtx, router, exchange)
-
-	// 线程安全地获取拦截器副本  Thread-safely get interceptor copy  线程安全地获取拦截器副本
-	e.RLock()
-	interceptors := make([]endpoint.Process, len(e.Interceptors))
-	copy(interceptors, e.Interceptors)
-	e.RUnlock()
-
-	for _, item := range interceptors {
-		// Check for context cancellation before each interceptor
-		// 在每个拦截器前检查上下文取消
-		if ctx != nil {
-			select {
-			case <-ctx.Done():
-				exchange.Out.SetError(fmt.Errorf("processing cancelled during interceptor: %w", ctx.Err()))
-				return
-			default:
-			}
-		}
-
-		//执行全局拦截器  Execute global interceptors  执行全局拦截器
-		if !item(router, exchange) {
-			return
-		}
-	}
-
-	// Check for context cancellation before From processing
-	// 在 From 处理前检查上下文取消
-	if ctx != nil {
-		select {
-		case <-ctx.Done():
-			exchange.Out.SetError(fmt.Errorf("processing cancelled before From: %w", ctx.Err()))
-			return
-		default:
-		}
-	}
-
-	//执行from端逻辑  Execute From endpoint logic  执行 From 端逻辑
-	if fromFlow := router.GetFrom(); fromFlow != nil {
-		if !fromFlow.ExecuteProcess(router, exchange) {
-			return
-		}
-	}
-
-	// Check for context cancellation before To processing
-	// 在 To 处理前检查上下文取消
-	if ctx != nil {
-		select {
-		case <-ctx.Done():
-			exchange.Out.SetError(fmt.Errorf("processing cancelled before To: %w", ctx.Err()))
-			return
-		default:
-		}
-	}
-
-	//执行to端逻辑  Execute To endpoint logic  执行 To 端逻辑
-	if router.GetFrom() != nil && router.GetFrom().GetTo() != nil {
-		router.GetFrom().GetTo().Execute(ctx, exchange)
-	}
+	return
 }
 
-func (e *BaseEndpoint) createContext(baseCtx context.Context, router endpoint.Router, exchange *endpoint.Exchange) context.Context {
-	if router.GetContextFunc() != nil {
-		if ctx := router.GetContextFunc()(baseCtx, exchange); ctx == nil {
-			return context.Background()
-		} else {
-			exchange.Context = ctx
-			return ctx
-		}
-	} else if baseCtx != nil {
-		return baseCtx
-	} else {
-		return context.Background()
-	}
+// Context cancelled, set error and return early
+// 上下文已取消，设置错误并提前返回
 
+//创建上下文  Create context  创建上下文
+
+// 线程安全地获取拦截器副本  Thread-safely get interceptor copy  线程安全地获取拦截器副本
+
+// Check for context cancellation before each interceptor
+// 在每个拦截器前检查上下文取消
+
+//执行全局拦截器  Execute global interceptors  执行全局拦截器
+
+// Check for context cancellation before From processing
+// 在 From 处理前检查上下文取消
+
+//执行from端逻辑  Execute From endpoint logic  执行 From 端逻辑
+
+// Check for context cancellation before To processing
+// 在 To 处理前检查上下文取消
+
+//执行to端逻辑  Execute To endpoint logic  执行 To 端逻辑
+
+func (e *BaseEndpoint) createContext(baseCtx context.Context, router endpoint.Router, exchange *endpoint.Exchange) context.Context {
+	_ = "STUB: not implemented"
+	return *new(context.Context)
 }
 
 func (e *BaseEndpoint) CheckAndSetRouterId(router endpoint.Router) string {
-	if router.GetId() == "" {
-		router.SetId(router.FromToString())
-	}
-	return router.GetId()
+	_ = "STUB: not implemented"
+	return ""
 }
 
-func (e *BaseEndpoint) Destroy() {
-	e.Lock()
-	defer e.Unlock()
-	e.Interceptors = nil
-	// Create a new map instead of clearing the existing one to avoid race conditions
-	e.RouterStorage = make(map[string]endpoint.Router)
-}
+func (e *BaseEndpoint) Destroy() { _ = "STUB: not implemented"; return }
+
+// Create a new map instead of clearing the existing one to avoid race conditions
 
 func (e *BaseEndpoint) GetRuleChainDefinition(configuration types.Configuration) *types.RuleChain {
-	if v, ok := configuration[types.NodeConfigurationKeyRuleChainDefinition]; ok {
-		if ruleNode, ok := v.(*types.RuleChain); ok {
-			return ruleNode
-		}
-	}
+	_ = "STUB: not implemented"
 	return nil
 }
 
-func (e *BaseEndpoint) HasRouter(id string) bool {
-	e.RLock()
-	defer e.RUnlock()
-	_, ok := e.RouterStorage[id]
-	return ok
-}
+func (e *BaseEndpoint) HasRouter(id string) bool { _ = "STUB: not implemented"; return false }
 
 // ExecutorFactory is a registry and factory for To endpoint executors.
 // It manages different types of executors that handle the final destination logic
@@ -901,12 +762,8 @@ type ExecutorFactory struct {
 // This method is thread-safe and can be called concurrently.
 // 此方法是线程安全的，可以并发调用。
 func (r *ExecutorFactory) Register(name string, executor endpoint.Executor) {
-	r.Lock()
-	defer r.Unlock()
-	if r.executors == nil {
-		r.executors = make(map[string]endpoint.Executor)
-	}
-	r.executors[name] = executor
+	_ = "STUB: not implemented"
+	return
 }
 
 // New creates a new executor instance by type name.
@@ -926,14 +783,8 @@ func (r *ExecutorFactory) Register(name string, executor endpoint.Executor) {
 // This method is thread-safe and uses read lock for optimal performance.
 // 此方法是线程安全的，使用读锁以获得最佳性能。
 func (r *ExecutorFactory) New(name string) (endpoint.Executor, bool) {
-	r.RLock()
-	defer r.RUnlock()
-	h, ok := r.executors[name]
-	if ok {
-		return h.New(), true
-	} else {
-		return nil, false
-	}
+	_ = "STUB: not implemented"
+	return *new(endpoint.Executor), false
 }
 
 // ChainExecutor is an executor implementation that routes messages to rule chains.
@@ -960,88 +811,48 @@ type ChainExecutor struct {
 }
 
 func (ce *ChainExecutor) New() endpoint.Executor {
+	_ = "STUB: not implemented"
+	return *
 
-	return &ChainExecutor{}
+	// IsPathSupportVar to路径允许带变量
+	new(endpoint.Executor)
 }
 
-// IsPathSupportVar to路径允许带变量
-func (ce *ChainExecutor) IsPathSupportVar() bool {
-	return true
-}
+func (ce *ChainExecutor) IsPathSupportVar() bool { _ = "STUB: not implemented"; return false }
 
 func (ce *ChainExecutor) Init(_ types.Config, _ types.Configuration) error {
+	_ = "STUB: not implemented"
 	return nil
 }
 
 func (ce *ChainExecutor) Execute(ctx context.Context, router endpoint.Router, exchange *endpoint.Exchange) {
-	fromFlow := router.GetFrom()
-	if fromFlow == nil {
-		return
-	}
-	inMsg := exchange.In.GetMsg()
-	if toFlow := fromFlow.GetTo(); toFlow != nil && inMsg != nil {
-		toChainId := toFlow.ToStringByDict(inMsg.Metadata.GetReadOnlyValues())
-		tos := strings.Split(toChainId, pathSplitFlag)
-		toChainId = tos[0]
-		//查找规则链，并执行
-		if ruleEngine, ok := router.GetRuleGo(exchange).Get(toChainId); ok {
-			opts := toFlow.GetOpts()
-			//监听结束回调函数
-			endFunc := types.WithOnEnd(func(ctx types.RuleContext, msg types.RuleMsg, err error, relationType string) {
-				// 创建 ScopedMessage 代理，隔离每次回调的消息状态
-				// Create ScopedMessage proxy to isolate message state for each callback
-				scopedOut := &ScopedMessage{
-					Message: exchange.Out, // 保留对原始 ResponseMessage 的引用（用于IO操作）
-					msg:     &msg,         // 绑定当前回调的特定数据
-				}
-
-				// 创建 ScopedExchange，使用代理的 Out 消息
-				// Create ScopedExchange using the proxied Out message
-				// 注意：这里是浅拷贝，Context 和 In 保持不变，但 Out 被替换为 ScopedMessage
-				// RWMutex 被重置，因为它是值拷贝，但在新 Exchange 中我们不应使用旧锁
-				scopedExchange := &endpoint.Exchange{
-					In:      exchange.In,
-					Out:     scopedOut,
-					Context: exchange.Context,
-				}
-
-				if err != nil {
-					scopedExchange.Out.SetError(err)
-				}
-
-				// 使用 ScopedExchange 执行后续处理器
-				// Execute processors using ScopedExchange
-				for _, process := range toFlow.GetProcessList() {
-					if !process(router, scopedExchange) {
-						break
-					}
-				}
-			})
-			opts = append(opts, types.WithContext(ctx))
-			if len(tos) > 1 {
-				opts = append(opts, types.WithStartNode(tos[1]))
-			}
-			opts = append(opts, endFunc)
-
-			if toFlow.IsWait() {
-				//同步
-				ruleEngine.OnMsgAndWait(*inMsg, opts...)
-			} else {
-				//异步
-				ruleEngine.OnMsg(*inMsg, opts...)
-			}
-		} else {
-			//找不到规则链返回错误
-			for _, process := range toFlow.GetProcessList() {
-				exchange.Out.SetError(fmt.Errorf("chainId=%s not found error", toChainId))
-				if !process(router, exchange) {
-					break
-				}
-			}
-		}
-
-	}
+	_ = "STUB: not implemented"
+	return
 }
+
+//查找规则链，并执行
+
+//监听结束回调函数
+
+// 创建 ScopedMessage 代理，隔离每次回调的消息状态
+// Create ScopedMessage proxy to isolate message state for each callback
+
+// 保留对原始 ResponseMessage 的引用（用于IO操作）
+// 绑定当前回调的特定数据
+
+// 创建 ScopedExchange，使用代理的 Out 消息
+// Create ScopedExchange using the proxied Out message
+// 注意：这里是浅拷贝，Context 和 In 保持不变，但 Out 被替换为 ScopedMessage
+// RWMutex 被重置，因为它是值拷贝，但在新 Exchange 中我们不应使用旧锁
+
+// 使用 ScopedExchange 执行后续处理器
+// Execute processors using ScopedExchange
+
+//同步
+
+//异步
+
+//找不到规则链返回错误
 
 // ComponentExecutor is an executor implementation that routes messages directly to individual components.
 // It provides a way to execute single node components without the overhead of a full rule chain,
@@ -1074,83 +885,38 @@ type ComponentExecutor struct {
 }
 
 func (ce *ComponentExecutor) New() endpoint.Executor {
-	return &ComponentExecutor{}
+	_ = "STUB: not implemented"
+	return *new(endpoint.Executor)
 }
 
 // IsPathSupportVar to路径不允许带变量
-func (ce *ComponentExecutor) IsPathSupportVar() bool {
-	return false
-}
+func (ce *ComponentExecutor) IsPathSupportVar() bool { _ = "STUB: not implemented"; return false }
 
 func (ce *ComponentExecutor) Init(config types.Config, configuration types.Configuration) error {
-	ce.config = config
-	if configuration == nil {
-		return fmt.Errorf("nodeType can't empty")
-	}
-	var nodeType = ""
-	if v, ok := configuration[pathKey]; ok {
-		nodeType = str.ToString(v)
-	}
-	node, err := config.ComponentsRegistry.NewNode(nodeType)
-	if err == nil {
-		ce.component = node
-		err = ce.component.Init(config, configuration)
-	}
-	return err
+	_ = "STUB: not implemented"
+	return nil
 }
 
 func (ce *ComponentExecutor) Execute(ctx context.Context, router endpoint.Router, exchange *endpoint.Exchange) {
-	if ce.component != nil {
-		fromFlow := router.GetFrom()
-		if fromFlow == nil {
-			return
-		}
-
-		inMsg := exchange.In.GetMsg()
-		if toFlow := fromFlow.GetTo(); toFlow != nil && inMsg != nil {
-			//初始化的空上下文
-			ruleCtx := engine.NewRuleContext(ctx, ce.config, nil, nil, nil, ce.config.Pool, func(ctx types.RuleContext, msg types.RuleMsg, err error, relationType string) {
-				// 创建 ScopedMessage 代理，隔离每次回调的消息状态
-				// Create ScopedMessage proxy to isolate message state for each callback
-				scopedOut := &ScopedMessage{
-					Message: exchange.Out, // 保留对原始 ResponseMessage 的引用（用于IO操作）
-					msg:     &msg,         // 绑定当前回调的特定数据
-				}
-
-				// 创建 ScopedExchange
-				scopedExchange := &endpoint.Exchange{
-					In:      exchange.In,
-					Out:     scopedOut,
-					Context: exchange.Context,
-				}
-
-				if err != nil {
-					scopedExchange.Out.SetError(err)
-				}
-
-				for _, process := range toFlow.GetProcessList() {
-					if !process(router, scopedExchange) {
-						break
-					}
-				}
-			}, engine.DefaultPool)
-
-			if toFlow.IsWait() {
-				c := make(chan struct{})
-				ruleCtx.SetOnAllNodeCompleted(func() {
-					close(c)
-				})
-				//执行组件逻辑
-				ce.component.OnMsg(ruleCtx, *inMsg)
-				//等待执行结束
-				<-c
-			} else {
-				//执行组件逻辑
-				ce.component.OnMsg(ruleCtx, *inMsg)
-			}
-		}
-	}
+	_ = "STUB: not implemented"
+	return
 }
+
+//初始化的空上下文
+
+// 创建 ScopedMessage 代理，隔离每次回调的消息状态
+// Create ScopedMessage proxy to isolate message state for each callback
+
+// 保留对原始 ResponseMessage 的引用（用于IO操作）
+// 绑定当前回调的特定数据
+
+// 创建 ScopedExchange
+
+//执行组件逻辑
+
+//等待执行结束
+
+//执行组件逻辑
 
 // DefaultExecutorFactory is the global factory instance for To endpoint executors.
 // It provides a centralized registry for all executor types used in the endpoint system.
@@ -1198,82 +964,53 @@ type ScopedMessage struct {
 
 // GetMsg returns the scope-specific RuleMsg.
 func (sm *ScopedMessage) GetMsg() *types.RuleMsg {
-	return sm.msg
-}
+	_ = "STUB: not implemented"
 
-// SetMsg sets the scope-specific RuleMsg.
-func (sm *ScopedMessage) SetMsg(msg *types.RuleMsg) {
-	sm.msg = msg
-}
-
-// Pass-through methods ensuring underlying IO operations work correctly
-
-func (sm *ScopedMessage) Body() []byte {
-	return sm.Message.Body()
-}
-
-func (sm *ScopedMessage) Headers() textproto.MIMEHeader {
-	return sm.Message.Headers()
-}
-
-func (sm *ScopedMessage) From() string {
-	return sm.Message.From()
-}
-
-func (sm *ScopedMessage) GetParam(key string) string {
-	return sm.Message.GetParam(key)
-}
-
-func (sm *ScopedMessage) SetStatusCode(statusCode int) {
-	sm.Message.SetStatusCode(statusCode)
-}
-
-func (sm *ScopedMessage) SetBody(body []byte) {
-	sm.Message.SetBody(body)
-}
-
-func (sm *ScopedMessage) SetError(err error) {
-	sm.err = err
-}
-
-func (sm *ScopedMessage) GetError() error {
-	return sm.err
-}
-
-// AddHeader delegates header append operations to the underlying message when supported.
-func (sm *ScopedMessage) AddHeader(key, value string) {
-	if modifier, ok := sm.Message.(endpoint.HeaderModifier); ok {
-		modifier.AddHeader(key, value)
-		return
-	}
-	sm.Message.Headers().Add(key, value)
-}
-
-// SetHeader delegates header replacement operations to the underlying message when supported.
-func (sm *ScopedMessage) SetHeader(key, value string) {
-	if modifier, ok := sm.Message.(endpoint.HeaderModifier); ok {
-		modifier.SetHeader(key, value)
-		return
-	}
-	sm.Message.Headers().Set(key, value)
-}
-
-// DelHeader delegates header deletion operations to the underlying message when supported.
-func (sm *ScopedMessage) DelHeader(key string) {
-	if modifier, ok := sm.Message.(endpoint.HeaderModifier); ok {
-		modifier.DelHeader(key)
-		return
-	}
-	sm.Message.Headers().Del(key)
-}
-
-// GetMetadata returns the underlying message metadata when header mutation is supported.
-func (sm *ScopedMessage) GetMetadata() *types.Metadata {
-	if modifier, ok := sm.Message.(endpoint.HeaderModifier); ok {
-		return modifier.GetMetadata()
-	}
+	// SetMsg sets the scope-specific RuleMsg.
 	return nil
 }
+
+func (sm *ScopedMessage) SetMsg(msg *types.RuleMsg) {
+	_ = "STUB: not implemented"
+
+	// Pass-through methods ensuring underlying IO operations work correctly
+	return
+}
+
+func (sm *ScopedMessage) Body() []byte { _ = "STUB: not implemented"; return nil }
+
+func (sm *ScopedMessage) Headers() textproto.MIMEHeader {
+	_ = "STUB: not implemented"
+	return *new(textproto.MIMEHeader)
+}
+
+func (sm *ScopedMessage) From() string { _ = "STUB: not implemented"; return "" }
+
+func (sm *ScopedMessage) GetParam(key string) string { _ = "STUB: not implemented"; return "" }
+
+func (sm *ScopedMessage) SetStatusCode(statusCode int) { _ = "STUB: not implemented"; return }
+
+func (sm *ScopedMessage) SetBody(body []byte) { _ = "STUB: not implemented"; return }
+
+func (sm *ScopedMessage) SetError(err error) { _ = "STUB: not implemented"; return }
+
+func (sm *ScopedMessage) GetError() error {
+	_ = "STUB: not implemented"
+
+	// AddHeader delegates header append operations to the underlying message when supported.
+	return nil
+}
+
+func (sm *ScopedMessage) AddHeader(key, value string) { _ = "STUB: not implemented"; return }
+
+// SetHeader delegates header replacement operations to the underlying message when supported.
+func (sm *ScopedMessage) SetHeader(key, value string) { _ = "STUB: not implemented"; return }
+
+// DelHeader delegates header deletion operations to the underlying message when supported.
+func (sm *ScopedMessage) DelHeader(key string) { _ = "STUB: not implemented"; return }
+
+// GetMetadata returns the underlying message metadata when header mutation is supported.
+func (sm *ScopedMessage) GetMetadata() *types.Metadata { _ = "STUB: not implemented"; return nil }
 
 // Response returns the underlying http.ResponseWriter if available.
 // This is used for HTTP-based endpoints to Returns nil if not available.
@@ -1281,11 +1018,9 @@ func (sm *ScopedMessage) GetMetadata() *types.Metadata {
 // Response 返回底层的 http.ResponseWriter（如果可用）。
 // 用于基于 HTTP 的端点。如果不可用则返回 nil。
 func (sm *ScopedMessage) Response() http.ResponseWriter {
+	_ = "STUB: not implemented"
 	// 尝试从底层 Message 获取 Response() 方法
-	if resp, ok := sm.Message.(interface{ Response() http.ResponseWriter }); ok {
-		return resp.Response()
-	}
-	return nil
+	return *new(http.ResponseWriter)
 }
 
 // Flush sends any buffered data to the client.
@@ -1293,8 +1028,4 @@ func (sm *ScopedMessage) Response() http.ResponseWriter {
 //
 // Flush 将缓冲数据发送到客户端。
 // 它尝试调用底层 Message 的 Flush 方法（如果实现了 Flusher 接口）。
-func (sm *ScopedMessage) Flush() {
-	if flusher, ok := sm.Message.(interface{ Flush() }); ok {
-		flusher.Flush()
-	}
-}
+func (sm *ScopedMessage) Flush() { _ = "STUB: not implemented"; return }

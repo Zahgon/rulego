@@ -18,7 +18,6 @@ package engine
 
 import (
 	"github.com/rulego/rulego/api/types"
-	"github.com/rulego/rulego/utils/json"
 )
 
 // JsonParser Json
@@ -27,32 +26,26 @@ type JsonParser struct {
 
 // DecodeRuleChain 通过json解析规则链结构体
 func (p *JsonParser) DecodeRuleChain(rootRuleChain []byte) (types.RuleChain, error) {
-	var def types.RuleChain
-	err := json.Unmarshal(rootRuleChain, &def)
-	return def, err
+	_ = "STUB: not implemented"
+	return *new(types.RuleChain), nil
 }
 
 // DecodeRuleNode 通过json解析节点结构体
 func (p *JsonParser) DecodeRuleNode(rootRuleChain []byte) (types.RuleNode, error) {
-	var def types.RuleNode
-	err := json.Unmarshal(rootRuleChain, &def)
-	return def, err
+	_ = "STUB: not implemented"
+	return *new(types.RuleNode), nil
 }
 
 func (p *JsonParser) EncodeRuleChain(def interface{}) ([]byte, error) {
-	if v, err := json.Marshal(def); err != nil {
-		return nil, err
-	} else {
-		//格式化Json
-		return json.Format(v)
-	}
+	_ = "STUB: not implemented"
+	return nil, nil
 }
 
+//格式化Json
+
 func (p *JsonParser) EncodeRuleNode(def interface{}) ([]byte, error) {
-	if v, err := json.Marshal(def); err != nil {
-		return nil, err
-	} else {
-		//格式化Json
-		return json.Format(v)
-	}
+	_ = "STUB: not implemented"
+	return nil, nil
 }
+
+//格式化Json

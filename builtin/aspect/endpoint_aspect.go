@@ -17,14 +17,10 @@
 package aspect
 
 import (
-	"reflect"
 	"sync"
 
-	"github.com/gofrs/uuid/v5"
 	"github.com/rulego/rulego/api/types"
 	"github.com/rulego/rulego/api/types/endpoint"
-	"github.com/rulego/rulego/utils/dsl"
-	"github.com/rulego/rulego/utils/str"
 )
 
 var (
@@ -80,68 +76,64 @@ type EndpointAspect struct {
 // Order 返回此切面的执行顺序。值越高，执行越晚。
 // EndpointAspect 的顺序为 900，执行较晚以确保其他切面首先设置。
 func (aspect *EndpointAspect) Order() int {
-	return 900
+	_ = "STUB: not implemented"
+
+	// New creates a new instance of the endpoint aspect for each rule engine.
+	// Each instance shares the same endpoint pool but maintains separate state.
+	//
+	// New 为每个规则引擎创建端点切面的新实例。
+	// 每个实例共享相同的端点池但维护独立的状态。
+	return 0
 }
 
-// New creates a new instance of the endpoint aspect for each rule engine.
-// Each instance shares the same endpoint pool but maintains separate state.
-//
-// New 为每个规则引擎创建端点切面的新实例。
-// 每个实例共享相同的端点池但维护独立的状态。
 func (aspect *EndpointAspect) New() types.Aspect {
-	return &EndpointAspect{EndpointPool: aspect.EndpointPool}
+	_ = "STUB: not implemented"
+	return *new(types.Aspect)
 }
 
 // Type returns the unique identifier for this aspect type.
 //
 // Type 返回此切面类型的唯一标识符。
 func (aspect *EndpointAspect) Type() string {
-	return "endpoint"
+	_ = "STUB: not implemented"
+
+	// PointCut determines which nodes this aspect applies to.
+	// Returns true for all nodes as endpoint management is chain-level.
+	//
+	// PointCut 确定此切面应用于哪些节点。
+	// 对所有节点返回 true，因为端点管理是链级别的。
+	return ""
 }
 
-// PointCut determines which nodes this aspect applies to.
-// Returns true for all nodes as endpoint management is chain-level.
-//
-// PointCut 确定此切面应用于哪些节点。
-// 对所有节点返回 true，因为端点管理是链级别的。
 func (aspect *EndpointAspect) PointCut(ctx types.RuleContext, msg types.RuleMsg, relationType string) bool {
-	return true
+	_ = "STUB: not implemented"
+
+	// OnCreated is called when a rule chain is created. It initializes endpoints
+	// defined in the rule chain metadata if endpoint functionality is enabled.
+	//
+	// OnCreated 在规则链创建时调用。如果启用了端点功能，它会初始化规则链元数据中定义的端点。
+	//
+	// Process:
+	// 处理过程：
+	//  1. Check if context is a chain context  检查上下文是否为链上下文
+	//  2. Verify endpoint functionality is enabled  验证端点功能是否启用
+	//  3. Create rule chain endpoint manager  创建规则链端点管理器
+	//  4. Initialize all defined endpoints  初始化所有定义的端点
+	//
+	// Parameters:
+	// 参数：
+	//   - ctx: Node context containing rule chain information
+	//     ctx：包含规则链信息的节点上下文
+	//
+	// Returns:
+	// 返回：
+	//   - error: Endpoint creation error if any, nil on success
+	//     error：端点创建错误（如果有），成功时为 nil
+	return false
 }
 
-// OnCreated is called when a rule chain is created. It initializes endpoints
-// defined in the rule chain metadata if endpoint functionality is enabled.
-//
-// OnCreated 在规则链创建时调用。如果启用了端点功能，它会初始化规则链元数据中定义的端点。
-//
-// Process:
-// 处理过程：
-//  1. Check if context is a chain context  检查上下文是否为链上下文
-//  2. Verify endpoint functionality is enabled  验证端点功能是否启用
-//  3. Create rule chain endpoint manager  创建规则链端点管理器
-//  4. Initialize all defined endpoints  初始化所有定义的端点
-//
-// Parameters:
-// 参数：
-//   - ctx: Node context containing rule chain information
-//     ctx：包含规则链信息的节点上下文
-//
-// Returns:
-// 返回：
-//   - error: Endpoint creation error if any, nil on success
-//     error：端点创建错误（如果有），成功时为 nil
 func (aspect *EndpointAspect) OnCreated(ctx types.NodeCtx) error {
-	if chainCtx, ok := ctx.(types.ChainCtx); ok {
-		if !chainCtx.Config().EndpointEnabled {
-			return nil
-		}
-		if ruleChainEndpoint, err := NewRuleChainEndpoint(ctx.GetNodeId().Id, chainCtx.Config(),
-			aspect.EndpointPool, chainCtx.GetRuleEnginePool(),
-			chainCtx.Definition(), chainCtx.Definition().Metadata.Endpoints); err != nil {
-			return err
-		} else {
-			aspect.ruleChainEndpoint = ruleChainEndpoint
-		}
-	}
+	_ = "STUB: not implemented"
 	return nil
 }
 
@@ -168,15 +160,7 @@ func (aspect *EndpointAspect) OnCreated(ctx types.NodeCtx) error {
 //   - error: Reload error if any, nil on success
 //     error：重新加载错误（如果有），成功时为 nil
 func (aspect *EndpointAspect) OnReload(_ types.NodeCtx, ctx types.NodeCtx) error {
-	if chainCtx, ok := ctx.(types.ChainCtx); ok && aspect.ruleChainEndpoint != nil {
-		if !ctx.Config().EndpointEnabled {
-			aspect.ruleChainEndpoint.Destroy()
-			return nil
-		}
-		aspect.ruleChainEndpoint.config = ctx.Config()
-		aspect.ruleChainEndpoint.ruleGoPool = chainCtx.GetRuleEnginePool()
-		return aspect.ruleChainEndpoint.Reload(chainCtx.Definition(), chainCtx.Definition().Metadata.Endpoints)
-	}
+	_ = "STUB: not implemented"
 	return nil
 }
 
@@ -184,11 +168,7 @@ func (aspect *EndpointAspect) OnReload(_ types.NodeCtx, ctx types.NodeCtx) error
 // of all associated endpoints to prevent resource leaks.
 //
 // OnDestroy 在规则链销毁时调用。它执行所有关联端点的清理以防止资源泄漏。
-func (aspect *EndpointAspect) OnDestroy(ctx types.NodeCtx) {
-	if aspect.ruleChainEndpoint != nil {
-		aspect.ruleChainEndpoint.Destroy()
-	}
-}
+func (aspect *EndpointAspect) OnDestroy(ctx types.NodeCtx) { _ = "STUB: not implemented"; return }
 
 type RuleChainEndpoint struct {
 	ruleEngineId string
@@ -200,240 +180,105 @@ type RuleChainEndpoint struct {
 }
 
 func NewRuleChainEndpoint(ruleEngineId string, config types.Config, endpointPool endpoint.Pool, ruleGoPool types.RuleEnginePool, ruleChain *types.RuleChain, defs []*types.EndpointDsl) (*RuleChainEndpoint, error) {
-	ruleChainEndpoint := &RuleChainEndpoint{
-		ruleEngineId: ruleEngineId,
-		endpointPool: endpointPool,
-		ruleGoPool:   ruleGoPool,
-		config:       config,
-		endpoints:    make(map[string]endpoint.DynamicEndpoint),
-	}
-	for _, item := range defs {
-		if ruleChain != nil {
-			processEndpointDsl(ruleChainEndpoint.config, ruleChain, item)
-		}
-		ruleChainEndpoint.bindTo(item, ruleEngineId)
-		if err := ruleChainEndpoint.AddEndpointAndStart(item, endpoint.DynamicEndpointOptions.WithConfig(config),
-			endpoint.DynamicEndpointOptions.WithRouterOpts(endpoint.RouterOptions.WithRuleGo(ruleGoPool)),
-			endpoint.DynamicEndpointOptions.WithRuleChain(ruleChain)); err != nil {
-			return nil, err
-		}
-	}
-	return ruleChainEndpoint, nil
+	_ = "STUB: not implemented"
+	return nil, nil
 }
 
 // Start 启动服务
-func (e *RuleChainEndpoint) Start() error {
-	endpoints := e.GetEndpoints()
-	for _, ep := range endpoints {
-		if err := ep.Start(); err != nil {
-			return err
-		}
-	}
-	return nil
-}
+func (e *RuleChainEndpoint) Start() error { _ = "STUB: not implemented"; return nil }
 
 func (e *RuleChainEndpoint) Reload(ruleChain *types.RuleChain, newDefs []*types.EndpointDsl) error {
-	var oldDefs []*types.EndpointDsl
-	endpoints := e.GetEndpoints()
-	for _, ep := range endpoints {
-		tmp := ep.Definition()
-		if ruleChain != nil {
-			processEndpointDsl(e.config, ruleChain, &tmp)
-		}
-		oldDefs = append(oldDefs, &tmp)
-	}
-	// process newDefs variables
-	if ruleChain != nil {
-		for _, item := range newDefs {
-			processEndpointDsl(e.config, ruleChain, item)
-		}
-	}
-	added, removed, modified := e.checkEndpointChanges(oldDefs, newDefs)
-	for _, item := range removed {
-		e.RemoveEndpoint(item.Id)
-	}
-	for _, item := range added {
-		e.bindTo(item, e.ruleEngineId)
-		if err := e.AddEndpointAndStart(item, endpoint.DynamicEndpointOptions.WithConfig(e.config),
-			endpoint.DynamicEndpointOptions.WithRouterOpts(endpoint.RouterOptions.WithRuleGo(e.ruleGoPool)),
-			endpoint.DynamicEndpointOptions.WithRuleChain(ruleChain),
-		); err != nil {
-			return err
-		}
-	}
-	for _, item := range modified {
-		e.bindTo(item, e.ruleEngineId)
-		e.RemoveEndpoint(item.Id)
-		if err := e.AddEndpointAndStart(item, endpoint.DynamicEndpointOptions.WithConfig(e.config),
-			endpoint.DynamicEndpointOptions.WithRouterOpts(endpoint.RouterOptions.WithRuleGo(e.ruleGoPool)),
-			endpoint.DynamicEndpointOptions.WithRuleChain(ruleChain),
-		); err != nil {
-			return err
-		}
-	}
+	_ = "STUB: not implemented"
 	return nil
 }
 
+// process newDefs variables
+
 func (e *RuleChainEndpoint) AddEndpointAndStart(def *types.EndpointDsl, opts ...endpoint.DynamicEndpointOption) error {
-	ep, err := e.endpointPool.Factory().NewFromDef(*def, opts...)
-	if err != nil {
-		return err
-	}
-	if ep.Id() == "" {
-		uid, _ := uuid.NewV4()
-		id := uid.String()
-		ep.SetId(id)
-		def.Id = id
-	}
-	e.AddEndpoint(ep)
-	return ep.Start()
+	_ = "STUB: not implemented"
+	return nil
 }
 
 func (e *RuleChainEndpoint) AddEndpoint(ep endpoint.DynamicEndpoint) {
-	e.Lock()
-	defer e.Unlock()
-	e.endpoints[ep.Id()] = ep
+	_ = "STUB: not implemented"
+	return
 }
 
 func (e *RuleChainEndpoint) GetEndpoint(id string) (endpoint.DynamicEndpoint, bool) {
-	e.RLock()
-	defer e.RUnlock()
-	ep, ok := e.endpoints[id]
-	return ep, ok
+	_ = "STUB: not implemented"
+	return *new(endpoint.DynamicEndpoint), false
 }
 
 func (e *RuleChainEndpoint) GetEndpoints() []endpoint.DynamicEndpoint {
-	e.RLock()
-	defer e.RUnlock()
-	var endpoints []endpoint.DynamicEndpoint
-	for _, ep := range e.endpoints {
-		endpoints = append(endpoints, ep)
-	}
-	return endpoints
+	_ = "STUB: not implemented"
+	return nil
 }
 
-func (e *RuleChainEndpoint) RemoveEndpoint(id string) {
-	e.Lock()
-	defer e.Unlock()
-	if ep, ok := e.endpoints[id]; ok {
-		ep.Destroy()
-		delete(e.endpoints, id)
-	}
-}
+func (e *RuleChainEndpoint) RemoveEndpoint(id string) { _ = "STUB: not implemented"; return }
 
-func (e *RuleChainEndpoint) Destroy() {
-	e.RLock()
-	defer e.RUnlock()
-	for _, ep := range e.endpoints {
-		ep.Destroy()
-	}
-	e.endpoints = make(map[string]endpoint.DynamicEndpoint)
-}
+func (e *RuleChainEndpoint) Destroy() { _ = "STUB: not implemented"; return }
 
 // Helper function to determine if two EndpointDsl instances are equal.
 func (e *RuleChainEndpoint) isEndpointModified(old, new *types.EndpointDsl) bool {
+	_ = "STUB: not implemented"
 	// Use reflect.DeepEqual to compare two EndpointDsl instances.
 	// This will check all fields for equality.
-	return !reflect.DeepEqual(old, new)
+	return false
 }
 
 // checkEndpointChanges compares two slices of EndpointDsl and returns slices of added, removed, and modified EndpointDsl instances.
 func (e *RuleChainEndpoint) checkEndpointChanges(oldEndpoints, newEndpoints []*types.EndpointDsl) (added, removed, modified []*types.EndpointDsl) {
-	oldMap := make(map[string]*types.EndpointDsl) // Map to store old endpoints for quick lookup.
-	newMap := make(map[string]*types.EndpointDsl) // Map to store new endpoints for quick lookup.
-
-	// Populate the oldMap.
-	for _, ep := range oldEndpoints {
-		oldMap[ep.Id] = ep
-	}
-
-	// Check for removed and modified endpoints.
-	for _, ep := range newEndpoints {
-		newMap[ep.Id] = ep
-		if oldEp, exists := oldMap[ep.Id]; exists {
-			if e.isEndpointModified(oldEp, ep) {
-				modified = append(modified, ep)
-			}
-			delete(oldMap, ep.Id) // Remove from oldMap since it's not removed.
-		} else {
-			added = append(added, ep) // It's a new ruleChainEndpoint.
-		}
-	}
-
-	// Anything left in oldMap is removed.
-	for _, ep := range oldMap {
-		removed = append(removed, ep)
-	}
-
-	return added, removed, modified
+	_ = "STUB: not implemented"
+	return nil, nil, nil
 }
+
+// Map to store old endpoints for quick lookup.
+// Map to store new endpoints for quick lookup.
+
+// Populate the oldMap.
+
+// Check for removed and modified endpoints.
+
+// Remove from oldMap since it's not removed.
+
+// It's a new ruleChainEndpoint.
+
+// Anything left in oldMap is removed.
 
 // 绑定To,To必须是当前规则链ID
 func (e *RuleChainEndpoint) bindTo(def *types.EndpointDsl, ruleEngineId string) {
-	for _, r := range def.Routers {
-		if r.To.Path == "" {
-			r.To.Path = ruleEngineId
-		}
-	}
+	_ = "STUB: not implemented"
+	return
 }
 
 func processEndpointDsl(config types.Config, ruleChain *types.RuleChain, item *types.EndpointDsl) {
-	if ruleChain == nil {
-		return
-	}
-	env := dsl.GetInitNodeEnv(config, *ruleChain)
-
-	// Configuration
-	item.Configuration = processConfiguration(env, item.Configuration)
-
-	// Processors
-	item.Processors = processSlice(env, item.Processors)
-
-	// Routers
-	for _, router := range item.Routers {
-		// Params
-		router.Params = processInterfaceSlice(env, router.Params)
-
-		// From
-		router.From.Path = str.ExecuteTemplate(router.From.Path, env)
-		router.From.Configuration = processConfiguration(env, router.From.Configuration)
-		router.From.Processors = processSlice(env, router.From.Processors)
-
-		// To
-		router.To.Path = str.ExecuteTemplate(router.To.Path, env)
-		router.To.Configuration = processConfiguration(env, router.To.Configuration)
-		router.To.Processors = processSlice(env, router.To.Processors)
-	}
+	_ = "STUB: not implemented"
+	return
 }
 
+// Configuration
+
+// Processors
+
+// Routers
+
+// Params
+
+// From
+
+// To
+
 func processConfiguration(env map[string]interface{}, config types.Configuration) types.Configuration {
-	newConfig := make(types.Configuration)
-	for k, v := range config {
-		if strV, ok := v.(string); ok {
-			newConfig[k] = str.ExecuteTemplate(strV, env)
-		} else {
-			newConfig[k] = v
-		}
-	}
-	return newConfig
+	_ = "STUB: not implemented"
+	return *new(types.Configuration)
 }
 
 func processSlice(env map[string]interface{}, slice []string) []string {
-	var newSlice []string
-	for _, s := range slice {
-		newSlice = append(newSlice, str.ExecuteTemplate(s, env))
-	}
-	return newSlice
+	_ = "STUB: not implemented"
+	return nil
 }
 
 func processInterfaceSlice(env map[string]interface{}, slice []interface{}) []interface{} {
-	var newSlice []interface{}
-	for _, v := range slice {
-		if s, ok := v.(string); ok {
-			newSlice = append(newSlice, str.ExecuteTemplate(s, env))
-		} else {
-			newSlice = append(newSlice, v)
-		}
-	}
-	return newSlice
+	_ = "STUB: not implemented"
+	return nil
 }

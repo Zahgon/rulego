@@ -28,15 +28,8 @@ package transform
 // }
 import (
 	"errors"
-	"fmt"
-	"strings"
-
-	"github.com/rulego/rulego/utils/js"
 
 	"github.com/rulego/rulego/api/types"
-	"github.com/rulego/rulego/components/base"
-	"github.com/rulego/rulego/utils/maps"
-	"github.com/rulego/rulego/utils/str"
 )
 
 const (
@@ -126,163 +119,65 @@ type JsTransformNode struct {
 
 // Type 返回组件类型
 // Type returns the component type.
-func (x *JsTransformNode) Type() string {
-	return JsTransformType
-}
+func (x *JsTransformNode) Type() string { _ = "STUB: not implemented"; return "" }
 
 // New 创建新实例
 // New creates a new instance.
-func (x *JsTransformNode) New() types.Node {
-	return &JsTransformNode{Config: JsTransformNodeConfiguration{
-		JsScript: JsTransformDefaultScript,
-	}}
-}
+func (x *JsTransformNode) New() types.Node { _ = "STUB: not implemented"; return *new(types.Node) }
 
 // Init 初始化节点
 // Init initializes the node.
 func (x *JsTransformNode) Init(ruleConfig types.Config, configuration types.Configuration) error {
-	err := maps.Map2Struct(configuration, &x.Config)
-	if err != nil {
-		return err
-	}
-
-	// 检查是否启用直通模式
-	script := strings.TrimSpace(x.Config.JsScript)
-	if script == "" || script == JsTransformDefaultScript {
-		x.passThrough = true
-		return nil
-	}
-
-	// 初始化JavaScript执行引擎
-	jsScript := fmt.Sprintf(JsTransformFuncTemplate, x.Config.JsScript)
-	x.jsEngine, err = js.NewGojaJsEngine(ruleConfig, jsScript, base.NodeUtils.GetVars(configuration))
-	return err
+	_ = "STUB: not implemented"
+	return nil
 }
+
+// 检查是否启用直通模式
+
+// 初始化JavaScript执行引擎
 
 // OnMsg 处理消息，使用JavaScript脚本转换消息内容
 // OnMsg processes messages using JavaScript script for message transformation.
 func (x *JsTransformNode) OnMsg(ctx types.RuleContext, msg types.RuleMsg) {
+	_ = "STUB: not implemented"
 	// 直通模式：直接转发
-	if x.passThrough {
-		ctx.TellNext(msg, types.Success)
-		return
-	}
-
-	// 准备传递给JS脚本的数据，因为js对data就行修改，会影响原始数据，所以需要复制一份
-	data := base.NodeUtils.GetDataByType(msg, false)
-
-	var metadataValues map[string]string
-	if msg.Metadata != nil {
-		metadataValues = msg.Metadata.Values()
-	} else {
-		metadataValues = make(map[string]string)
-	}
-
-	// 执行JavaScript脚本
-	out, err := x.jsEngine.Execute(ctx, JsTransformFuncName, data, metadataValues, msg.Type, string(msg.DataType))
-	if err != nil {
-		ctx.TellFailure(msg, err)
-		return
-	}
-
-	// 处理执行结果
-	x.processJsResult(ctx, msg, out)
+	return
 }
+
+// 准备传递给JS脚本的数据，因为js对data就行修改，会影响原始数据，所以需要复制一份
+
+// 执行JavaScript脚本
+
+// 处理执行结果
 
 // processJsResult 处理JavaScript执行结果
 // processJsResult processes JavaScript execution results.
 func (x *JsTransformNode) processJsResult(ctx types.RuleContext, msg types.RuleMsg, out interface{}) {
+	_ = "STUB: not implemented"
 	// 验证返回值格式
-	formatData, ok := out.(map[string]interface{})
-	if !ok {
-		ctx.TellFailure(msg, JsTransformReturnFormatErr)
-		return
-	}
-
-	// 更新数据类型
-	if formatDataType, ok := formatData[types.DataTypeKey]; ok {
-		if dataTypeStr := str.ToString(formatDataType); dataTypeStr != "" {
-			msg.DataType = types.DataType(dataTypeStr)
-		}
-	}
-
-	// 更新消息类型
-	if formatMsgType, ok := formatData[types.MsgTypeKey]; ok {
-		msg.Type = str.ToString(formatMsgType)
-	}
-
-	// 更新元数据
-	if formatMetaData, ok := formatData[types.MetadataKey]; ok {
-		msg.Metadata.ReplaceAll(str.ToStringMapString(formatMetaData))
-	}
-
-	// 更新消息数据
-	if formatMsgData, ok := formatData[types.MsgKey]; ok {
-		// 处理字节数组
-		if byteData, isByteSlice := formatMsgData.([]byte); isByteSlice {
-			msg.SetBytes(byteData)
-		} else if byteData, isByteArray := formatMsgData.([]interface{}); isByteArray {
-			// 尝试转换为字节数组
-			bytes := make([]byte, len(byteData))
-			isValidByteArray := true
-			for i, v := range byteData {
-				var byteVal float64
-				var isNumber bool
-
-				if val, ok := v.(float64); ok {
-					byteVal = val
-					isNumber = true
-				} else if val, ok := v.(int64); ok {
-					byteVal = float64(val)
-					isNumber = true
-				} else if val, ok := v.(int); ok {
-					byteVal = float64(val)
-					isNumber = true
-				}
-
-				if isNumber {
-					// 边界检查
-					if byteVal < 0 || byteVal > 255 || byteVal != float64(int(byteVal)) {
-						ctx.TellFailure(msg, fmt.Errorf("byte array element at index %d has invalid value %v: must be integer in range 0-255", i, byteVal))
-						return
-					}
-					bytes[i] = byte(byteVal)
-				} else {
-					isValidByteArray = false
-					break
-				}
-			}
-
-			if isValidByteArray {
-				msg.SetBytes(bytes)
-			} else {
-				// 转字符串处理
-				if newValue, err := str.ToStringMaybeErr(formatMsgData); err == nil {
-					msg.SetData(newValue)
-				} else {
-					ctx.TellFailure(msg, err)
-					return
-				}
-			}
-		} else {
-			// 普通数据类型
-			if newValue, err := str.ToStringMaybeErr(formatMsgData); err == nil {
-				msg.SetData(newValue)
-			} else {
-				ctx.TellFailure(msg, err)
-				return
-			}
-		}
-	}
-
-	// 发送到Success链
-	ctx.TellNext(msg, types.Success)
+	return
 }
+
+// 更新数据类型
+
+// 更新消息类型
+
+// 更新元数据
+
+// 更新消息数据
+
+// 处理字节数组
+
+// 尝试转换为字节数组
+
+// 边界检查
+
+// 转字符串处理
+
+// 普通数据类型
+
+// 发送到Success链
 
 // Destroy 清理资源
 // Destroy cleans up resources.
-func (x *JsTransformNode) Destroy() {
-	if x.jsEngine != nil {
-		x.jsEngine.Stop()
-	}
-}
+func (x *JsTransformNode) Destroy() { _ = "STUB: not implemented"; return }

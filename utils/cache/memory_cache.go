@@ -48,18 +48,11 @@ type item struct {
 // - An empty items map
 // - A stopGc channel for controlling garbage collection
 // Note: Garbage collection is not started automatically, call StartGC() to enable it.
-func NewMemoryCache(gcInterval time.Duration) *MemoryCache {
-	c := &MemoryCache{
-		items:      make(map[string]item),
-		stopGc:     make(chan struct{}),
-		gcInterval: time.Minute * 5, // Default 5 minute
-	}
-	if gcInterval > 0 {
-		c.gcInterval = gcInterval
-	}
-	// GC is no longer started automatically
-	return c
-}
+func NewMemoryCache(gcInterval time.Duration) *MemoryCache { _ = "STUB: not implemented"; return nil }
+
+// Default 5 minute
+
+// GC is no longer started automatically
 
 // Set stores a value in the cache with the given key and an optional expiration duration.
 // Parameters:
@@ -73,37 +66,14 @@ func NewMemoryCache(gcInterval time.Duration) *MemoryCache {
 // If ttl is 0, the item will not expire.
 // ttl should be a string (e.g. "10m").
 func (c *MemoryCache) Set(key string, value interface{}, ttl string) error {
-	var expiration int64
-	var dur time.Duration
-	var err error
-
-	if ttl != "" {
-		dur, err = time.ParseDuration(ttl)
-		if err != nil {
-			return err
-		}
-	}
-
-	if dur > 0 {
-		expiration = time.Now().Add(dur).UnixNano()
-	}
-
-	c.mu.Lock()
-	c.items[key] = item{
-		value:      value,
-		expiration: expiration,
-	}
-	// If an expirable item was added and GC is not running (ticker is nil),
-	// set flag to start GC after releasing the lock.
-	shouldStartGC := expiration > 0 && c.ticker == nil
-	c.mu.Unlock()
-
-	if shouldStartGC {
-		c.StartGC() // StartGC handles its own locking
-	}
-
+	_ = "STUB: not implemented"
 	return nil
 }
+
+// If an expirable item was added and GC is not running (ticker is nil),
+// set flag to start GC after releasing the lock.
+
+// StartGC handles its own locking
 
 // Get retrieves a value from the cache by its key.
 // Parameters:
@@ -115,22 +85,12 @@ func (c *MemoryCache) Set(key string, value interface{}, ttl string) error {
 //
 // It returns the value and nil error if the key exists and has not expired.
 func (c *MemoryCache) Get(key string) (interface{}, error) {
-	c.mu.RLock()
-	defer c.mu.RUnlock()
-
-	it, found := c.items[key]
-	if !found {
-		return nil, types.ErrCacheMiss
-	}
-
-	if it.expiration > 0 && time.Now().UnixNano() > it.expiration {
-		// Item has expired
-		// We can also delete it here, but the GC will take care of it
-		return nil, types.ErrCacheMiss
-	}
-
-	return it.value, nil
+	_ = "STUB: not implemented"
+	return nil, nil
 }
+
+// Item has expired
+// We can also delete it here, but the GC will take care of it
 
 // Has checks if a prefixed key exists in the cache
 // Parameters:
@@ -138,28 +98,9 @@ func (c *MemoryCache) Get(key string) (interface{}, error) {
 //
 // Returns:
 //   - bool: Whether the key exists and is valid
-func (c *MemoryCache) Has(key string) bool {
-	c.mu.RLock()
-	defer c.mu.RUnlock()
+func (c *MemoryCache) Has(key string) bool { _ = "STUB: not implemented"; return false }
 
-	it, found := c.items[key]
-	if !found {
-		return false
-	}
-
-	if it.expiration > 0 && time.Now().UnixNano() > it.expiration {
-		return false
-	}
-
-	return true
-}
-
-func (c *MemoryCache) Delete(key string) error {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	delete(c.items, key)
-	return nil
-}
+func (c *MemoryCache) Delete(key string) error { _ = "STUB: not implemented"; return nil }
 
 // DeleteByPrefix removes all cache items with the given prefix.
 // Parameters:
@@ -167,16 +108,7 @@ func (c *MemoryCache) Delete(key string) error {
 //
 // Returns:
 //   - error: Always nil in current implementation
-func (c *MemoryCache) DeleteByPrefix(prefix string) error {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	for k := range c.items {
-		if len(k) >= len(prefix) && k[:len(prefix)] == prefix {
-			delete(c.items, k)
-		}
-	}
-	return nil
-}
+func (c *MemoryCache) DeleteByPrefix(prefix string) error { _ = "STUB: not implemented"; return nil }
 
 // GetByPrefix retrieves all values with keys matching the specified prefix
 // Parameters:
@@ -185,85 +117,37 @@ func (c *MemoryCache) DeleteByPrefix(prefix string) error {
 // Returns:
 //   - map[string]interface{}: map of matching key-value pairs
 func (c *MemoryCache) GetByPrefix(prefix string) map[string]interface{} {
-	c.mu.RLock()
-	defer c.mu.RUnlock()
-
-	result := make(map[string]interface{})
-	now := time.Now().UnixNano()
-
-	for k, v := range c.items {
-		if len(k) >= len(prefix) && k[:len(prefix)] == prefix {
-			if v.expiration == 0 || now <= v.expiration {
-				result[k] = v.value
-			}
-		}
-	}
-
-	return result
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // StartGC starts the garbage collection process if not already running and if there are expirable items.
 // It runs a goroutine that periodically checks for expired items (every c.gcInterval).
 // If GC is already running, or if there are no items with an expiration time, this is a no-op.
-func (c *MemoryCache) StartGC() {
-	c.mu.Lock()
-	if c.ticker != nil { // GC already running
-		c.mu.Unlock()
-		return
-	}
+func (c *MemoryCache) StartGC() { _ = "STUB: not implemented"; return }
 
-	// Check if there are any expirable items. If not, don't start GC.
-	hasExpirable := false
-	for _, itm := range c.items {
-		if itm.expiration > 0 {
-			hasExpirable = true
-			break
-		}
-	}
+// GC already running
 
-	if !hasExpirable {
-		c.mu.Unlock()
-		return
-	}
+// Check if there are any expirable items. If not, don't start GC.
 
-	c.ticker = time.NewTicker(c.gcInterval) // Use configured interval
-	c.stopGc = make(chan struct{})          // Create new stopGc channel
-	c.mu.Unlock()
+// Use configured interval
+// Create new stopGc channel
 
-	go func() {
-		for {
-			select {
-			case <-c.ticker.C:
-				c.deleteExpired()
-			case <-c.stopGc:
-				c.ticker.Stop()
-				c.mu.Lock()
-				c.ticker = nil // Mark GC as stopped
-				c.mu.Unlock()
-				return
-			}
-		}
-	}()
-}
+// Mark GC as stopped
 
 // StopGC stops the garbage collection process.
 // It sends a signal to the GC goroutine to stop.
 // If GC is not running, this is a no-op.
 // This function is safe to call multiple times; it will only attempt to close the stop channel once.
-func (c *MemoryCache) StopGC() {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	if c.ticker != nil && c.stopGc != nil { // If GC is effectively running and stop channel exists
-		select {
-		case <-c.stopGc:
-			// Channel already closed or signal already sent.
-		default:
-			// Channel is open, close it to signal the GC goroutine.
-			close(c.stopGc)
-		}
-		// The GC goroutine is responsible for stopping the ticker and setting c.ticker = nil.
-	}
-}
+func (c *MemoryCache) StopGC() { _ = "STUB: not implemented"; return }
+
+// If GC is effectively running and stop channel exists
+
+// Channel already closed or signal already sent.
+
+// Channel is open, close it to signal the GC goroutine.
+
+// The GC goroutine is responsible for stopping the ticker and setting c.ticker = nil.
 
 // deleteExpired removes all expired items from the cache.
 // This is called periodically by the GC goroutine.
@@ -274,65 +158,32 @@ func (c *MemoryCache) StopGC() {
 // It first collects all expired keys under a read lock to minimize write lock contention,
 // then deletes them in batches under a write lock, re-checking expiration status before deletion.
 // After cleaning, it checks if GC should be paused.
-func (c *MemoryCache) deleteExpired() {
-	now := time.Now().UnixNano() // Use this timestamp for the entire deletion cycle.
+func (c *MemoryCache) deleteExpired() { _ = "STUB: not implemented"; return }
 
-	// Step 1: Collect all expired keys under a read lock.
-	// This allows other read operations to proceed concurrently.
-	c.mu.RLock()
-	var expiredKeys []string
-	for k, v := range c.items {
-		if v.expiration > 0 && now > v.expiration {
-			expiredKeys = append(expiredKeys, k)
-		}
-	}
-	c.mu.RUnlock()
+// Use this timestamp for the entire deletion cycle.
 
-	if len(expiredKeys) == 0 {
-		return
-	}
+// Step 1: Collect all expired keys under a read lock.
+// This allows other read operations to proceed concurrently.
 
-	// Step 2: Delete collected keys in batches under a write lock.
-	// Batching helps to avoid holding the write lock for too long if there are many expired keys.
-	const batchSize = 300 // Number of keys to delete in each batch.
-	for i := 0; i < len(expiredKeys); i += batchSize {
-		c.mu.Lock()
-		// Determine the end of the current batch
-		end := i + batchSize
-		if end > len(expiredKeys) {
-			end = len(expiredKeys)
-		}
-		currentBatch := expiredKeys[i:end]
+// Step 2: Delete collected keys in batches under a write lock.
+// Batching helps to avoid holding the write lock for too long if there are many expired keys.
+// Number of keys to delete in each batch.
 
-		for _, k := range currentBatch {
-			// Re-check if the item still exists and is still expired.
-			// This is important because the item might have been updated or deleted
-			// by another goroutine between the RUnlock (after collecting keys) and this Lock.
-			if item, found := c.items[k]; found && item.expiration > 0 && now > item.expiration {
-				delete(c.items, k)
-			}
-		}
-		c.mu.Unlock()
-		// Consider a small sleep here if GC is aggressive or many batches,
-		// to yield to other goroutines, e.g., time.Sleep(time.Millisecond).
-		// For now, keeping it simple without the sleep.
-	}
+// Determine the end of the current batch
 
-	// After deleting expired items, check if there are any expirable items left.
-	c.mu.RLock()
-	hasExpirableRemaining := false
-	for _, itm := range c.items {
-		if itm.expiration > 0 { // If any item has a non-zero expiration, GC should continue.
-			hasExpirableRemaining = true
-			break
-		}
-	}
-	c.mu.RUnlock()
+// Re-check if the item still exists and is still expired.
+// This is important because the item might have been updated or deleted
+// by another goroutine between the RUnlock (after collecting keys) and this Lock.
 
-	if !hasExpirableRemaining {
-		c.StopGC() // If no expirable items left, stop the GC.
-	}
-}
+// Consider a small sleep here if GC is aggressive or many batches,
+// to yield to other goroutines, e.g., time.Sleep(time.Millisecond).
+// For now, keeping it simple without the sleep.
+
+// After deleting expired items, check if there are any expirable items left.
+
+// If any item has a non-zero expiration, GC should continue.
+
+// If no expirable items left, stop the GC.
 
 // NamespaceCache is a namespace-based cache wrapper
 // It implements the Cache interface, adding namespace prefix functionality to the underlying cache
@@ -356,13 +207,8 @@ type NamespaceCache struct {
 //   - *NamespaceCache: New namespace cache instance
 //   - nil: If cache parameter is nil
 func NewNamespaceCache(cache types.Cache, namespace string) *NamespaceCache {
-	if cache == nil {
-		return nil
-	}
-	return &NamespaceCache{
-		Cache:     cache,
-		Namespace: namespace,
-	}
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // Set stores a namespace-prefixed key-value pair in the cache
@@ -374,10 +220,8 @@ func NewNamespaceCache(cache types.Cache, namespace string) *NamespaceCache {
 // Returns:
 //   - error: If underlying cache returns error or cache is not initialized
 func (c *NamespaceCache) Set(key string, value interface{}, ttl string) error {
-	if c == nil || c.Cache == nil {
-		return types.ErrCacheNotInitialized
-	}
-	return c.Cache.Set(c.Namespace+key, value, ttl)
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // Get retrieves the value for a prefixed key
@@ -388,10 +232,8 @@ func (c *NamespaceCache) Set(key string, value interface{}, ttl string) error {
 //   - interface{}: Stored value
 //   - error: returns error if operation failed
 func (c *NamespaceCache) Get(key string) (interface{}, error) {
-	if c == nil || c.Cache == nil {
-		return nil, types.ErrCacheNotInitialized
-	}
-	return c.Cache.Get(c.Namespace + key)
+	_ = "STUB: not implemented"
+	return nil, nil
 }
 
 // Delete removes a prefixed key from the cache
@@ -400,12 +242,7 @@ func (c *NamespaceCache) Get(key string) (interface{}, error) {
 //
 // Returns:
 //   - error: If underlying cache returns error or cache is not initialized
-func (c *NamespaceCache) Delete(key string) error {
-	if c == nil || c.Cache == nil {
-		return types.ErrCacheNotInitialized
-	}
-	return c.Cache.Delete(c.Namespace + key)
-}
+func (c *NamespaceCache) Delete(key string) error { _ = "STUB: not implemented"; return nil }
 
 // Has checks if a prefixed key exists in the cache
 // Parameters:
@@ -413,12 +250,7 @@ func (c *NamespaceCache) Delete(key string) error {
 //
 // Returns:
 //   - bool: Whether the key exists and is valid
-func (c *NamespaceCache) Has(key string) bool {
-	if c == nil || c.Cache == nil {
-		return false
-	}
-	return c.Cache.Has(c.Namespace + key)
-}
+func (c *NamespaceCache) Has(key string) bool { _ = "STUB: not implemented"; return false }
 
 // DeleteByPrefix removes all cache items matching the specified prefix
 // Parameters:
@@ -427,25 +259,11 @@ func (c *NamespaceCache) Has(key string) bool {
 // Returns:
 //   - error: If underlying cache returns error or cache is not initialized
 //     Returns types.ErrCacheNotInitialized if cache is nil
-func (c *NamespaceCache) DeleteByPrefix(prefix string) error {
-	if c == nil || c.Cache == nil {
-		return types.ErrCacheNotInitialized
-	}
-	return c.Cache.DeleteByPrefix(c.Namespace + prefix)
-}
+func (c *NamespaceCache) DeleteByPrefix(prefix string) error { _ = "STUB: not implemented"; return nil }
 
 func (c *NamespaceCache) GetByPrefix(prefix string) map[string]interface{} {
-	if c == nil || c.Cache == nil {
-		return map[string]interface{}{}
-	}
-	result := c.Cache.GetByPrefix(c.Namespace + prefix)
-	newResult := make(map[string]interface{})
-	for k, v := range result {
-		if len(k) > len(c.Namespace) {
-			newResult[k[len(c.Namespace):]] = v
-		}
-	}
-	return newResult
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // Ensure NamespaceCache implements the Cache interface.

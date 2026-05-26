@@ -44,29 +44,26 @@ type EndNode struct {
 
 // Type 返回组件类型
 // Type returns the component type identifier.
-func (x *EndNode) Type() string {
-	return types.NodeTypeEnd
-}
+func (x *EndNode) Type() string { _ = "STUB: not implemented"; return "" }
 
 // New creates a new instance.
 func (x *EndNode) New() types.Node {
-	return &EndNode{}
+	_ = "STUB: not implemented"
+
+	// Init initializes the component.
+	return *new(types.Node)
 }
 
-// Init initializes the component.
 func (x *EndNode) Init(ruleConfig types.Config, configuration types.Configuration) error {
+	_ = "STUB: not implemented"
 	// No configuration needed
 	return nil
 }
 
 // OnMsg processes the incoming message and triggers the end callback.
 func (x *EndNode) OnMsg(ctx types.RuleContext, msg types.RuleMsg) {
-	relationType := ""
-	if relationTypes := ctx.GetRelationTypes(); len(relationTypes) > 0 {
-		relationType = relationTypes[0]
-	}
-	ctx.DoOnEnd(msg, ctx.GetErr(), relationType)
+	_ = "STUB: not implemented"
+	return
 }
 
-func (x *EndNode) Destroy() {
-}
+func (x *EndNode) Destroy() { _ = "STUB: not implemented"; return }

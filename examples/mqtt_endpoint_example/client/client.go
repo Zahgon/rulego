@@ -26,7 +26,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"time"
@@ -114,170 +113,66 @@ func main() {
 
 // sendJSONData sends sample JSON sensor data to MQTT topics
 // sendJSONData 向MQTT主题发送示例JSON传感器数据
-func sendJSONData(client *mqtt.Client) {
-	fmt.Println("\n=== Sending JSON Sensor Data ===")
+func sendJSONData(client *mqtt.Client) { _ = "STUB: not implemented"; return }
 
-	// Sample sensor data
-	// 示例传感器数据
-	sensorData := []SensorData{
-		{
-			SensorID:     "TEMP_001",
-			Temperature:  23.5,
-			Humidity:     65.2,
-			Timestamp:    time.Now().Unix(),
-			Location:     "Office Room A",
-			BatteryLevel: 85.6,
-		},
-		{
-			SensorID:     "TEMP_002",
-			Temperature:  35.8, // High temperature
-			Humidity:     58.7,
-			Timestamp:    time.Now().Unix(),
-			Location:     "Warehouse B",
-			BatteryLevel: 92.3,
-		},
-		{
-			SensorID:     "HUM_001",
-			Temperature:  22.1,
-			Humidity:     75.5, // High humidity
-			Timestamp:    time.Now().Unix(),
-			Location:     "Laboratory C",
-			BatteryLevel: 78.9,
-		},
-	}
+// Sample sensor data
+// 示例传感器数据
 
-	for i, data := range sensorData {
-		// Convert to JSON
-		// 转换为JSON
-		jsonData, err := json.Marshal(data)
-		if err != nil {
-			log.Printf("Failed to marshal JSON data: %v", err)
-			continue
-		}
+// High temperature
 
-		// Publish to sensor-specific topic
-		// 发布到传感器特定主题
-		topic := fmt.Sprintf("sensors/%s/data", data.SensorID)
-		fmt.Printf("Publishing JSON data %d to topic '%s': %s\n", i+1, topic, string(jsonData))
+// High humidity
 
-		err = client.Publish(topic, 1, jsonData)
-		if err != nil {
-			log.Printf("Failed to publish JSON data: %v", err)
-			continue
-		}
+// Convert to JSON
+// 转换为JSON
 
-		// Wait a bit between messages
-		// 消息之间等待一点时间
-		time.Sleep(time.Second)
-	}
-}
+// Publish to sensor-specific topic
+// 发布到传感器特定主题
+
+// Wait a bit between messages
+// 消息之间等待一点时间
 
 // sendBinaryData sends sample binary device commands to MQTT topics
 // sendBinaryData 向MQTT主题发送示例二进制设备命令
-func sendBinaryData(client *mqtt.Client) {
-	fmt.Println("\n=== Sending Binary Device Commands ===")
+func sendBinaryData(client *mqtt.Client) { _ = "STUB: not implemented"; return }
 
-	// Sample binary commands
-	// 示例二进制命令
-	commands := []DeviceCommand{
-		{DeviceID: 1001, Command: 0x01, Value: 100}, // SET_PARAMETER
-		{DeviceID: 1002, Command: 0x02, Value: 255}, // GET_STATUS
-		{DeviceID: 1003, Command: 0x03, Value: 0},   // RESET
-		{DeviceID: 1004, Command: 0x04, Value: 50},  // SET_THRESHOLD
-	}
+// Sample binary commands
+// 示例二进制命令
 
-	for i, cmd := range commands {
-		// Create binary data (protocol: deviceId(2) + command(1) + value(4))
-		// 创建二进制数据（协议：deviceId(2) + command(1) + value(4)）
-		binaryData := make([]byte, 7)
+// SET_PARAMETER
+// GET_STATUS
+// RESET
+// SET_THRESHOLD
 
-		// Device ID (2 bytes, big endian)
-		// 设备ID（2字节，大端序）
-		binaryData[0] = byte(cmd.DeviceID >> 8)
-		binaryData[1] = byte(cmd.DeviceID & 0xFF)
+// Create binary data (protocol: deviceId(2) + command(1) + value(4))
+// 创建二进制数据（协议：deviceId(2) + command(1) + value(4)）
 
-		// Command (1 byte)
-		// 命令（1字节）
-		binaryData[2] = cmd.Command
+// Device ID (2 bytes, big endian)
+// 设备ID（2字节，大端序）
 
-		// Value (4 bytes, big endian)
-		// 值（4字节，大端序）
-		binaryData[3] = byte(cmd.Value >> 24)
-		binaryData[4] = byte(cmd.Value >> 16)
-		binaryData[5] = byte(cmd.Value >> 8)
-		binaryData[6] = byte(cmd.Value & 0xFF)
+// Command (1 byte)
+// 命令（1字节）
 
-		// Publish to device-specific topic
-		// 发布到设备特定主题
-		topic := fmt.Sprintf("devices/%d/command", cmd.DeviceID)
-		fmt.Printf("Publishing binary data %d to topic '%s': Device=%d, Command=0x%02X, Value=%d\n",
-			i+1, topic, cmd.DeviceID, cmd.Command, cmd.Value)
+// Value (4 bytes, big endian)
+// 值（4字节，大端序）
 
-		err := client.Publish(topic, 1, binaryData)
-		if err != nil {
-			log.Printf("Failed to publish binary data: %v", err)
-			continue
-		}
+// Publish to device-specific topic
+// 发布到设备特定主题
 
-		// Wait a bit between messages
-		// 消息之间等待一点时间
-		time.Sleep(time.Second)
-	}
-}
+// Wait a bit between messages
+// 消息之间等待一点时间
 
 // sendSystemMessages sends sample system messages
 // sendSystemMessages 发送示例系统消息
-func sendSystemMessages(client *mqtt.Client) {
-	fmt.Println("\n=== Sending System Messages ===")
+func sendSystemMessages(client *mqtt.Client) { _ = "STUB: not implemented"; return }
 
-	// Sample system messages
-	// 示例系统消息
-	systemMessages := []SystemMessage{
-		{
-			MessageID: "SYS_001",
-			Level:     "INFO",
-			Source:    "DataProcessor",
-			Content:   "System startup completed successfully",
-			Timestamp: time.Now().Unix(),
-		},
-		{
-			MessageID: "SYS_002",
-			Level:     "WARNING",
-			Source:    "TemperatureMonitor",
-			Content:   "High temperature detected in zone B",
-			Timestamp: time.Now().Unix(),
-		},
-		{
-			MessageID: "SYS_003",
-			Level:     "ERROR",
-			Source:    "NetworkManager",
-			Content:   "Connection timeout to external service",
-			Timestamp: time.Now().Unix(),
-		},
-	}
+// Sample system messages
+// 示例系统消息
 
-	for i, msg := range systemMessages {
-		// Convert to JSON
-		// 转换为JSON
-		jsonData, err := json.Marshal(msg)
-		if err != nil {
-			log.Printf("Failed to marshal system message: %v", err)
-			continue
-		}
+// Convert to JSON
+// 转换为JSON
 
-		// Publish to system topic based on level
-		// 根据级别发布到系统主题
-		topic := fmt.Sprintf("system/%s", msg.Level)
-		fmt.Printf("Publishing system message %d to topic '%s': %s\n", i+1, topic, string(jsonData))
+// Publish to system topic based on level
+// 根据级别发布到系统主题
 
-		err = client.Publish(topic, 1, jsonData)
-		if err != nil {
-			log.Printf("Failed to publish system message: %v", err)
-			continue
-		}
-
-		// Wait a bit between messages
-		// 消息之间等待一点时间
-		time.Sleep(time.Second)
-	}
-}
+// Wait a bit between messages
+// 消息之间等待一点时间

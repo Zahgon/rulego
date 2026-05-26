@@ -17,17 +17,10 @@
 package engine
 
 import (
-	"context"
 	"errors"
-	"strings"
 
 	"github.com/rulego/rulego/api/types"
-	"github.com/rulego/rulego/components/base"
-	"github.com/rulego/rulego/utils/dsl"
-	"github.com/rulego/rulego/utils/json"
-	"github.com/rulego/rulego/utils/maps"
 	"github.com/rulego/rulego/utils/schema"
-	"github.com/rulego/rulego/utils/str"
 )
 
 // ErrRuleEnginePoolNil rule engine pool is nil
@@ -109,255 +102,63 @@ type DynamicNode struct {
 }
 
 func NewDynamicNode(componentType, componentDsl string) *DynamicNode {
-	return &DynamicNode{
-		ComponentType: componentType,
-		Dsl:           componentDsl,
-	}
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // Type 组件类型
-func (x *DynamicNode) Type() string {
-	return x.ComponentType
-}
+func (x *DynamicNode) Type() string { _ = "STUB: not implemented"; return "" }
 
-func (x *DynamicNode) New() types.Node {
-	return &DynamicNode{
-		ComponentType: x.ComponentType,
-		Dsl:           x.Dsl,
-	}
-}
+func (x *DynamicNode) New() types.Node { _ = "STUB: not implemented"; return *new(types.Node) }
 
 // Init 初始化
 func (x *DynamicNode) Init(ruleConfig types.Config, configuration types.Configuration) error {
-	chainCtx := base.NodeUtils.GetChainCtx(configuration)
-	if chainCtx == nil {
-		return ErrRuleEnginePoolNil
-	}
-	if x.Dsl == "" {
-		return ErrDSLEmpty
-	}
-	err := maps.Map2Struct(configuration, &x.instantiatedConfig)
-	if err != nil {
-		return err
-	}
-	rootChainId := chainCtx.GetNodeId().Id
-	self := base.NodeUtils.GetSelfDefinition(configuration)
-	newChainId := rootChainId + "#" + self.Id
-	componentDef, err := ruleConfig.Parser.DecodeRuleChain([]byte(x.Dsl))
-	if err != nil {
-		return err
-	}
-
-	//把组件配置和跟规则链vars复制到当前组件定义的vars
-	newComponentDef := x.copyVars(componentDef, chainCtx.Definition(), configuration)
-	newComponentDsl, err := ruleConfig.Parser.EncodeRuleChain(newComponentDef)
-	if err != nil {
-		return err
-	}
-
-	//动态初始化子规则链
-	x.ruleEngine, err = NewRuleEngine(newChainId, newComponentDsl)
-	return err
+	_ = "STUB: not implemented"
+	return nil
 }
+
+//把组件配置和跟规则链vars复制到当前组件定义的vars
+
+//动态初始化子规则链
 
 // OnMsg 处理消息
 func (x *DynamicNode) OnMsg(ctx types.RuleContext, msg types.RuleMsg) {
-	if x.ruleEngine == nil {
-		ctx.TellFailure(msg, errors.New("rule engine is nil"))
-		return
-	}
-	x.ruleEngine.OnMsg(msg, types.WithContext(ctx.GetContext()),
-		types.WithOnEnd(func(nodeCtx types.RuleContext, onEndMsg types.RuleMsg, err error, relationType string) {
-			if err != nil {
-				ctx.TellFailure(onEndMsg, err)
-			} else {
-				ctx.TellNext(onEndMsg, relationType)
-			}
-		}))
+	_ = "STUB: not implemented"
+	return
 }
 
 // Destroy 销毁
-func (x *DynamicNode) Destroy() {
-	if x.ruleEngine != nil {
-		x.ruleEngine.Stop(context.Background())
-	}
-}
+func (x *DynamicNode) Destroy() { _ = "STUB: not implemented"; return }
 
 // Def 组件定义
 func (x *DynamicNode) Def() types.ComponentForm {
-	var componentForm types.ComponentForm
-	var ruleChain types.RuleChain
-	_ = json.Unmarshal([]byte(x.Dsl), &ruleChain)
-	var icon = "custom-node"
-	var category = "custom"
-	var description string
-	var version string
-	var relationTypes = []string{types.Success, types.Failure}
-	if ruleChain.RuleChain.AdditionalInfo != nil {
-		if v := str.ToString(ruleChain.RuleChain.AdditionalInfo["icon"]); v != "" {
-			icon = v
-		}
-		if v := str.ToString(ruleChain.RuleChain.AdditionalInfo["category"]); v != "" {
-			category = v
-		}
-		if v := str.ToString(ruleChain.RuleChain.AdditionalInfo["description"]); v != "" {
-			description = v
-		}
-		if v := str.ToString(ruleChain.RuleChain.AdditionalInfo["version"]); v != "" {
-			version = v
-		}
-		// 获取关系类型
-		relationTypesValue := ruleChain.RuleChain.AdditionalInfo["relationTypes"]
-		if relationTypesValue != nil {
-			if v, ok := relationTypesValue.([]string); ok && len(v) > 0 {
-				relationTypes = v
-			} else if v, ok := relationTypesValue.(string); ok {
-				if v := strings.Split(v, ","); len(v) > 0 {
-					relationTypes = v
-				}
-			}
-		}
-	}
-
-	// 获取输入参数定义
-	inputSchemaMap := ruleChain.RuleChain.AdditionalInfo["inputSchema"]
-	var fields types.ComponentFormFieldList
-	if inputSchemaMap != nil {
-		var inputSchema schema.JSONSchema
-		_ = maps.Map2Struct(inputSchemaMap, &inputSchema)
-
-		// 获取字段列表并排序
-		var fieldNames []string
-		for name := range inputSchema.Properties {
-			fieldNames = append(fieldNames, name)
-		}
-
-		for _, name := range fieldNames {
-			fieldMap := inputSchema.Properties[name]
-			field := x.processField(name, fieldMap, inputSchema)
-			fields = append(fields, field)
-		}
-
-	} else {
-		fields = x.processFieldAuto(ruleChain)
-	}
-	componentForm = types.ComponentForm{
-		Type:          x.ComponentType,
-		Category:      category,
-		Label:         ruleChain.RuleChain.Name,
-		Desc:          description,
-		Icon:          icon,
-		Fields:        fields,
-		RelationTypes: &relationTypes,
-		Version:       version,
-		ComponentKind: types.ComponentKindDynamic,
-	}
-	return componentForm
+	_ = "STUB: not implemented"
+	return *new(types.ComponentForm)
 }
+
+// 获取关系类型
+
+// 获取输入参数定义
+
+// 获取字段列表并排序
 
 // processFieldAuto 处理自动生成字段 生成规则：提取 ${vars.xx}变量
 func (x *DynamicNode) processFieldAuto(def types.RuleChain) types.ComponentFormFieldList {
-	var fields types.ComponentFormFieldList
-	// 找到所有匹配的变量
-	var vars = dsl.ParseVars(types.Vars, def)
-	for _, item := range vars {
-		var rules []map[string]interface{}
-		var required = true
-		rules = []map[string]interface{}{
-			{
-				"required": true,
-				"message":  "This field is required",
-			},
-		}
-		field := types.ComponentFormField{
-			Name:         item,
-			Label:        item,
-			Type:         "string",
-			DefaultValue: "${vars." + item + "}",
-			Fields:       nil,
-			Rules:        rules,
-			Required:     required,
-		}
-		fields = append(fields, field)
-	}
-
-	return fields
+	_ = "STUB: not implemented"
+	return *new(types.ComponentFormFieldList)
 }
+
+// 找到所有匹配的变量
 
 // processField 处理单个字段，支持嵌套字段
 func (x *DynamicNode) processField(name string, fieldMap schema.FieldSchema, parentSchema schema.JSONSchema) types.ComponentFormField {
-	var rules []map[string]interface{}
-	var required = false
-	if parentSchema.CheckFieldIsRequired(name) {
-		rules = []map[string]interface{}{
-			{
-				"required": true,
-				"message":  "This field is required",
-			},
-		}
-		required = true
-	}
-
-	field := types.ComponentFormField{
-		Name:         name,
-		Label:        fieldMap.Title,
-		Type:         fieldMap.Type,
-		DefaultValue: fieldMap.Default,
-		Fields:       nil,
-		Rules:        rules,
-		Desc:         fieldMap.Description,
-		Required:     required,
-	}
-
-	if fieldMap.Type == "object" && fieldMap.Properties != nil {
-		// 获取子字段列表并排序
-		var nestedFieldNames []string
-		for nestedName := range fieldMap.Properties {
-			nestedFieldNames = append(nestedFieldNames, nestedName)
-		}
-
-		for _, nestedName := range nestedFieldNames {
-			nestedFieldMap := fieldMap.Properties[nestedName]
-			nestedField := x.processField(nestedName, nestedFieldMap, schema.JSONSchema{
-				Required: fieldMap.Required,
-			})
-			field.Fields = append(field.Fields, nestedField)
-		}
-	}
-
-	return field
+	_ = "STUB: not implemented"
+	return *new(types.ComponentFormField)
 }
+
+// 获取子字段列表并排序
+
 func (x *DynamicNode) copyVars(targetRuleChain types.RuleChain, fromRootChain *types.RuleChain, fromNodeConfig types.Configuration) types.RuleChain {
-	var varsMap map[string]interface{}
-	if vars, ok := targetRuleChain.RuleChain.Configuration[types.Vars]; ok {
-		if v, ok := vars.(map[string]interface{}); ok {
-			varsMap = v
-		} else {
-			varsMap = make(map[string]interface{})
-		}
-	} else {
-		varsMap = make(map[string]interface{})
-	}
-
-	if fromRootChain != nil {
-		if fromRootVars, ok := fromRootChain.RuleChain.Configuration[types.Vars]; ok {
-			if fromRootVarsMap, ok := fromRootVars.(map[string]interface{}); ok {
-				for k, v := range fromRootVarsMap {
-					varsMap[k] = v
-				}
-			}
-		}
-	}
-
-	for k, v := range fromNodeConfig {
-		if strings.HasPrefix(k, "$") {
-			continue
-		}
-		varsMap[k] = v
-	}
-	if targetRuleChain.RuleChain.Configuration == nil {
-		targetRuleChain.RuleChain.Configuration = make(types.Configuration)
-	}
-	targetRuleChain.RuleChain.Configuration[types.Vars] = varsMap
-	return targetRuleChain
+	_ = "STUB: not implemented"
+	return *new(types.RuleChain)
 }

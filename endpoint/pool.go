@@ -71,13 +71,15 @@ type Factory struct {
 //   - endpoint.DynamicEndpoint: Created dynamic endpoint  创建的动态端点
 //   - error: Creation error if any  如果有的话，创建错误
 func (f *Factory) NewFromDsl(dsl []byte, opts ...endpoint.DynamicEndpointOption) (endpoint.DynamicEndpoint, error) {
-	return NewFromDsl(dsl, opts...)
+	_ = "STUB: not implemented"
+	return *new(endpoint.DynamicEndpoint), nil
 }
 
 // NewFromDef creates a new DynamicEndpoint instance from DSL definition structure.
 // NewFromDef 从 DSL 定义结构创建新的 DynamicEndpoint 实例。
 func (f *Factory) NewFromDef(def types.EndpointDsl, opts ...endpoint.DynamicEndpointOption) (endpoint.DynamicEndpoint, error) {
-	return NewFromDef(def, opts...)
+	_ = "STUB: not implemented"
+	return *new(endpoint.DynamicEndpoint), nil
 }
 
 // NewFromType creates a new Endpoint instance from type.
@@ -97,7 +99,8 @@ func (f *Factory) NewFromDef(def types.EndpointDsl, opts ...endpoint.DynamicEndp
 //   - endpoint.Endpoint: Created endpoint instance  创建的端点实例
 //   - error: Creation error if any  如果有的话，创建错误
 func (f *Factory) NewFromType(componentType string, ruleConfig types.Config, configuration interface{}) (endpoint.Endpoint, error) {
-	return f.registry.New(componentType, ruleConfig, configuration)
+	_ = "STUB: not implemented"
+	return *new(endpoint.Endpoint), nil
 }
 
 // Pool is a structure that holds DynamicEndpoints.
@@ -119,63 +122,44 @@ type Pool struct {
 
 // NewPool creates a new instance of a Pool.
 // NewPool 创建 Pool 的新实例。
-func NewPool() *Pool {
-	return &Pool{
-		factory: &Factory{
-			registry: Registry,
-		},
-	}
-}
+func NewPool() *Pool { _ = "STUB: not implemented"; return nil }
 
 // Factory returns the factory instance used by this pool.
 // Factory 返回此池使用的工厂实例。
 func (p *Pool) Factory() endpoint.Factory {
-	return p.factory
+	_ = "STUB: not implemented"
+
+	// New creates a new DynamicEndpoint instance with the specified ID.
+	// If the id is empty, it uses the id defined in def.
+	// This method implements a singleton pattern per ID.
+	//
+	// New 使用指定的 ID 创建新的 DynamicEndpoint 实例。
+	// 如果 id 为空，则使用 def 中定义的 id。
+	// 此方法为每个 ID 实现单例模式。
+	//
+	// Parameters:
+	// 参数：
+	//   - id: Unique identifier for the endpoint  端点的唯一标识符
+	//   - def: JSON DSL definition bytes  JSON DSL 定义字节
+	//   - opts: Optional configuration functions  可选的配置函数
+	//
+	// Returns:
+	// 返回：
+	//   - endpoint.DynamicEndpoint: Created or existing endpoint  创建的或现有的端点
+	//   - error: Creation error if any  如果有的话，创建错误
+	return *new(endpoint.Factory)
 }
 
-// New creates a new DynamicEndpoint instance with the specified ID.
-// If the id is empty, it uses the id defined in def.
-// This method implements a singleton pattern per ID.
-//
-// New 使用指定的 ID 创建新的 DynamicEndpoint 实例。
-// 如果 id 为空，则使用 def 中定义的 id。
-// 此方法为每个 ID 实现单例模式。
-//
-// Parameters:
-// 参数：
-//   - id: Unique identifier for the endpoint  端点的唯一标识符
-//   - def: JSON DSL definition bytes  JSON DSL 定义字节
-//   - opts: Optional configuration functions  可选的配置函数
-//
-// Returns:
-// 返回：
-//   - endpoint.DynamicEndpoint: Created or existing endpoint  创建的或现有的端点
-//   - error: Creation error if any  如果有的话，创建错误
 func (p *Pool) New(id string, def []byte, opts ...endpoint.DynamicEndpointOption) (endpoint.DynamicEndpoint, error) {
-	if v, ok := p.entries.Load(id); ok {
-		return v.(endpoint.DynamicEndpoint), nil
-	} else {
-		if id != "" {
-			opts = append(opts, endpoint.DynamicEndpointOptions.WithId(id))
-		}
-		if e, err := NewFromDsl(def, opts...); err != nil {
-			return e, err
-		} else {
-			p.entries.Store(e.Id(), e)
-			return e, nil
-		}
-	}
+	_ = "STUB: not implemented"
+	return *new(endpoint.DynamicEndpoint), nil
 }
 
 // Get retrieves a DynamicEndpoint instance by its ID.
 // Get 通过 ID 检索 DynamicEndpoint 实例。
 func (p *Pool) Get(id string) (endpoint.DynamicEndpoint, bool) {
-	v, ok := p.entries.Load(id)
-	if ok {
-		return v.(endpoint.DynamicEndpoint), ok
-	} else {
-		return nil, false
-	}
+	_ = "STUB: not implemented"
+	return *new(endpoint.DynamicEndpoint), false
 }
 
 // Del deletes a DynamicEndpoint instance by its ID.
@@ -183,48 +167,29 @@ func (p *Pool) Get(id string) (endpoint.DynamicEndpoint, bool) {
 //
 // Del 通过 ID 删除 DynamicEndpoint 实例。
 // 此方法在删除端点前调用 Destroy() 执行清理。
-func (p *Pool) Del(id string) {
-	v, ok := p.entries.Load(id)
-	if ok {
-		v.(endpoint.DynamicEndpoint).Destroy()
-		p.entries.Delete(id)
-	}
-}
+func (p *Pool) Del(id string) { _ = "STUB: not implemented"; return }
 
 // Stop releases all DynamicEndpoint instances.
 // This method gracefully shuts down all endpoints in the pool.
 //
 // Stop 释放所有 DynamicEndpoint 实例。
 // 此方法优雅地关闭池中的所有端点。
-func (p *Pool) Stop() {
-	p.entries.Range(func(key, value any) bool {
-		if item, ok := value.(endpoint.DynamicEndpoint); ok {
-			item.Destroy()
-		}
-		p.entries.Delete(key)
-		return true
-	})
-}
+func (p *Pool) Stop() { _ = "STUB: not implemented"; return }
 
 // Range iterates over all DynamicEndpoint instances.
 // Range 遍历所有 DynamicEndpoint 实例。
 func (p *Pool) Range(f func(key, value any) bool) {
-	p.entries.Range(f)
+	_ = "STUB: not implemented"
+
+	// Reload reloads all DynamicEndpoint instances with the provided options.
+	// This method applies the same options to all endpoints in the pool.
+	//
+	// Reload 使用提供的选项重新加载所有 DynamicEndpoint 实例。
+	// 此方法将相同的选项应用于池中的所有端点。
+	return
 }
 
-// Reload reloads all DynamicEndpoint instances with the provided options.
-// This method applies the same options to all endpoints in the pool.
-//
-// Reload 使用提供的选项重新加载所有 DynamicEndpoint 实例。
-// 此方法将相同的选项应用于池中的所有端点。
-func (p *Pool) Reload(opts ...endpoint.DynamicEndpointOption) {
-	DefaultPool.entries.Range(func(key, value any) bool {
-		if item, ok := value.(endpoint.DynamicEndpoint); ok {
-			_ = item.Reload(nil, opts...)
-		}
-		return true
-	})
-}
+func (p *Pool) Reload(opts ...endpoint.DynamicEndpointOption) { _ = "STUB: not implemented"; return }
 
 // New creates or retrieves a DynamicEndpoint instance with the specified ID from the default pool.
 // If the id is empty, it uses the id defined in def.
@@ -243,7 +208,8 @@ func (p *Pool) Reload(opts ...endpoint.DynamicEndpointOption) {
 //   - endpoint.DynamicEndpoint: Created or existing endpoint  创建的或现有的端点
 //   - error: Creation error if any  如果有的话，创建错误
 func New(id string, def []byte, opts ...endpoint.DynamicEndpointOption) (endpoint.DynamicEndpoint, error) {
-	return DefaultPool.New(id, def, opts...)
+	_ = "STUB: not implemented"
+	return *new(endpoint.DynamicEndpoint), nil
 }
 
 // Get retrieves a DynamicEndpoint instance by its ID from the default pool.
@@ -259,7 +225,8 @@ func New(id string, def []byte, opts ...endpoint.DynamicEndpointOption) (endpoin
 //   - endpoint.DynamicEndpoint: Retrieved endpoint  检索到的端点
 //   - bool: True if endpoint exists, false otherwise  如果端点存在则为 true，否则为 false
 func Get(id string) (endpoint.DynamicEndpoint, bool) {
-	return DefaultPool.Get(id)
+	_ = "STUB: not implemented"
+	return *new(endpoint.DynamicEndpoint), false
 }
 
 // Del deletes a DynamicEndpoint instance by its ID from the default pool.
@@ -269,27 +236,25 @@ func Get(id string) (endpoint.DynamicEndpoint, bool) {
 // Parameters:
 // 参数：
 //   - id: Unique identifier for the endpoint  端点的唯一标识符
-func Del(id string) {
-	DefaultPool.Del(id)
-}
+func Del(id string) { _ = "STUB: not implemented"; return }
 
 // Stop releases all DynamicEndpoint instances in the default pool.
 //
 // Stop 释放默认池中的所有 DynamicEndpoint 实例。
 func Stop() {
-	DefaultPool.Stop()
+	_ = "STUB: not implemented"
+
+	// Range iterates over all DynamicEndpoint instances in the default pool.
+	//
+	// Range 遍历默认池中的所有 DynamicEndpoint 实例。
+	//
+	// Parameters:
+	// 参数：
+	//   - f: Function to apply to each key-value pair  要应用于每个键值对的函数
+	return
 }
 
-// Range iterates over all DynamicEndpoint instances in the default pool.
-//
-// Range 遍历默认池中的所有 DynamicEndpoint 实例。
-//
-// Parameters:
-// 参数：
-//   - f: Function to apply to each key-value pair  要应用于每个键值对的函数
-func Range(f func(key, value any) bool) {
-	DefaultPool.Range(f)
-}
+func Range(f func(key, value any) bool) { _ = "STUB: not implemented"; return }
 
 // Reload reloads all DynamicEndpoint instances in the default pool with the provided options.
 //
@@ -298,6 +263,4 @@ func Range(f func(key, value any) bool) {
 // Parameters:
 // 参数：
 //   - opts: Optional configuration functions  可选的配置函数
-func Reload(opts ...endpoint.DynamicEndpointOption) {
-	DefaultPool.Reload(opts...)
-}
+func Reload(opts ...endpoint.DynamicEndpointOption) { _ = "STUB: not implemented"; return }

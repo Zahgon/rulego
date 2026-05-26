@@ -57,11 +57,7 @@ type RuleChain struct {
 }
 
 func (r RuleChain) GetNode(nodeId string) (*RuleNode, bool) {
-	for _, item := range r.Metadata.Nodes {
-		if item.Id == nodeId {
-			return item, true
-		}
-	}
+	_ = "STUB: not implemented"
 	return nil, false
 }
 
@@ -171,11 +167,8 @@ type RuleChainBaseInfo struct {
 //   - bool: True if the key exists, false otherwise
 //     bool：如果键存在则为 true，否则为 false
 func (r RuleChainBaseInfo) GetAdditionalInfo(key string) (interface{}, bool) {
-	if r.AdditionalInfo == nil {
-		return "", false
-	}
-	v, ok := r.AdditionalInfo[key]
-	return v, ok
+	_ = "STUB: not implemented"
+	return nil, false
 }
 
 // PutAdditionalInfo adds additional information by key and value.
@@ -199,10 +192,8 @@ func (r RuleChainBaseInfo) GetAdditionalInfo(key string) (interface{}, bool) {
 //	chainInfo.PutAdditionalInfo("author", "admin")
 //	chainInfo.PutAdditionalInfo("lastModified", time.Now())
 func (r RuleChainBaseInfo) PutAdditionalInfo(key string, value interface{}) {
-	if r.AdditionalInfo == nil {
-		r.AdditionalInfo = make(map[string]interface{})
-	}
-	r.AdditionalInfo[key] = value
+	_ = "STUB: not implemented"
+	return
 }
 
 // RuleMetadata defines the metadata of a rule chain, including information about nodes and connections.
@@ -399,11 +390,8 @@ type RuleNode struct {
 }
 
 func (n RuleNode) GetAdditionalInfo(key string) (interface{}, bool) {
-	if n.AdditionalInfo == nil {
-		return "", false
-	}
-	v, ok := n.AdditionalInfo[key]
-	return v, ok
+	_ = "STUB: not implemented"
+	return nil, false
 }
 
 // NodeAdditionalInfo is used for visualization position information (reserved field).

@@ -1,24 +1,14 @@
 package config
 
 import (
-	"examples/server/internal/constants"
-	"strings"
-
 	"github.com/rulego/rulego/api/types"
 )
 
 var C Config
 
-func Get() *Config {
-	return &C
-}
+func Get() *Config { _ = "STUB: not implemented"; return nil }
 
-func Set(c Config) {
-	C = c
-	if C.EventBusChainId == "" {
-		C.EventBusChainId = constants.KeyDefaultIntegrationChainId
-	}
-}
+func Set(c Config) { _ = "STUB: not implemented"; return }
 
 type Config struct {
 	// DataDir 数据目录
@@ -100,50 +90,19 @@ type MCP struct {
 	ExcludeComponents string `ini:"exclude_components"`
 }
 
-func (c *Config) InitUserMap() {
-	if c.Users != nil {
-		c.UserNamePasswordMap = types.Properties{}
-		for username, passwordAndApiKey := range c.Users {
-			c.UserNamePasswordMap[strings.TrimSpace(username)] = strings.TrimSpace(strings.Split(passwordAndApiKey, ",")[0])
-		}
-		c.ApiKeyUserNameMap = types.Properties{}
-		for username, passwordAndApiKey := range c.Users {
-			params := strings.Split(passwordAndApiKey, ",")
-			if len(params) > 1 {
-				c.ApiKeyUserNameMap[strings.TrimSpace(params[1])] = strings.TrimSpace(username)
-			}
-		}
-	}
-}
+func (c *Config) InitUserMap() { _ = "STUB: not implemented"; return }
 
 // CheckPassword 检查密码
 func (c *Config) CheckPassword(username, password string) bool {
-	if c.UserNamePasswordMap == nil {
-		return false
-	}
-	return c.UserNamePasswordMap[username] == password
+	_ = "STUB: not implemented"
+	return false
 }
 
 // GetUsernameByApiKey 通过ApiKey获取用户名
-func (c *Config) GetUsernameByApiKey(apikey string) string {
-	if c.ApiKeyUserNameMap == nil {
-		return ""
-	}
-	return c.ApiKeyUserNameMap[apikey]
-}
+func (c *Config) GetUsernameByApiKey(apikey string) string { _ = "STUB: not implemented"; return "" }
 
 // GetApiKeyByUsername 通过用户名获取ApiKey
-func (c *Config) GetApiKeyByUsername(username string) string {
-	if c.UserNamePasswordMap == nil {
-		return ""
-	}
-	for apikey, u := range c.ApiKeyUserNameMap {
-		if u == username {
-			return apikey
-		}
-	}
-	return ""
-}
+func (c *Config) GetApiKeyByUsername(username string) string { _ = "STUB: not implemented"; return "" }
 
 // DefaultConfig 默认配置
 var DefaultConfig = Config{

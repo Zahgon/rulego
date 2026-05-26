@@ -17,14 +17,10 @@
 package engine
 
 import (
-	"context"
-	"fmt"
 	"sync"
 
 	"github.com/rulego/rulego/api/types"
-	"github.com/rulego/rulego/utils/aes"
 	"github.com/rulego/rulego/utils/lca"
-	"github.com/rulego/rulego/utils/str"
 )
 
 // RelationCache caches the outgoing node relationships based on the incoming node.
@@ -237,207 +233,82 @@ type RuleChainCtx struct {
 //   - Variable processing failures  变量处理失败
 //   - Invalid rule chain definitions  无效的规则链定义
 func InitRuleChainCtx(config types.Config, aspects types.AspectList, ruleChainDef *types.RuleChain, ruleChainPool types.RuleEnginePool) (*RuleChainCtx, error) {
+	_ = "STUB: not implemented"
 	// Retrieve aspects for the engine
-	chainBeforeInitAspects, _, _, afterReloadAspects, destroyAspects := aspects.GetEngineAspects()
-	for _, aspect := range chainBeforeInitAspects {
-		if err := aspect.OnChainBeforeInit(config, ruleChainDef); err != nil {
-			return nil, err
-		}
-	}
-
-	// Initialize a new RuleChainCtx with the provided configuration and aspects
-	var ruleChainCtx = &RuleChainCtx{
-		config:             config,
-		SelfDefinition:     ruleChainDef,
-		nodes:              make(map[types.RuleNodeId]types.NodeCtx),
-		nodeRoutes:         make(map[types.RuleNodeId][]types.RuleNodeRelation),
-		relationCache:      make(map[RelationCache][]types.NodeCtx),
-		parentNodeIds:      make(map[types.RuleNodeId][]types.RuleNodeId),
-		componentsRegistry: config.ComponentsRegistry,
-		initialized:        true,
-		aspects:            aspects,
-		afterReloadAspects: afterReloadAspects,
-		destroyAspects:     destroyAspects,
-		ruleChainPool:      ruleChainPool,
-		referencedNodes:    make([]string, 0),
-	}
-	// Initialize LCA calculator
-	ruleChainCtx.lcaCalculator = lca.NewLCACalculator(ruleChainCtx)
-	// Set the ID of the rule chain context if provided in the definition
-	if ruleChainDef.RuleChain.ID != "" {
-		ruleChainCtx.Id = types.RuleNodeId{Id: ruleChainDef.RuleChain.ID, Type: types.CHAIN}
-	}
-	// Process the rule chain configuration's vars and secrets
-	if ruleChainDef != nil && ruleChainDef.RuleChain.Configuration != nil {
-		varsConfig := ruleChainDef.RuleChain.Configuration[types.Vars]
-		ruleChainCtx.vars = str.ToStringMapString(varsConfig)
-		envConfig := ruleChainDef.RuleChain.Configuration[types.Secrets]
-		secrets := str.ToStringMapString(envConfig)
-		ruleChainCtx.decryptSecrets = decryptSecret(secrets, []byte(config.SecretKey))
-	}
-	nodeLen := len(ruleChainDef.Metadata.Nodes)
-	ruleChainCtx.nodeIds = make([]types.RuleNodeId, nodeLen)
-	// Load all node information
-	for index, item := range ruleChainDef.Metadata.Nodes {
-		if item.Id == "" {
-			item.Id = fmt.Sprintf(defaultNodeIdPrefix+"%d", index)
-		}
-		ruleNodeId := types.RuleNodeId{Id: item.Id, Type: types.NODE}
-		ruleChainCtx.nodeIds[index] = ruleNodeId
-		ruleNodeCtx, err := InitRuleNodeCtx(config, ruleChainCtx, aspects, item)
-		if err != nil {
-			return nil, err
-		}
-		ruleChainCtx.nodes[ruleNodeId] = ruleNodeCtx
-	}
-
-	// Check if there are any end nodes and cache the result
-	// 检查是否有结束节点并缓存结果
-	for _, nodeCtx := range ruleChainCtx.nodes {
-		if nodeCtx.Type() == types.NodeTypeEnd {
-			ruleChainCtx.hasEndNode = true
-			break
-		}
-	}
-
-	// Load node relationship information
-	for _, item := range ruleChainDef.Metadata.Connections {
-		inNodeId := types.RuleNodeId{Id: item.FromId, Type: types.NODE}
-		outNodeId := types.RuleNodeId{Id: item.ToId, Type: types.NODE}
-		ruleNodeRelation := types.RuleNodeRelation{
-			InId:         inNodeId,
-			OutId:        outNodeId,
-			RelationType: item.Type,
-		}
-		nodeRelations, ok := ruleChainCtx.nodeRoutes[inNodeId]
-
-		if ok {
-			nodeRelations = append(nodeRelations, ruleNodeRelation)
-		} else {
-			nodeRelations = []types.RuleNodeRelation{ruleNodeRelation}
-		}
-		ruleChainCtx.nodeRoutes[inNodeId] = nodeRelations
-
-		// Record parent nodes
-		parentNodeIds, ok := ruleChainCtx.parentNodeIds[outNodeId]
-		if ok {
-			parentNodeIds = append(parentNodeIds, inNodeId)
-		} else {
-			parentNodeIds = []types.RuleNodeId{inNodeId}
-		}
-		ruleChainCtx.parentNodeIds[outNodeId] = parentNodeIds
-	}
-	// Load sub-rule chains
-	for _, item := range ruleChainDef.Metadata.RuleChainConnections {
-		inNodeId := types.RuleNodeId{Id: item.FromId, Type: types.NODE}
-		outNodeId := types.RuleNodeId{Id: item.ToId, Type: types.CHAIN}
-		ruleChainRelation := types.RuleNodeRelation{
-			InId:         inNodeId,
-			OutId:        outNodeId,
-			RelationType: item.Type,
-		}
-
-		nodeRelations, ok := ruleChainCtx.nodeRoutes[inNodeId]
-		if ok {
-			nodeRelations = append(nodeRelations, ruleChainRelation)
-		} else {
-			nodeRelations = []types.RuleNodeRelation{ruleChainRelation}
-		}
-		ruleChainCtx.nodeRoutes[inNodeId] = nodeRelations
-
-		// Record parent nodes
-		parentNodeIds, ok := ruleChainCtx.parentNodeIds[outNodeId]
-		if ok {
-			parentNodeIds = append(parentNodeIds, inNodeId)
-		} else {
-			parentNodeIds = []types.RuleNodeId{inNodeId}
-		}
-		ruleChainCtx.parentNodeIds[outNodeId] = parentNodeIds
-	}
-	// Initialize the root rule context
-	if firstNode, ok := ruleChainCtx.GetFirstNode(); ok {
-		ruleChainCtx.rootRuleContext = NewRuleContext(context.Background(), ruleChainCtx.config, ruleChainCtx, nil,
-			firstNode, config.Pool, nil, ruleChainPool)
-	} else {
-		// If there are no nodes, initialize an empty node context
-		ruleNodeCtx, _ := InitRuleNodeCtx(config, ruleChainCtx, aspects, &types.RuleNode{})
-		ruleChainCtx.rootRuleContext = NewRuleContext(context.Background(), ruleChainCtx.config, ruleChainCtx, nil,
-			ruleNodeCtx, config.Pool, nil, ruleChainPool)
-		ruleChainCtx.isEmpty = true
-	}
-
-	return ruleChainCtx, nil
+	return nil, nil
 }
+
+// Initialize a new RuleChainCtx with the provided configuration and aspects
+
+// Initialize LCA calculator
+
+// Set the ID of the rule chain context if provided in the definition
+
+// Process the rule chain configuration's vars and secrets
+
+// Load all node information
+
+// Check if there are any end nodes and cache the result
+// 检查是否有结束节点并缓存结果
+
+// Load node relationship information
+
+// Record parent nodes
+
+// Load sub-rule chains
+
+// Record parent nodes
+
+// Initialize the root rule context
+
+// If there are no nodes, initialize an empty node context
 
 // Config returns the configuration of the rule chain context
-func (rc *RuleChainCtx) Config() types.Config {
-	rc.RLock()
-	defer rc.RUnlock()
-	return rc.config
-}
+func (rc *RuleChainCtx) Config() types.Config { _ = "STUB: not implemented"; return *new(types.Config) }
 
 // GetNodeById retrieves a node context by its ID
 func (rc *RuleChainCtx) GetNodeById(id types.RuleNodeId) (types.NodeCtx, bool) {
-	rc.RLock()
-	defer rc.RUnlock()
-	if id.Type == types.CHAIN {
-		// For sub-rule chains, search through the rule chain pool
-		if subRuleEngine, ok := rc.GetRuleEnginePool().Get(id.Id); ok && subRuleEngine.RootRuleChainCtx() != nil {
-			return subRuleEngine.RootRuleChainCtx(), true
-		} else {
-			return nil, false
-		}
-	} else {
-		ruleNodeCtx, ok := rc.nodes[id]
-		return ruleNodeCtx, ok
-	}
+	_ = "STUB: not implemented"
+	return *new(types.NodeCtx), false
 }
+
+// For sub-rule chains, search through the rule chain pool
 
 // GetNodeByIndex retrieves a node context by its index
 func (rc *RuleChainCtx) GetNodeByIndex(index int) (types.NodeCtx, bool) {
-	rc.RLock()
-	if index >= len(rc.nodeIds) {
-		rc.RUnlock()
-		return &RuleNodeCtx{}, false
-	}
-	nodeId := rc.nodeIds[index]
-	rc.RUnlock()
-	return rc.GetNodeById(nodeId)
+	_ = "STUB: not implemented"
+	return *new(types.NodeCtx), false
 }
 
 // GetFirstNode retrieves the first node, where the message starts flowing. By default, it's the node with index 0
 func (rc *RuleChainCtx) GetFirstNode() (types.NodeCtx, bool) {
-	rc.RLock()
-	firstNodeIndex := rc.SelfDefinition.Metadata.FirstNodeIndex
-	rc.RUnlock()
-	return rc.GetNodeByIndex(firstNodeIndex)
+	_ = "STUB: not implemented"
+	return *new(types.NodeCtx), false
 }
 
 // GetNodeRoutes retrieves the routes for a given node ID
 func (rc *RuleChainCtx) GetNodeRoutes(id types.RuleNodeId) ([]types.RuleNodeRelation, bool) {
-	rc.RLock()
-	defer rc.RUnlock()
-	relations, ok := rc.nodeRoutes[id]
-	return relations, ok
+	_ = "STUB: not implemented"
+	return nil, false
 }
 
 // GetParentNodeIds retrieves the parent node IDs for a given node ID
 func (rc *RuleChainCtx) GetParentNodeIds(id types.RuleNodeId) ([]types.RuleNodeId, bool) {
-	rc.RLock()
-	defer rc.RUnlock()
-	nodeIds, ok := rc.parentNodeIds[id]
-	return nodeIds, ok
+	_ = "STUB: not implemented"
+	return nil, false
 }
 
 // GetLCA finds the lowest common ancestor of a node's parent nodes using optimized algorithm
 // GetLCA 使用优化算法查找节点所有父节点的最低共同祖先
 func (rc *RuleChainCtx) GetLCA(id types.RuleNodeId) (types.RuleNodeId, bool) {
-	return rc.lcaCalculator.GetLCA(id)
+	_ = "STUB: not implemented"
+	return *new(types.RuleNodeId), false
 }
 
 // GetLCAOfNodes finds the lowest common ancestor of multiple nodes.
 func (rc *RuleChainCtx) GetLCAOfNodes(nodeIds []types.RuleNodeId) (types.RuleNodeId, bool) {
-	return rc.lcaCalculator.GetLCAOfNodes(nodeIds)
+	_ = "STUB: not implemented"
+	return *new(types.RuleNodeId), false
 }
 
 // GetNextNodes retrieves the child nodes of the current node with the specified relationship
@@ -459,154 +330,70 @@ func (rc *RuleChainCtx) GetLCAOfNodes(nodeIds []types.RuleNodeId) (types.RuleNod
 //   - []types.NodeCtx: List of child node contexts  子节点上下文列表
 //   - bool: true if any child nodes found, false otherwise  如果找到任何子节点则为 true，否则为 false
 func (rc *RuleChainCtx) GetNextNodes(id types.RuleNodeId, relationType string) ([]types.NodeCtx, bool) {
-	var nodeCtxList []types.NodeCtx
-	cacheKey := RelationCache{inNodeId: id, relationType: relationType}
-	rc.RLock()
-	// Get from cache
-	nodeCtxList, ok := rc.relationCache[cacheKey]
-	rc.RUnlock()
-	if ok {
-		return nodeCtxList, nodeCtxList != nil
-	}
-
-	// Get from the Routes
-	relations, ok := rc.GetNodeRoutes(id)
-	hasNextComponents := false
-	if ok {
-		for _, item := range relations {
-			if item.RelationType == relationType {
-				if nodeCtx, nodeCtxOk := rc.GetNodeById(item.OutId); nodeCtxOk {
-					nodeCtxList = append(nodeCtxList, nodeCtx)
-					hasNextComponents = true
-				}
-			}
-		}
-	}
-	rc.Lock()
-	// Add to the cache
-	rc.relationCache[cacheKey] = nodeCtxList
-	rc.Unlock()
-	return nodeCtxList, hasNextComponents
+	_ = "STUB: not implemented"
+	return nil, false
 }
+
+// Get from cache
+
+// Get from the Routes
+
+// Add to the cache
 
 // Type returns the component type
 func (rc *RuleChainCtx) Type() string {
-	return "ruleChain"
+	_ = "STUB: not implemented"
+
+	// New creates a new instance (not supported for RuleChainCtx)
+	return ""
 }
 
-// New creates a new instance (not supported for RuleChainCtx)
-func (rc *RuleChainCtx) New() types.Node {
-	panic("not support this method")
-}
+func (rc *RuleChainCtx) New() types.Node { _ = "STUB: not implemented"; return *new(types.Node) }
 
 // Init initializes the rule chain context
 func (rc *RuleChainCtx) Init(_ types.Config, configuration types.Configuration) error {
-	if rootRuleChainDef, ok := configuration["selfDefinition"]; ok {
-		if v, ok := rootRuleChainDef.(*types.RuleChain); ok {
-			if ruleChainCtx, err := InitRuleChainCtx(rc.config, rc.aspects, v, nil); err == nil {
-				rc.Copy(ruleChainCtx)
-			} else {
-				return err
-			}
-		}
-	}
+	_ = "STUB: not implemented"
 	return nil
 }
 
 // OnMsg processes incoming messages
 func (rc *RuleChainCtx) OnMsg(ctx types.RuleContext, msg types.RuleMsg) {
-	rc.RLock()
-	id := rc.Id.Id
-	rc.RUnlock()
-	ctx.TellFlow(id, msg)
+	_ = "STUB: not implemented"
+	return
 }
 
 // Destroy cleans up resources and executes destroy aspects
-func (rc *RuleChainCtx) Destroy() {
-	defer func() {
-		if r := recover(); r != nil {
-			if rc.config.Logger != nil {
-				rc.config.Logger.Printf("RuleChainCtx.Destroy() panic recovered: %v", r)
-			}
-		}
-	}()
+func (rc *RuleChainCtx) Destroy() { _ = "STUB: not implemented"; return }
 
-	// Get copies of what we need to destroy without holding locks for too long
-	rc.RLock()
-	nodesToDestroy := make([]types.NodeCtx, 0, len(rc.nodes))
-	for _, v := range rc.nodes {
-		nodesToDestroy = append(nodesToDestroy, v)
-	}
-	destroyAspects := make([]types.OnDestroyAspect, len(rc.destroyAspects))
-	copy(destroyAspects, rc.destroyAspects)
-	// Pre-fetch the node ID to avoid calling GetNodeId() in OnDestroy which needs a lock
-	nodeId := rc.getNodeIdUnsafe()
-	config := rc.config
-	rc.RUnlock()
+// Get copies of what we need to destroy without holding locks for too long
 
-	// Destroy nodes without holding any locks
-	for _, v := range nodesToDestroy {
-		func() {
-			defer func() {
-				if r := recover(); r != nil {
-					if config.Logger != nil {
-						config.Logger.Printf("Node.Destroy() panic recovered: %v", r)
-					}
-				}
-			}()
-			v.Destroy()
-		}()
-	}
+// Pre-fetch the node ID to avoid calling GetNodeId() in OnDestroy which needs a lock
 
-	// Create a wrapper to avoid GetNodeId() calls in OnDestroy
-	wrapper := &nodeCtxWrapper{
-		nodeId:   nodeId,
-		original: rc,
-	}
+// Destroy nodes without holding any locks
 
-	// Execute destroy aspects without holding locks
-	// Note: We avoid calling methods that need locks within OnDestroy by pre-fetching data
-	for _, aop := range destroyAspects {
-		func() {
-			defer func() {
-				if r := recover(); r != nil {
-					if config.Logger != nil {
-						config.Logger.Printf("OnDestroy aspect panic recovered: %v", r)
-					}
-				}
-			}()
-			aop.OnDestroy(wrapper)
-		}()
-	}
-}
+// Create a wrapper to avoid GetNodeId() calls in OnDestroy
+
+// Execute destroy aspects without holding locks
+// Note: We avoid calling methods that need locks within OnDestroy by pre-fetching data
 
 // IsDebugMode checks if debug mode is enabled
-func (rc *RuleChainCtx) IsDebugMode() bool {
-	rc.RLock()
-	defer rc.RUnlock()
-	return rc.SelfDefinition.RuleChain.DebugMode
-}
+func (rc *RuleChainCtx) IsDebugMode() bool { _ = "STUB: not implemented"; return false }
 
 // GetNodeId returns the node ID
 func (rc *RuleChainCtx) GetNodeId() types.RuleNodeId {
-	rc.RLock()
-	defer rc.RUnlock()
-	return rc.getNodeIdUnsafe()
+	_ = "STUB: not implemented"
+	return *new(types.RuleNodeId)
 }
 
 // getNodeIdUnsafe returns the node ID without locking (for internal use)
 func (rc *RuleChainCtx) getNodeIdUnsafe() types.RuleNodeId {
-	return rc.Id
+	_ = "STUB: not implemented"
+
+	// ReloadSelf reloads the rule chain from a byte slice definition
+	return *new(types.RuleNodeId)
 }
 
-// ReloadSelf reloads the rule chain from a byte slice definition
-func (rc *RuleChainCtx) ReloadSelf(def []byte) error {
-	if rootRuleChainDef, err := rc.config.Parser.DecodeRuleChain(def); err == nil {
-		return rc.ReloadSelfFromDef(rootRuleChainDef)
-	} else {
-		return err
-	}
-}
+func (rc *RuleChainCtx) ReloadSelf(def []byte) error { _ = "STUB: not implemented"; return nil }
 
 // ReloadSelfFromDef reloads the rule chain from a RuleChain definition
 // This method performs hot reloading of rule chain configuration, supporting
@@ -638,205 +425,75 @@ func (rc *RuleChainCtx) ReloadSelf(def []byte) error {
 //   - Context initialization failures  上下文初始化失败
 //   - Aspect execution errors  切面执行错误
 func (rc *RuleChainCtx) ReloadSelfFromDef(def types.RuleChain) error {
-	defer func() {
-		if r := recover(); r != nil {
-			if rc.config.Logger != nil {
-				rc.config.Logger.Printf("ReloadSelfFromDef panic recovered: %v", r)
-			}
-		}
-	}()
-
-	if def.RuleChain.Disabled {
-		return types.ErrEngineDisabled
-	}
-	if ctx, err := InitRuleChainCtx(rc.config, rc.aspects, &def, rc.ruleChainPool); err == nil {
-		// First, execute destroy operations without holding locks to avoid deadlock
-		rc.RLock()
-		oldNodes := make(map[types.RuleNodeId]types.NodeCtx)
-		for k, v := range rc.nodes {
-			oldNodes[k] = v
-		}
-		destroyAspects := make([]types.OnDestroyAspect, len(rc.destroyAspects))
-		copy(destroyAspects, rc.destroyAspects)
-		// Pre-fetch the node ID to avoid deadlock in OnDestroy
-		nodeId := rc.getNodeIdUnsafe()
-		config := rc.config
-		rc.RUnlock()
-
-		// Destroy old nodes without holding any locks
-		for _, v := range oldNodes {
-			func() {
-				defer func() {
-					if r := recover(); r != nil {
-						if config.Logger != nil {
-							config.Logger.Printf("Node destroy in reload panic recovered: %v", r)
-						}
-					}
-				}()
-				v.Destroy()
-			}()
-		}
-
-		// Create a wrapper to avoid GetNodeId() calls in OnDestroy
-		wrapper := &nodeCtxWrapper{
-			nodeId:   nodeId,
-			original: rc,
-		}
-
-		// Execute destroy aspects without holding locks
-		for _, aop := range destroyAspects {
-			func() {
-				defer func() {
-					if r := recover(); r != nil {
-						if config.Logger != nil {
-							config.Logger.Printf("OnDestroy aspect in reload panic recovered: %v", r)
-						}
-					}
-				}()
-				aop.OnDestroy(wrapper)
-			}()
-		}
-
-		// Now lock and copy the new context
-		rc.Lock()
-		rc.copyUnsafe(ctx)
-		rc.Unlock()
-
-		// Execute reload aspects
-		for _, aop := range rc.afterReloadAspects {
-			func() {
-				defer func() {
-					if r := recover(); r != nil {
-						if config.Logger != nil {
-							config.Logger.Printf("OnReload aspect panic recovered: %v", r)
-						}
-					}
-				}()
-				if err := aop.OnReload(rc, rc); err != nil {
-					if config.Logger != nil {
-						config.Logger.Printf("OnReload aspect error: %v", err)
-					}
-				}
-			}()
-		}
-		return nil
-	} else {
-		return err
-	}
-}
-
-// copyUnsafe copies the content from another RuleChainCtx without locking
-// This method should only be called when the caller already holds the lock
-func (rc *RuleChainCtx) copyUnsafe(newCtx *RuleChainCtx) {
-	rc.Id = newCtx.Id
-	rc.config = newCtx.config
-	rc.initialized = newCtx.initialized
-	rc.componentsRegistry = newCtx.componentsRegistry
-	rc.SelfDefinition = newCtx.SelfDefinition
-	rc.nodeIds = newCtx.nodeIds
-	rc.nodes = newCtx.nodes
-	rc.nodeRoutes = newCtx.nodeRoutes
-	rc.rootRuleContext = newCtx.rootRuleContext
-	rc.aspects = newCtx.aspects
-	rc.afterReloadAspects = newCtx.afterReloadAspects
-	rc.destroyAspects = newCtx.destroyAspects
-	rc.vars = newCtx.vars
-	rc.decryptSecrets = newCtx.decryptSecrets
-	// Clear cache
-	rc.relationCache = make(map[RelationCache][]types.NodeCtx)
-}
-
-// ReloadChild reloads a child node
-func (rc *RuleChainCtx) ReloadChild(ruleNodeId types.RuleNodeId, def []byte) error {
-	if node, ok := rc.GetNodeById(ruleNodeId); ok {
-		// Update child node
-		err := node.ReloadSelf(def)
-		// Execute reload aspects
-		for _, aop := range rc.afterReloadAspects {
-			if err := aop.OnReload(rc, node); err != nil {
-				return err
-			}
-		}
-		return err
-	}
+	_ = "STUB: not implemented"
 	return nil
 }
 
-// DSL returns the rule chain definition as a byte slice
-func (rc *RuleChainCtx) DSL() []byte {
-	rc.RLock()
-	defer rc.RUnlock()
-	v, _ := rc.config.Parser.EncodeRuleChain(rc.SelfDefinition)
-	return v
+// First, execute destroy operations without holding locks to avoid deadlock
+
+// Pre-fetch the node ID to avoid deadlock in OnDestroy
+
+// Destroy old nodes without holding any locks
+
+// Create a wrapper to avoid GetNodeId() calls in OnDestroy
+
+// Execute destroy aspects without holding locks
+
+// Now lock and copy the new context
+
+// Execute reload aspects
+
+// copyUnsafe copies the content from another RuleChainCtx without locking
+// This method should only be called when the caller already holds the lock
+func (rc *RuleChainCtx) copyUnsafe(newCtx *RuleChainCtx) { _ = "STUB: not implemented"; return }
+
+// Clear cache
+
+// ReloadChild reloads a child node
+func (rc *RuleChainCtx) ReloadChild(ruleNodeId types.RuleNodeId, def []byte) error {
+	_ = "STUB: not implemented"
+	return nil
 }
+
+// Update child node
+
+// Execute reload aspects
+
+// DSL returns the rule chain definition as a byte slice
+func (rc *RuleChainCtx) DSL() []byte { _ = "STUB: not implemented"; return nil }
 
 // Definition returns the rule chain definition
-func (rc *RuleChainCtx) Definition() *types.RuleChain {
-	rc.RLock()
-	defer rc.RUnlock()
-	return rc.SelfDefinition
-}
+func (rc *RuleChainCtx) Definition() *types.RuleChain { _ = "STUB: not implemented"; return nil }
 
 // Copy copies the content from another RuleChainCtx
-func (rc *RuleChainCtx) Copy(newCtx *RuleChainCtx) {
-	rc.Lock()
-	defer rc.Unlock()
-	rc.Id = newCtx.Id
-	rc.config = newCtx.config
-	rc.initialized = newCtx.initialized
-	rc.componentsRegistry = newCtx.componentsRegistry
-	rc.SelfDefinition = newCtx.SelfDefinition
-	rc.nodeIds = newCtx.nodeIds
-	rc.nodes = newCtx.nodes
-	rc.nodeRoutes = newCtx.nodeRoutes
-	rc.rootRuleContext = newCtx.rootRuleContext
-	rc.aspects = newCtx.aspects
-	rc.afterReloadAspects = newCtx.afterReloadAspects
-	rc.destroyAspects = newCtx.destroyAspects
-	rc.vars = newCtx.vars
-	rc.decryptSecrets = newCtx.decryptSecrets
-	// Clear cache
-	rc.relationCache = make(map[RelationCache][]types.NodeCtx)
-}
+func (rc *RuleChainCtx) Copy(newCtx *RuleChainCtx) { _ = "STUB: not implemented"; return }
+
+// Clear cache
 
 // SetRuleEnginePool sets the sub-rule chain pool
 func (rc *RuleChainCtx) SetRuleEnginePool(ruleChainPool types.RuleEnginePool) {
-	rc.ruleChainPool = ruleChainPool
+	_ = "STUB: not implemented"
+	return
 }
 
 // GetRuleEnginePool retrieves the sub-rule chain pool
 func (rc *RuleChainCtx) GetRuleEnginePool() types.RuleEnginePool {
-	if rc.ruleChainPool == nil {
-		return DefaultPool
-	} else {
-		return rc.ruleChainPool
-	}
+	_ = "STUB: not implemented"
+	return *new(types.RuleEnginePool)
 }
 
 // SetAspects sets the aspects for the rule chain
-func (rc *RuleChainCtx) SetAspects(aspects types.AspectList) {
-	rc.Lock()
-	defer rc.Unlock()
-	rc.aspects = aspects
-	_, _, _, afterReloadAspects, destroyAspects := aspects.GetEngineAspects()
-	rc.afterReloadAspects = afterReloadAspects
-	rc.destroyAspects = destroyAspects
-}
+func (rc *RuleChainCtx) SetAspects(aspects types.AspectList) { _ = "STUB: not implemented"; return }
 
 // GetAspects retrieves the aspects of the rule chain
 func (rc *RuleChainCtx) GetAspects() types.AspectList {
-	rc.RLock()
-	defer rc.RUnlock()
-	return rc.aspects
+	_ = "STUB: not implemented"
+	return *new(types.AspectList)
 }
 
 // HasEndNode 检查规则链是否配置了结束节点
 // HasEndNode checks if the rule chain has configured end nodes
-func (rc *RuleChainCtx) HasEndNode() bool {
-	rc.RLock()
-	defer rc.RUnlock()
-	return rc.hasEndNode
-}
+func (rc *RuleChainCtx) HasEndNode() bool { _ = "STUB: not implemented"; return false }
 
 // HasEndDescendant 从指定节点开始，判断其是否存在“结束节点”的后代
 // HasEndDescendant determines whether there exists a descendant end node starting from the given node
@@ -850,115 +507,44 @@ func (rc *RuleChainCtx) HasEndNode() bool {
 // 说明:
 //   - 通过广度优先遍历沿着当前规则链的路由前进；当遇到子规则链连接时，若该子规则链已配置结束节点，则视为存在结束节点后代
 func (rc *RuleChainCtx) HasEndDescendant(startId types.RuleNodeId) bool {
-	visited := make(map[types.RuleNodeId]struct{})
-	queue := []types.RuleNodeId{startId}
-
-	for len(queue) > 0 {
-		current := queue[0]
-		queue = queue[1:]
-
-		relations, ok := rc.GetNodeRoutes(current)
-		if !ok {
-			continue
-		}
-
-		for _, rel := range relations {
-			nextId := rel.OutId
-			if _, seen := visited[nextId]; seen {
-				continue
-			}
-			visited[nextId] = struct{}{}
-
-			if nodeCtx, ok := rc.GetNodeById(nextId); ok {
-				if nodeCtx.Type() == types.NodeTypeEnd {
-					return true
-				} else if nextId.Type == types.CHAIN {
-					if subChain, _ := nodeCtx.(*RuleChainCtx); subChain != nil {
-						if subChain.HasEndNode() {
-							return true
-						}
-					}
-				}
-			}
-
-			queue = append(queue, nextId)
-		}
-	}
-
+	_ = "STUB: not implemented"
 	return false
 }
 
 // GetReferencedNodes 获取被其他节点引用的节点列表
 // GetReferencedNodes gets the list of nodes that are referenced by other nodes
-func (rc *RuleChainCtx) GetReferencedNodes() []string {
-	rc.RLock()
-	defer rc.RUnlock()
-	return rc.referencedNodes
-}
+func (rc *RuleChainCtx) GetReferencedNodes() []string { _ = "STUB: not implemented"; return nil }
 
 // GetNodeDependencies 获取指定节点的依赖节点ID列表
 // GetNodeDependencies gets the dependent node IDs for the specified node
 func (rc *RuleChainCtx) GetNodeDependencies(nodeId string) []string {
-	rc.RLock()
-	defer rc.RUnlock()
-	if dependencies, exists := rc.nodeDependencies[nodeId]; exists {
-		return dependencies
-	}
+	_ = "STUB: not implemented"
 	return nil
 }
 
 // AddNodeDependency 添加节点之间的依赖关系
 // AddNodeDependency adds a dependency relationship between nodes
 func (rc *RuleChainCtx) AddNodeDependency(nodeId string, dependentNodeId string) {
-	rc.Lock()
-	defer rc.Unlock()
-
-	// Initialize nodeDependencies map if it doesn't exist
-	if rc.nodeDependencies == nil {
-		rc.nodeDependencies = make(map[string][]string)
-	}
-
-	// Get existing dependencies for the node
-	dependencies, exists := rc.nodeDependencies[nodeId]
-	if !exists {
-		dependencies = make([]string, 0)
-	}
-
-	// Check if dependency already exists to avoid duplicates
-	for _, existingDep := range dependencies {
-		if existingDep == dependentNodeId {
-			return // Dependency already exists
-		}
-	}
-
-	// Add the new dependency
-	dependencies = append(dependencies, dependentNodeId)
-	rc.nodeDependencies[nodeId] = dependencies
-
-	// Add to referencedNodes if not already present
-	alreadyReferenced := false
-	for _, referencedNode := range rc.referencedNodes {
-		if referencedNode == dependentNodeId {
-			alreadyReferenced = true
-			break
-		}
-	}
-	if !alreadyReferenced {
-		rc.referencedNodes = append(rc.referencedNodes, dependentNodeId)
-	}
+	_ = "STUB: not implemented"
+	return
 }
+
+// Initialize nodeDependencies map if it doesn't exist
+
+// Get existing dependencies for the node
+
+// Check if dependency already exists to avoid duplicates
+
+// Dependency already exists
+
+// Add the new dependency
+
+// Add to referencedNodes if not already present
 
 // decryptSecret decrypts the secrets in the input map using the provided secret key
 func decryptSecret(inputMap map[string]string, secretKey []byte) map[string]string {
-	result := make(map[string]string)
-	for key, value := range inputMap {
-		if plaintext, err := aes.Decrypt(value, secretKey); err == nil {
-			result[key] = plaintext
-		} else {
-			result[key] = value
-		}
-	}
-	return result
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // nodeCtxWrapper wraps RuleChainCtx to provide a cached node ID, avoiding lock calls in OnDestroy
@@ -968,27 +554,43 @@ type nodeCtxWrapper struct {
 }
 
 func (w *nodeCtxWrapper) GetNodeId() types.RuleNodeId {
-	return w.nodeId // Return cached value without locking
+	_ = "STUB: not implemented"
+	// Return cached value without locking
+	return *new(types.RuleNodeId)
 }
 
 // Delegate all other methods to the original context
-func (w *nodeCtxWrapper) Config() types.Config        { return w.original.Config() }
-func (w *nodeCtxWrapper) IsDebugMode() bool           { return w.original.IsDebugMode() }
-func (w *nodeCtxWrapper) ReloadSelf(def []byte) error { return w.original.ReloadSelf(def) }
+func (w *nodeCtxWrapper) Config() types.Config {
+	_ = "STUB: not implemented"
+	return *new(types.Config)
+}
+func (w *nodeCtxWrapper) IsDebugMode() bool           { _ = "STUB: not implemented"; return false }
+func (w *nodeCtxWrapper) ReloadSelf(def []byte) error { _ = "STUB: not implemented"; return nil }
 func (w *nodeCtxWrapper) ReloadSelfFromDef(def types.RuleChain) error {
-	return w.original.ReloadSelfFromDef(def)
+	_ = "STUB: not implemented"
+	return nil
 }
+
 func (w *nodeCtxWrapper) ReloadChild(ruleNodeId types.RuleNodeId, def []byte) error {
-	return w.original.ReloadChild(ruleNodeId, def)
+	_ = "STUB: not implemented"
+	return nil
 }
+
 func (w *nodeCtxWrapper) GetNodeById(id types.RuleNodeId) (types.NodeCtx, bool) {
-	return w.original.GetNodeById(id)
+	_ = "STUB: not implemented"
+	return *new(types.NodeCtx), false
 }
-func (w *nodeCtxWrapper) DSL() []byte     { return w.original.DSL() }
-func (w *nodeCtxWrapper) Type() string    { return w.original.Type() }
-func (w *nodeCtxWrapper) New() types.Node { return w.original.New() }
+
+func (w *nodeCtxWrapper) DSL() []byte     { _ = "STUB: not implemented"; return nil }
+func (w *nodeCtxWrapper) Type() string    { _ = "STUB: not implemented"; return "" }
+func (w *nodeCtxWrapper) New() types.Node { _ = "STUB: not implemented"; return *new(types.Node) }
 func (w *nodeCtxWrapper) Init(config types.Config, configuration types.Configuration) error {
-	return w.original.Init(config, configuration)
+	_ = "STUB: not implemented"
+	return nil
 }
-func (w *nodeCtxWrapper) OnMsg(ctx types.RuleContext, msg types.RuleMsg) { w.original.OnMsg(ctx, msg) }
-func (w *nodeCtxWrapper) Destroy()                                       { w.original.Destroy() }
+
+func (w *nodeCtxWrapper) OnMsg(ctx types.RuleContext, msg types.RuleMsg) {
+	_ = "STUB: not implemented"
+	return
+}
+func (w *nodeCtxWrapper) Destroy() { _ = "STUB: not implemented"; return }

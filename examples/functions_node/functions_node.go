@@ -18,11 +18,12 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"time"
+
 	"github.com/rulego/rulego"
 	"github.com/rulego/rulego/api/types"
 	"github.com/rulego/rulego/components/action"
-	"log"
-	"time"
 )
 
 var ruleEngine types.RuleEngine

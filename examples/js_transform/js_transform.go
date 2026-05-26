@@ -18,10 +18,11 @@ package main
 
 import (
 	"fmt"
-	"github.com/rulego/rulego"
-	"github.com/rulego/rulego/api/types"
 	"log"
 	"time"
+
+	"github.com/rulego/rulego"
+	"github.com/rulego/rulego/api/types"
 )
 
 // js处理msg payload和元数据

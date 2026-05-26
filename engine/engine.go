@@ -67,20 +67,14 @@ package engine
 
 import (
 	"context"
-	"errors"
-	"fmt"
-	"reflect"
 	"sync"
-	"sync/atomic"
 	"time"
 	"unsafe"
 
 	"github.com/rulego/rulego/api/types/metrics"
-	"github.com/rulego/rulego/utils/cache"
 
 	"github.com/rulego/rulego/api/types"
 	"github.com/rulego/rulego/builtin/aspect"
-	"github.com/rulego/rulego/builtin/funcs"
 	"github.com/rulego/rulego/components/base"
 )
 
@@ -300,85 +294,63 @@ type RuleEngine struct {
 //  4. Validating the configuration  验证配置
 //  5. Configuring backpressure control for memory safety  配置背压控制以确保内存安全
 func NewRuleEngine(id string, def []byte, opts ...types.RuleEngineOption) (*RuleEngine, error) {
-	if len(def) == 0 {
-		return nil, errors.New("def can not nil")
-	}
-
-	// Create a new RuleEngine with the Id
-	// 使用 ID 创建新的 RuleEngine
-	ruleEngine := &RuleEngine{
-		id:            id,
-		Config:        NewConfig(),
-		ruleChainPool: DefaultPool,
-		// Initialize backpressure control with default values
-		// 使用默认值初始化背压控制
-		maxConcurrentReloadWaiters: 1000, // Default: allow max 1000 concurrent waiters
-		reloadBackpressureEnabled:  true, // Enable backpressure by default
-	}
-
-	// Initialize graceful shutdown functionality
-	// 初始化优雅停机功能
-	if ruleEngine.Config.Logger == nil {
-		ruleEngine.Config.Logger = types.DefaultLogger()
-	}
-	ruleEngine.InitGracefulShutdown(ruleEngine.Config.Logger, 10*time.Second)
-
-	err := ruleEngine.ReloadSelf(def, opts...)
-	if err == nil && ruleEngine.rootRuleChainCtx != nil {
-		if id != "" {
-			ruleEngine.rootRuleChainCtx.Id = types.RuleNodeId{Id: id, Type: types.CHAIN}
-		} else {
-			// Use the rule chain ID if no ID is provided.
-			// 如果没有提供 ID，则使用规则链 ID。
-			ruleEngine.id = ruleEngine.rootRuleChainCtx.Id.Id
-		}
-
-	}
-
-	return ruleEngine, err
+	_ = "STUB: not implemented"
+	return nil, nil
 }
+
+// Create a new RuleEngine with the Id
+// 使用 ID 创建新的 RuleEngine
+
+// Initialize backpressure control with default values
+// 使用默认值初始化背压控制
+// Default: allow max 1000 concurrent waiters
+// Enable backpressure by default
+
+// Initialize graceful shutdown functionality
+// 初始化优雅停机功能
+
+// Use the rule chain ID if no ID is provided.
+// 如果没有提供 ID，则使用规则链 ID。
 
 // Id returns the unique identifier of the rule engine instance.
 // Id 返回规则引擎实例的唯一标识符。
 func (e *RuleEngine) Id() string {
-	return e.id
+	_ = "STUB: not implemented"
+
+	// SetConfig updates the configuration of the rule engine.
+	// This should be called before initialization for best results.
+	// SetConfig 更新规则引擎的配置。
+	// 为了获得最佳效果，应在初始化前调用。
+	return ""
 }
 
-// SetConfig updates the configuration of the rule engine.
-// This should be called before initialization for best results.
-// SetConfig 更新规则引擎的配置。
-// 为了获得最佳效果，应在初始化前调用。
 func (e *RuleEngine) SetConfig(config types.Config) {
-	e.Config = config
+	_ = "STUB: not implemented"
+
+	// SetAspects updates the list of aspects used by the rule engine.
+	// Aspects provide cross-cutting functionality like logging and validation.
+	// SetAspects 更新规则引擎使用的切面列表。
+	// 切面提供如日志和验证等横切功能。
+	return
 }
 
-// SetAspects updates the list of aspects used by the rule engine.
-// Aspects provide cross-cutting functionality like logging and validation.
-// SetAspects 更新规则引擎使用的切面列表。
-// 切面提供如日志和验证等横切功能。
-func (e *RuleEngine) SetAspects(aspects ...types.Aspect) {
-	e.Aspects = aspects
-}
+func (e *RuleEngine) SetAspects(aspects ...types.Aspect) { _ = "STUB: not implemented"; return }
 
 // SetRuleEnginePool sets the pool used for managing sub-rule chains.
 // This allows for nested rule chain execution and resource sharing.
 // SetRuleEnginePool 设置用于管理子规则链的池。
 // 这允许嵌套规则链执行和资源共享。
 func (e *RuleEngine) SetRuleEnginePool(ruleChainPool types.RuleEnginePool) {
-	e.ruleChainPool = ruleChainPool
-	if e.rootRuleChainCtx != nil {
-		e.rootRuleChainCtx.SetRuleEnginePool(ruleChainPool)
-	}
+	_ = "STUB: not implemented"
+	return
 }
 
 // GetAspects returns a copy of the current aspects list to avoid data races.
 // GetAspects 返回当前切面列表的副本以避免数据竞争。
 func (e *RuleEngine) GetAspects() types.AspectList {
+	_ = "STUB: not implemented"
 	// 返回一个副本以避免数据竞争
-	if e.rootRuleChainCtx != nil {
-		return e.rootRuleChainCtx.GetAspects()
-	}
-	return e.Aspects
+	return *new(types.AspectList)
 }
 
 // Reload reloads the current rule chain with optional new configuration.
@@ -386,68 +358,27 @@ func (e *RuleEngine) GetAspects() types.AspectList {
 // Reload 使用可选的新配置重载当前规则链。
 // 这是使用当前 DSL 定义的便捷方法。
 func (e *RuleEngine) Reload(opts ...types.RuleEngineOption) error {
-	return e.ReloadSelf(e.DSL(), opts...)
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // initBuiltinsAspects initializes the built-in aspects if no custom aspects are provided.
 // It ensures that essential aspects like validation and debugging are always available.
 // initBuiltinsAspects 如果没有提供自定义切面，则初始化内置切面。
 // 它确保验证和调试等基本切面始终可用。
-func (e *RuleEngine) initBuiltinsAspects() {
-	var newAspects types.AspectList
-	//初始化内置切面
-	if len(e.Aspects) == 0 {
-		for _, builtinsAspect := range BuiltinsAspects {
-			newAspects = append(newAspects, builtinsAspect.New())
-		}
-	} else {
-		for _, item := range e.Aspects {
-			newAspects = append(newAspects, item.New())
-		}
+func (e *RuleEngine) initBuiltinsAspects() { _ = "STUB: not implemented"; return }
 
-		for _, builtinsAspect := range BuiltinsAspects {
-			found := false
-			for _, item := range newAspects {
-				//判断是否是相同类型
-				if reflect.TypeOf(item) == reflect.TypeOf(builtinsAspect) {
-					found = true
-					break
-				}
-			}
-			if !found {
-				newAspects = append(newAspects, builtinsAspect.New())
-			}
-		}
-	}
-	e.Aspects = newAspects
-}
+//初始化内置切面
+
+//判断是否是相同类型
 
 // initChain initializes the rule chain with the provided definition.
 // It sets up all nodes, relationships, and executes creation aspects.
 // initChain 使用提供的定义初始化规则链。
 // 它设置所有节点、关系并执行创建切面。
-func (e *RuleEngine) initChain(def types.RuleChain) error {
-	if def.RuleChain.Disabled {
-		return types.ErrEngineDisabled
-	}
-	if ctx, err := InitRuleChainCtx(e.Config, e.Aspects, &def, e.ruleChainPool); err == nil {
-		if e.rootRuleChainCtx != nil {
-			ctx.Id = e.rootRuleChainCtx.Id
-		}
-		e.rootRuleChainCtx = ctx
-		//执行创建切面逻辑
-		_, _, createdAspects, _, _ := e.Aspects.GetEngineAspects()
-		for _, aop := range createdAspects {
-			if err := aop.OnCreated(e.rootRuleChainCtx); err != nil {
-				return err
-			}
-		}
-		atomic.StoreInt32(&e.initialized, 1)
-		return nil
-	} else {
-		return err
-	}
-}
+func (e *RuleEngine) initChain(def types.RuleChain) error { _ = "STUB: not implemented"; return nil }
+
+//执行创建切面逻辑
 
 // ReloadSelf reloads the rule chain with new definition and options.
 // This method supports hot reloading of rule configurations without stopping the engine.
@@ -478,82 +409,43 @@ func (e *RuleEngine) initChain(def types.RuleChain) error {
 // 返回：
 //   - error: Reload error if any  如果有的话，重载错误
 func (e *RuleEngine) ReloadSelf(dsl []byte, opts ...types.RuleEngineOption) error {
-	e.reloadLock.Lock()
-	defer e.reloadLock.Unlock()
-	return e.reloadSelf(dsl, opts...)
+	_ = "STUB: not implemented"
+	return nil
 }
 
 func (e *RuleEngine) reloadSelf(dsl []byte, opts ...types.RuleEngineOption) error {
+	_ = "STUB: not implemented"
 	// Apply the options to the RuleEngine.
 	// 将选项应用于 RuleEngine。
-	for _, opt := range opts {
-		_ = opt(e)
-	}
-
-	// Check if engine is shutting down, if so, reject reload operation
-	// 检查引擎是否正在停机，如果是，拒绝重载操作
-	if e.IsShuttingDown() {
-		return types.ErrEngineShuttingDown
-	}
-
-	// Set reloading state to block new messages during reload
-	// 设置重载状态以在重载期间阻塞新消息
-	if e.Initialized() {
-		e.SetReloading(true)
-		defer e.SetReloading(false)
-
-		// Wait for active messages to complete before reloading
-		// 在重载前等待活跃消息完成
-		waitTimeout := 10 * time.Second
-		e.WaitForActiveOperations(waitTimeout)
-	}
-
-	var err error
-	if e.Initialized() {
-		//初始化内置切面
-		if len(e.Aspects) == 0 {
-			e.initBuiltinsAspects()
-		}
-		e.rootRuleChainCtx.config = e.Config
-		e.rootRuleChainCtx.SetAspects(e.Aspects)
-		//更新规则链
-		err = e.rootRuleChainCtx.ReloadSelf(dsl)
-		////设置子规则链池
-		//e.rootRuleChainCtx.SetRuleEnginePool(e.ruleChainPool)
-		if err == nil && e.OnUpdated != nil {
-			e.OnUpdated(e.id, e.id, dsl)
-		}
-	} else {
-		//初始化内置切面
-		e.initBuiltinsAspects()
-		var rootRuleChainDef types.RuleChain
-		//初始化
-		if rootRuleChainDef, err = e.Config.Parser.DecodeRuleChain(dsl); err == nil {
-			err = e.initChain(rootRuleChainDef)
-		} else {
-			return err
-		}
-	}
-
-	// Set the aspect lists.
-	// 设置切面列表。
-	startAspects, endAspects, completedAspects := e.Aspects.GetChainAspects()
-	holder := &aspectsHolder{startAspects: startAspects, endAspects: endAspects, completedAspects: completedAspects}
-	atomic.StorePointer(&e.aspectsPtr, unsafe.Pointer(holder))
-	return err
+	return nil
 }
+
+// Check if engine is shutting down, if so, reject reload operation
+// 检查引擎是否正在停机，如果是，拒绝重载操作
+
+// Set reloading state to block new messages during reload
+// 设置重载状态以在重载期间阻塞新消息
+
+// Wait for active messages to complete before reloading
+// 在重载前等待活跃消息完成
+
+//初始化内置切面
+
+//更新规则链
+
+////设置子规则链池
+//e.rootRuleChainCtx.SetRuleEnginePool(e.ruleChainPool)
+
+//初始化内置切面
+
+//初始化
+
+// Set the aspect lists.
+// 设置切面列表。
 
 // waitForReloadComplete waits for any ongoing reload to complete before starting a new one.
 // waitForReloadComplete 在开始新的重载前等待任何正在进行的重载完成。
-func (e *RuleEngine) waitForReloadComplete() error {
-	if e.IsReloading() {
-		timeout := 10 * time.Second
-		if !e.WaitForReloadComplete(timeout) {
-			return types.ErrEngineReloadTimeout
-		}
-	}
-	return nil
-}
+func (e *RuleEngine) waitForReloadComplete() error { _ = "STUB: not implemented"; return nil }
 
 // ReloadChild updates a specific node within the root rule chain.
 // If ruleNodeId is empty, it updates the entire root rule chain.
@@ -574,88 +466,47 @@ func (e *RuleEngine) waitForReloadComplete() error {
 // 返回：
 //   - error: Update error if any  如果有的话，更新错误
 func (e *RuleEngine) ReloadChild(ruleNodeId string, dsl []byte) error {
-	e.reloadLock.Lock()
-	defer e.reloadLock.Unlock()
-
-	if len(dsl) == 0 {
-		return types.ErrEngineDslEmpty
-	} else if e.rootRuleChainCtx == nil {
-		return types.ErrEngineNotInitialized
-	} else if e.IsShuttingDown() {
-		return types.ErrEngineShuttingDown
-	} else if ruleNodeId == "" {
-		//更新根规则链
-		return e.reloadSelf(dsl)
-	} else {
-		// Set reloading state to block new messages during reload
-		// 设置重载状态以在重载期间阻塞新消息
-		e.SetReloading(true)
-		defer e.SetReloading(false)
-
-		// Wait for active messages to complete before reloading child node
-		// 在重载子节点前等待活跃消息完成
-		waitTimeout := 10 * time.Second
-		e.WaitForActiveOperations(waitTimeout)
-
-		//更新根规则链子节点
-		err := e.rootRuleChainCtx.ReloadChild(types.RuleNodeId{Id: ruleNodeId}, dsl)
-
-		if err == nil && e.OnUpdated != nil {
-			e.OnUpdated(e.id, ruleNodeId, e.DSL())
-		}
-		return err
-	}
+	_ = "STUB: not implemented"
+	return nil
 }
+
+//更新根规则链
+
+// Set reloading state to block new messages during reload
+// 设置重载状态以在重载期间阻塞新消息
+
+// Wait for active messages to complete before reloading child node
+// 在重载子节点前等待活跃消息完成
+
+//更新根规则链子节点
 
 // DSL returns the current rule chain configuration in its original format.
 // DSL 返回原始格式的当前规则链配置。
-func (e *RuleEngine) DSL() []byte {
-	if e.rootRuleChainCtx != nil {
-		return e.rootRuleChainCtx.DSL()
-	} else {
-		return nil
-	}
-}
+func (e *RuleEngine) DSL() []byte { _ = "STUB: not implemented"; return nil }
 
 // Definition returns the rule chain definition structure.
 // Definition 返回规则链定义结构。
 func (e *RuleEngine) Definition() types.RuleChain {
-	if e.rootRuleChainCtx != nil {
-		return *e.rootRuleChainCtx.SelfDefinition
-	} else {
-		return types.RuleChain{}
-	}
+	_ = "STUB: not implemented"
+	return *new(types.RuleChain)
 }
 
 // NodeDSL returns the configuration of a specific node within the rule chain.
 // NodeDSL 返回规则链中特定节点的配置。
 func (e *RuleEngine) NodeDSL(chainId types.RuleNodeId, childNodeId types.RuleNodeId) []byte {
-	if e.rootRuleChainCtx != nil {
-		if chainId.Id == "" {
-			if node, ok := e.rootRuleChainCtx.GetNodeById(childNodeId); ok {
-				return node.DSL()
-			}
-		} else {
-			if node, ok := e.rootRuleChainCtx.GetNodeById(chainId); ok {
-				if childNode, ok := node.GetNodeById(childNodeId); ok {
-					return childNode.DSL()
-				}
-			}
-		}
-	}
+	_ = "STUB: not implemented"
 	return nil
 }
 
 // Initialized returns whether the rule engine has been properly initialized.
 // Initialized 返回规则引擎是否已正确初始化。
-func (e *RuleEngine) Initialized() bool {
-	return atomic.LoadInt32(&e.initialized) == 1 && e.rootRuleChainCtx != nil
-}
+func (e *RuleEngine) Initialized() bool { _ = "STUB: not implemented"; return false }
 
 // RootRuleChainCtx returns the root rule chain context.
 // RootRuleChainCtx 返回根规则链上下文。
 func (e *RuleEngine) RootRuleChainCtx() types.ChainCtx {
-	return e.rootRuleChainCtx
+	_ = "STUB: not implemented"
+	return *new(types.ChainCtx)
 }
 
 // Stop shuts down the rule engine and releases all resources.
@@ -689,116 +540,73 @@ func (e *RuleEngine) RootRuleChainCtx() types.ChainCtx {
 // Stop 关闭规则引擎并释放所有资源。
 // 实现两阶段优雅停机策略：
 func (e *RuleEngine) Stop(ctx context.Context) {
+	_ = "STUB: not implemented"
 	// Handle concurrent calls: if already shutting down, wait for completion instead of forcing
 	// 处理并发调用：如果已在停机，等待完成而不是强制停机
-	if e.IsShuttingDown() {
-		// Check if shutdown is already completed by checking if the engine is initialized
-		// If the engine is not initialized, shutdown has already completed
-		// 检查停机是否已经完成，通过检查引擎是否已初始化
-		// 如果引擎未初始化，说明停机已经完成
-		if !e.Initialized() {
-			// Shutdown has already completed, no need to wait
-			// 停机已经完成，无需等待
-			return
-		}
-
-		// Wait for the ongoing shutdown to complete with a reasonable timeout
-		// 等待正在进行的停机完成，设置合理的超时
-		shutdownWaitTimeout := 10 * time.Second // Reduced from 30s for better responsiveness
-		if ctx != nil {
-			if deadline, ok := ctx.Deadline(); ok {
-				// Use the remaining time from the provided context, but with a minimum wait time
-				// 使用提供的上下文的剩余时间，但设置最小等待时间
-				remainingTime := time.Until(deadline)
-				if remainingTime > 0 && remainingTime < shutdownWaitTimeout {
-					shutdownWaitTimeout = remainingTime
-				}
-			}
-		}
-
-		// Wait for the ongoing shutdown to complete
-		// 等待正在进行的停机完成
-		ticker := time.NewTicker(50 * time.Millisecond) // More frequent checks for faster response
-		defer ticker.Stop()
-
-		waitCtx, cancel := context.WithTimeout(context.Background(), shutdownWaitTimeout)
-		defer cancel()
-
-		for {
-			select {
-			case <-waitCtx.Done():
-				// Timeout waiting for shutdown to complete, force cleanup
-				// 等待停机完成超时，强制清理
-				e.Config.Logger.Printf("Timeout waiting for ongoing shutdown to complete, forcing cleanup")
-				e.forceStop()
-				return
-			case <-ticker.C:
-				// Check if shutdown completed by checking initialization status
-				// Shutdown is complete when the engine is no longer initialized
-				// 通过检查初始化状态来检查停机是否完成
-				// 当引擎不再初始化时停机完成
-				if !e.Initialized() {
-					// Shutdown completed successfully
-					// 停机成功完成
-					return
-				}
-			}
-		}
-	}
-
-	// Calculate timeout from context, handling negative durations explicitly
-	// 从上下文计算超时，明确处理负持续时间
-	var timeout time.Duration
-	var isExpiredContext bool
-
-	if ctx != nil {
-		if deadline, ok := ctx.Deadline(); ok {
-			timeout = time.Until(deadline)
-			if timeout <= 0 {
-				// Context deadline has already passed
-				// 上下文截止时间已过
-				isExpiredContext = true
-				e.Config.Logger.Printf("Context deadline has already passed (negative duration: %v), performing immediate shutdown", timeout)
-				timeout = 0 // Use immediate shutdown for expired contexts
-			}
-		} else {
-			// Default timeout for context.Background() or contexts without deadline
-			// 对于 context.Background() 或没有截止时间的上下文使用默认超时
-			timeout = 10 * time.Second
-		}
-	} else {
-		// Immediate shutdown for nil context
-		// 对于nil上下文立即停机
-		timeout = 0
-	}
-
-	// Perform graceful shutdown
-	// 执行优雅停机
-	e.GracefulShutdown.GracefulStop(func() {
-		if isExpiredContext || timeout == 0 {
-			// For expired contexts or nil context, skip graceful wait and go straight to cleanup
-			// 对于过期上下文或nil上下文，跳过优雅等待直接清理
-			e.Config.Logger.Printf("Performing immediate shutdown")
-			e.GracefulShutdown.ForceStop()
-		} else {
-			// Phase 1: Wait for all active messages to complete naturally
-			// 第一阶段：等待所有活跃消息自然完成
-			allCompleted := e.WaitForActiveOperations(timeout)
-			if !allCompleted {
-				e.Config.Logger.Printf("Graceful shutdown timeout after %v, forcing context cancellation", timeout)
-				// Phase 2: Force cancel context to interrupt ongoing operations
-				// 第二阶段：强制取消上下文以中断正在进行的操作
-				e.GracefulShutdown.ForceStop()
-				// Give a brief moment for operations to respond to cancellation
-				// 给操作一个短暂的时间来响应取消
-				e.WaitForActiveOperations(500 * time.Millisecond)
-			}
-		}
-		// Clean up resources
-		// 清理资源
-		e.forceStop()
-	})
+	return
 }
+
+// Check if shutdown is already completed by checking if the engine is initialized
+// If the engine is not initialized, shutdown has already completed
+// 检查停机是否已经完成，通过检查引擎是否已初始化
+// 如果引擎未初始化，说明停机已经完成
+
+// Shutdown has already completed, no need to wait
+// 停机已经完成，无需等待
+
+// Wait for the ongoing shutdown to complete with a reasonable timeout
+// 等待正在进行的停机完成，设置合理的超时
+// Reduced from 30s for better responsiveness
+
+// Use the remaining time from the provided context, but with a minimum wait time
+// 使用提供的上下文的剩余时间，但设置最小等待时间
+
+// Wait for the ongoing shutdown to complete
+// 等待正在进行的停机完成
+// More frequent checks for faster response
+
+// Timeout waiting for shutdown to complete, force cleanup
+// 等待停机完成超时，强制清理
+
+// Check if shutdown completed by checking initialization status
+// Shutdown is complete when the engine is no longer initialized
+// 通过检查初始化状态来检查停机是否完成
+// 当引擎不再初始化时停机完成
+
+// Shutdown completed successfully
+// 停机成功完成
+
+// Calculate timeout from context, handling negative durations explicitly
+// 从上下文计算超时，明确处理负持续时间
+
+// Context deadline has already passed
+// 上下文截止时间已过
+
+// Use immediate shutdown for expired contexts
+
+// Default timeout for context.Background() or contexts without deadline
+// 对于 context.Background() 或没有截止时间的上下文使用默认超时
+
+// Immediate shutdown for nil context
+// 对于nil上下文立即停机
+
+// Perform graceful shutdown
+// 执行优雅停机
+
+// For expired contexts or nil context, skip graceful wait and go straight to cleanup
+// 对于过期上下文或nil上下文，跳过优雅等待直接清理
+
+// Phase 1: Wait for all active messages to complete naturally
+// 第一阶段：等待所有活跃消息自然完成
+
+// Phase 2: Force cancel context to interrupt ongoing operations
+// 第二阶段：强制取消上下文以中断正在进行的操作
+
+// Give a brief moment for operations to respond to cancellation
+// 给操作一个短暂的时间来响应取消
+
+// Clean up resources
+// 清理资源
 
 // applyShutdownContext applies graceful shutdown context handling to the rule context copy.
 // This method ensures that message processing respects shutdown signals while preserving
@@ -822,36 +630,19 @@ func (e *RuleEngine) Stop(ctx context.Context) {
 // This method now only preserves context values from user context while using shutdown context for cancellation.
 // The user context cancellation feature has been removed to prevent goroutine leaks in high concurrency scenarios.
 func (e *RuleEngine) applyShutdownContext(rootCtxCopy, rootCtx *DefaultRuleContext) {
-	shutdownCtx := e.GetShutdownContext()
-	if shutdownCtx == nil {
-		return
-	}
-
-	if rootCtxCopy.GetContext() == rootCtx.GetContext() {
-		// No custom context was set by user options, use shutdown context directly
-		// 用户选项没有设置自定义上下文，直接使用停机上下文
-		rootCtxCopy.SetContext(shutdownCtx)
-	} else {
-		// User provided custom context, preserve its values but use shutdown context for cancellation
-		// This prevents goroutine leaks while maintaining context value inheritance
-		// 用户提供了自定义上下文，保留其值但使用停机上下文进行取消
-		userCtx := rootCtxCopy.GetContext()
-		combinedCtx, cancel := e.combineContextsValueOnly(userCtx, shutdownCtx)
-		rootCtxCopy.SetContext(combinedCtx)
-
-		// Ensure context is cancelled when rule chain execution completes
-		// 确保规则链执行完成时取消上下文
-		if cancel != nil {
-			originalOnAllNodeCompleted := rootCtxCopy.onAllNodeCompleted
-			rootCtxCopy.SetOnAllNodeCompleted(func() {
-				cancel()
-				if originalOnAllNodeCompleted != nil {
-					originalOnAllNodeCompleted()
-				}
-			})
-		}
-	}
+	_ = "STUB: not implemented"
+	return
 }
+
+// No custom context was set by user options, use shutdown context directly
+// 用户选项没有设置自定义上下文，直接使用停机上下文
+
+// User provided custom context, preserve its values but use shutdown context for cancellation
+// This prevents goroutine leaks while maintaining context value inheritance
+// 用户提供了自定义上下文，保留其值但使用停机上下文进行取消
+
+// Ensure context is cancelled when rule chain execution completes
+// 确保规则链执行完成时取消上下文
 
 // combineContextsValueOnly creates a context that inherits values from user context
 // and can be cancelled by either the user context or shutdown context.
@@ -868,24 +659,20 @@ func (e *RuleEngine) applyShutdownContext(rootCtxCopy, rootCtx *DefaultRuleConte
 // 2. 可以被用户上下文或停机上下文取消
 // 3. 使用受控的协程，当上下文被取消时会被清理
 func (e *RuleEngine) combineContextsValueOnly(userCtx, shutdownCtx context.Context) (context.Context, context.CancelFunc) {
+	_ = "STUB: not implemented"
 	// Check if either context is already cancelled
 	// 检查任一上下文是否已取消
-	select {
-	case <-userCtx.Done():
-		// User context already cancelled, return it directly
-		// 用户上下文已取消，直接返回
-		return userCtx, func() {}
-	case <-shutdownCtx.Done():
-		// Shutdown context already cancelled, return it directly
-		// 停机上下文已取消，直接返回
-		return shutdownCtx, func() {}
-	default:
-		// Both contexts are active, create combined context
-		// 两个上下文都活跃，创建组合上下文
-		c := newCombinedCancelContext(userCtx, shutdownCtx)
-		return c, c.Cancel
-	}
+	return *new(context.Context), *new(context.CancelFunc)
 }
+
+// User context already cancelled, return it directly
+// 用户上下文已取消，直接返回
+
+// Shutdown context already cancelled, return it directly
+// 停机上下文已取消，直接返回
+
+// Both contexts are active, create combined context
+// 两个上下文都活跃，创建组合上下文
 
 // combinedCancelContext is a context implementation that can be cancelled by either
 // of two parent contexts. It uses lazy goroutine creation - only creates a goroutine
@@ -910,126 +697,72 @@ type combinedCancelContext struct {
 // newCombinedCancelContext 创建一个新的组合上下文，可以被userCtx或shutdownCtx取消。
 // 它使用单个协程来监控两个上下文，当任一上下文取消时立即退出。
 func newCombinedCancelContext(userCtx, shutdownCtx context.Context) *combinedCancelContext {
+	_ = "STUB: not implemented"
 	// Check if either context is already cancelled to avoid creating unnecessary goroutine
 	// 检查任一上下文是否已取消，以避免创建不必要的协程
-	select {
-	case <-userCtx.Done():
-		// User context already cancelled, create a context that's already cancelled
-		// 用户上下文已取消，创建一个已取消的上下文
-		ctx, cancel := context.WithCancel(context.Background())
-		cancel() // Immediately cancel
-		c := &combinedCancelContext{
-			userCtx:     userCtx,
-			shutdownCtx: shutdownCtx,
-			ctx:         ctx,
-			cancel:      cancel,
-		}
-		c.setErr(userCtx.Err())
-		return c
-	case <-shutdownCtx.Done():
-		// Shutdown context already cancelled, create a context that's already cancelled
-		// 停机上下文已取消，创建一个已取消的上下文
-		ctx, cancel := context.WithCancel(context.Background())
-		cancel() // Immediately cancel
-		c := &combinedCancelContext{
-			userCtx:     userCtx,
-			shutdownCtx: shutdownCtx,
-			ctx:         ctx,
-			cancel:      cancel,
-		}
-		c.setErr(shutdownCtx.Err())
-		return c
-	default:
-		// Both contexts are active, will create goroutine lazily when Done() is called
-		// 两个上下文都活跃，将在首次调用Done()时延迟创建协程
-	}
-
-	// Create an internal context that will be cancelled when either parent is cancelled
-	// 创建一个内部上下文，当任一父上下文取消时将被取消
-	ctx, cancel := context.WithCancel(context.Background())
-
-	return &combinedCancelContext{
-		userCtx:     userCtx,
-		shutdownCtx: shutdownCtx,
-		ctx:         ctx,
-		cancel:      cancel,
-		// done will be initialized lazily when Done() is first called
-		// done 将在首次调用Done()时延迟初始化
-	}
+	return nil
 }
+
+// User context already cancelled, create a context that's already cancelled
+// 用户上下文已取消，创建一个已取消的上下文
+
+// Immediately cancel
+
+// Shutdown context already cancelled, create a context that's already cancelled
+// 停机上下文已取消，创建一个已取消的上下文
+
+// Immediately cancel
+
+// Both contexts are active, will create goroutine lazily when Done() is called
+// 两个上下文都活跃，将在首次调用Done()时延迟创建协程
+
+// Create an internal context that will be cancelled when either parent is cancelled
+// 创建一个内部上下文，当任一父上下文取消时将被取消
+
+// done will be initialized lazily when Done() is first called
+// done 将在首次调用Done()时延迟初始化
 
 // setErr sets the error once when the context is cancelled
 // setErr 在上下文被取消时设置错误（仅设置一次）
-func (c *combinedCancelContext) setErr(err error) {
-	c.errOnce.Do(func() {
-		c.errMu.Lock()
-		c.err = err
-		c.errMu.Unlock()
-	})
-}
+func (c *combinedCancelContext) setErr(err error) { _ = "STUB: not implemented"; return }
 
 // Cancel cancels the context and stops the monitoring goroutine.
 // Cancel 取消上下文并停止监控协程。
 func (c *combinedCancelContext) Cancel() {
-	c.cancel()
+	_ = "STUB: not implemented"
+
+	// Done returns a channel that is closed when the context is cancelled.
+	// The goroutine is created lazily on first call to avoid unnecessary goroutines.
+	// Done 返回一个在上下文被取消时关闭的通道。
+	// 协程在首次调用时延迟创建，以避免不必要的协程。
+	return
 }
 
-// Done returns a channel that is closed when the context is cancelled.
-// The goroutine is created lazily on first call to avoid unnecessary goroutines.
-// Done 返回一个在上下文被取消时关闭的通道。
-// 协程在首次调用时延迟创建，以避免不必要的协程。
 func (c *combinedCancelContext) Done() <-chan struct{} {
+	_ = "STUB: not implemented"
 	// Check if already cancelled before starting monitoring
 	// 在开始监控前检查是否已取消
-	select {
-	case <-c.userCtx.Done():
-		// Already cancelled, return closed channel
-		// 已取消，返回已关闭的通道
-		c.setErr(c.userCtx.Err())
-		return c.userCtx.Done()
-	case <-c.shutdownCtx.Done():
-		// Already cancelled, return closed channel
-		// 已取消，返回已关闭的通道
-		c.setErr(c.shutdownCtx.Err())
-		return c.shutdownCtx.Done()
-	default:
-		// Start monitoring lazily
-		// 延迟开始监控
-		c.startMonitoring()
-		return c.ctx.Done()
-	}
+	return nil
 }
+
+// Already cancelled, return closed channel
+// 已取消，返回已关闭的通道
+
+// Already cancelled, return closed channel
+// 已取消，返回已关闭的通道
+
+// Start monitoring lazily
+// 延迟开始监控
 
 // Err returns the error if either parent context is cancelled, nil otherwise.
 // Err 如果任一父上下文被取消则返回错误，否则返回nil。
-func (c *combinedCancelContext) Err() error {
-	c.errMu.Lock()
-	defer c.errMu.Unlock()
-	if c.err != nil {
-		return c.err
-	}
-	return c.ctx.Err()
-}
+func (c *combinedCancelContext) Err() error { _ = "STUB: not implemented"; return nil }
 
 // Deadline returns the earlier deadline of the two parent contexts, or ok=false if neither has a deadline.
 // Deadline 返回两个父上下文中较早的截止时间，如果都没有截止时间则ok=false。
 func (c *combinedCancelContext) Deadline() (time.Time, bool) {
-	userDeadline, userOk := c.userCtx.Deadline()
-	shutdownDeadline, shutdownOk := c.shutdownCtx.Deadline()
-
-	if !userOk && !shutdownOk {
-		return time.Time{}, false
-	}
-	if !userOk {
-		return shutdownDeadline, shutdownOk
-	}
-	if !shutdownOk {
-		return userDeadline, userOk
-	}
-	if userDeadline.Before(shutdownDeadline) {
-		return userDeadline, true
-	}
-	return shutdownDeadline, true
+	_ = "STUB: not implemented"
+	return *new(time.Time), false
 }
 
 // Value returns the value associated with this context for key, or nil if no value is associated with key.
@@ -1037,21 +770,15 @@ func (c *combinedCancelContext) Deadline() (time.Time, bool) {
 // Value 返回与此上下文中键关联的值，如果没有与键关联的值则返回nil。
 // 它首先检查用户上下文，然后回退到停机上下文。
 func (c *combinedCancelContext) Value(key interface{}) interface{} {
-	if val := c.userCtx.Value(key); val != nil {
-		return val
-	}
-	return c.shutdownCtx.Value(key)
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // incrementActiveMessages 增加活跃消息计数
-func (e *RuleEngine) incrementActiveMessages() {
-	e.IncrementActiveOperations()
-}
+func (e *RuleEngine) incrementActiveMessages() { _ = "STUB: not implemented"; return }
 
 // decrementActiveMessages 减少活跃消息计数
-func (e *RuleEngine) decrementActiveMessages() {
-	e.DecrementActiveOperations()
-}
+func (e *RuleEngine) decrementActiveMessages() { _ = "STUB: not implemented"; return }
 
 // forceStop performs immediate cleanup of all rule engine resources.
 // This method is called during shutdown to ensure complete resource cleanup,
@@ -1069,42 +796,12 @@ func (e *RuleEngine) decrementActiveMessages() {
 //
 // forceStop 执行规则引擎资源的立即清理。
 // 此方法在停机期间调用以确保完整的资源清理，无论优雅停机是否成功完成。
-func (e *RuleEngine) forceStop() {
-	defer func() {
-		if r := recover(); r != nil {
-			e.Config.Logger.Printf("RuleEngine.forceStop() panic recovered: %v", r)
-		}
-	}()
+func (e *RuleEngine) forceStop() { _ = "STUB: not implemented"; return }
 
-	// Force cancellation of graceful shutdown context
-	// 强制取消优雅停机上下文
-	e.GracefulShutdown.ForceStop()
+// Force cancellation of graceful shutdown context
+// 强制取消优雅停机上下文
 
-	if e.rootRuleChainCtx != nil {
-		func() {
-			defer func() {
-				if r := recover(); r != nil {
-					e.Config.Logger.Printf("RuleChainCtx.Destroy() panic recovered: %v", r)
-				}
-			}()
-			e.rootRuleChainCtx.Destroy()
-		}()
-	}
-
-	// 清理实例缓存
-	if e.Config.Cache != nil && e.rootRuleChainCtx != nil {
-		func() {
-			defer func() {
-				if r := recover(); r != nil {
-					e.Config.Logger.Printf("Cache cleanup panic recovered: %v", r)
-				}
-			}()
-			_ = e.Config.Cache.DeleteByPrefix(e.rootRuleChainCtx.GetNodeId().Id + types.NamespaceSeparator)
-		}()
-	}
-
-	atomic.StoreInt32(&e.initialized, 0)
-}
+// 清理实例缓存
 
 // OnMsg asynchronously processes a message using the rule engine.
 // It accepts optional RuleContextOption parameters to customize the execution context.
@@ -1112,34 +809,27 @@ func (e *RuleEngine) forceStop() {
 // OnMsg 使用规则引擎异步处理消息。
 // 它接受可选的 RuleContextOption 参数来自定义执行上下文。
 func (e *RuleEngine) OnMsg(msg types.RuleMsg, opts ...types.RuleContextOption) {
-	e.onMsgAndWait(msg, false, opts...)
+	_ = "STUB: not implemented"
+	return
 }
 
 // OnMsgAndWait synchronously processes a message using the rule engine and waits for all nodes in the rule chain to complete before returning.
 // OnMsgAndWait 使用规则引擎同步处理消息，并在返回前等待规则链中的所有节点完成。
 func (e *RuleEngine) OnMsgAndWait(msg types.RuleMsg, opts ...types.RuleContextOption) {
-	e.onMsgAndWait(msg, true, opts...)
+	_ = "STUB: not implemented"
+	return
 }
 
 // RootRuleContext returns the root rule context for advanced operations.
 // RootRuleContext 返回用于高级操作的根规则上下文。
 func (e *RuleEngine) RootRuleContext() types.RuleContext {
-	if e.rootRuleChainCtx != nil {
-		return e.rootRuleChainCtx.rootRuleContext
-	}
-	return nil
+	_ = "STUB: not implemented"
+	return *new(types.RuleContext)
 }
 
 // GetMetrics returns engine metrics if the metrics aspect is enabled.
 // GetMetrics 如果启用了指标切面，则返回引擎指标。
-func (e *RuleEngine) GetMetrics() *metrics.EngineMetrics {
-	for _, aop := range e.Aspects {
-		if metricsAspect, ok := aop.(*aspect.MetricsAspect); ok {
-			return metricsAspect.GetMetrics()
-		}
-	}
-	return nil
-}
+func (e *RuleEngine) GetMetrics() *metrics.EngineMetrics { _ = "STUB: not implemented"; return nil }
 
 // OnMsgWithEndFunc is a deprecated method that asynchronously processes a message using the rule engine.
 // The endFunc callback is used to obtain the results after the rule chain execution is complete.
@@ -1151,7 +841,8 @@ func (e *RuleEngine) GetMetrics() *metrics.EngineMetrics {
 // 注意：如果规则链有多个端点，回调函数将被执行多次。
 // 已弃用：请改用 OnMsg。
 func (e *RuleEngine) OnMsgWithEndFunc(msg types.RuleMsg, endFunc types.OnEndFunc) {
-	e.OnMsg(msg, types.WithOnEnd(endFunc))
+	_ = "STUB: not implemented"
+	return
 }
 
 // OnMsgWithOptions is a deprecated method that asynchronously processes a message using the rule engine.
@@ -1168,7 +859,8 @@ func (e *RuleEngine) OnMsgWithEndFunc(msg types.RuleMsg, endFunc types.OnEndFunc
 // 注意：如果规则链有多个端点，回调函数将被执行多次。
 // 已弃用：请改用 OnMsg。
 func (e *RuleEngine) OnMsgWithOptions(msg types.RuleMsg, opts ...types.RuleContextOption) {
-	e.onMsgAndWait(msg, false, opts...)
+	_ = "STUB: not implemented"
+	return
 }
 
 // doOnAllNodeCompleted handles the completion of all nodes within the rule chain.
@@ -1176,51 +868,39 @@ func (e *RuleEngine) OnMsgWithOptions(msg types.RuleMsg, opts ...types.RuleConte
 // doOnAllNodeCompleted 处理规则链内所有节点的完成。
 // 它执行切面、完成运行快照并触发任何自定义回调函数。
 func (e *RuleEngine) doOnAllNodeCompleted(rootCtxCopy *DefaultRuleContext, msg types.RuleMsg, customFunc func()) {
+	_ = "STUB: not implemented"
 	// Execute aspects upon completion of all nodes.
 	// 在所有节点完成后执行切面。
-	e.onAllNodeCompleted(rootCtxCopy, msg)
-
-	// Trigger custom callback if provided.
-	// 如果提供了自定义回调，则触发它。
-	if customFunc != nil {
-		customFunc()
-	}
-	// Complete the run snapshot if it exists.
-	// 如果运行快照存在，则完成它。
-	if rootCtxCopy.runSnapshot != nil {
-		rootCtxCopy.runSnapshot.onRuleChainCompleted(rootCtxCopy)
-	}
-
-	// 减少活跃消息计数
-	e.decrementActiveMessages()
+	return
 }
+
+// Trigger custom callback if provided.
+// 如果提供了自定义回调，则触发它。
+
+// Complete the run snapshot if it exists.
+// 如果运行快照存在，则完成它。
+
+// 减少活跃消息计数
 
 // onErrHandler handles the scenario where the rule chain has no nodes or fails to process the message.
 // It logs an error and triggers the end-of-chain callbacks.
 // onErrHandler 处理规则链没有节点或处理消息失败的场景。
 // 它记录错误并触发链结束回调。
 func (e *RuleEngine) onErrHandler(msg types.RuleMsg, rootCtxCopy *DefaultRuleContext, err error, needDecrement bool) {
+	_ = "STUB: not implemented"
 	// Trigger the configured OnEnd callback with the error.
 	// 使用错误触发配置的 OnEnd 回调。
-	if rootCtxCopy.config.OnEnd != nil {
-		rootCtxCopy.config.OnEnd(rootCtxCopy, msg, err, types.Failure)
-	}
-	// Trigger the onEnd callback with the error and Failure relation type.
-	// 使用错误和失败关系类型触发 onEnd 回调。
-	if rootCtxCopy.onEnd != nil {
-		rootCtxCopy.onEnd(rootCtxCopy, msg, err, types.Failure)
-	}
-	// Execute the onAllNodeCompleted callback if it exists.
-	// 如果存在 onAllNodeCompleted 回调，则执行它。
-	if rootCtxCopy.onAllNodeCompleted != nil {
-		rootCtxCopy.onAllNodeCompleted()
-	}
-	// Decrement active messages only if needed (when there was a corresponding increment)
-	// 只有在需要时才减少活跃消息计数（当有对应的增加时）
-	if needDecrement {
-		e.decrementActiveMessages()
-	}
+	return
 }
+
+// Trigger the onEnd callback with the error and Failure relation type.
+// 使用错误和失败关系类型触发 onEnd 回调。
+
+// Execute the onAllNodeCompleted callback if it exists.
+// 如果存在 onAllNodeCompleted 回调，则执行它。
+
+// Decrement active messages only if needed (when there was a corresponding increment)
+// 只有在需要时才减少活跃消息计数（当有对应的增加时）
 
 // onMsgAndWait processes a message through the rule engine with optional waiting for completion.
 // This method implements a careful ordering of checks to prevent deadlocks during reload operations.
@@ -1242,363 +922,218 @@ func (e *RuleEngine) onErrHandler(msg types.RuleMsg, rootCtxCopy *DefaultRuleCon
 //
 // onMsgAndWait 通过规则引擎处理消息，可选择等待完成。
 func (e *RuleEngine) onMsgAndWait(msg types.RuleMsg, wait bool, opts ...types.RuleContextOption) {
+	_ = "STUB: not implemented"
 	// Check if the rule engine is initialized
 	// 检查规则引擎是否已初始化
-	if e.rootRuleChainCtx == nil {
-		// Handle uninitialized engine error through callback if options are provided
-		// 如果提供了选项，通过回调处理未初始化引擎错误
-		e.handleEngineNotInitializedError(msg, opts...)
-		return
-	}
-
-	// Check if engine is shutting down first (before incrementing counter to avoid resource leak)
-	// IMPORTANT: Check before incrementing counter to prevent resource leaks
-	// 首先检查是否正在停机（在增加计数前检查以避免资源泄漏）
-	// 重要：在增加计数前检查以防止资源泄漏
-	if e.IsShuttingDown() {
-		// Create context and handle shutdown error through callback
-		// 创建上下文并通过回调处理停机错误
-		rootCtxCopy := e.createRootContextCopy(msg, opts...)
-		e.onErrHandler(msg, rootCtxCopy, types.ErrEngineShuttingDown, false)
-		return
-	}
-
-	// Check if engine is reloading and wait for reload to complete (before incrementing counter)
-	// CRITICAL: This prevents deadlock where messages wait for reload completion
-	// while reload waits for active message count to reach zero
-	// MEMORY SAFETY: Implements backpressure control to prevent memory overflow
-	// 检查引擎是否正在重载并等待重载完成（在增加计数前检查）
-	// 关键：这防止了消息等待重载完成而重载等待活跃消息计数归零的死锁
-	// 内存安全：实现背压控制以防止内存溢出
-	if e.IsReloading() {
-		// Implement backpressure control to prevent memory overflow during reload
-		// 实现背压控制以防止重载期间的内存溢出
-		if !e.incrementReloadWaiters() {
-			// Backpressure limit reached - reject message to prevent memory overflow
-			// 达到背压限制 - 拒绝消息以防止内存溢出
-			rootCtxCopy := e.createRootContextCopy(msg, opts...)
-			e.Config.Logger.Printf("RuleEngine: %s", types.ErrEngineReloadBackpressureLimit.Error())
-			e.onErrHandler(msg, rootCtxCopy, types.ErrEngineReloadBackpressureLimit, false)
-			return
-		}
-
-		// Ensure we decrement the waiter count when done
-		// 确保完成时减少等待者计数
-		defer e.decrementReloadWaiters()
-
-		// Wait for reload to complete with timeout
-		// 等待重载完成，设置超时
-		reloadTimeout := 30 * time.Second
-		if !e.WaitForReloadComplete(reloadTimeout) {
-			// Reload timeout, handle as error
-			// 重载超时，作为错误处理
-			rootCtxCopy := e.createRootContextCopy(msg, opts...)
-			e.onErrHandler(msg, rootCtxCopy, errors.New("engine reload timeout"), false)
-			return
-		}
-	}
-
-	// Now increment active message count after all state checks pass
-	// This ensures the counter is only incremented for messages that will actually be processed
-	// 在所有状态检查通过后现在增加活跃消息计数
-	// 这确保计数器只为实际将被处理的消息增加
-	e.incrementActiveMessages()
-
-	// Double-check shutdown status after incrementing counter to handle race condition
-	// If shutdown was initiated between our first check and counter increment,
-	// we need to decrement the counter and exit to prevent Stop() from hanging
-	// 在增加计数器后再次检查停机状态以处理竞态条件
-	// 如果在我们首次检查和计数器增加之间启动了停机，
-	// 我们需要减少计数器并退出以防止Stop()挂起
-	if e.IsShuttingDown() {
-		// Create context and handle shutdown error through callback
-		// 创建上下文并通过回调处理停机错误
-		rootCtxCopy := e.createRootContextCopy(msg, opts...)
-		e.onErrHandler(msg, rootCtxCopy, types.ErrEngineShuttingDown, true)
-		return
-	}
-
-	// Create root context copy for message processing
-	// 创建根上下文副本来处理消息
-	rootCtxCopy := e.createRootContextCopy(msg, opts...)
-
-	// Apply graceful shutdown context handling
-	// This combines user-provided context with shutdown context for proper cancellation
-	// 应用优雅停机上下文处理
-	// 这将用户提供的上下文与停机上下文组合以实现正确的取消
-	rootCtx := e.rootRuleChainCtx.rootRuleContext.(*DefaultRuleContext)
-	e.applyShutdownContext(rootCtxCopy, rootCtx)
-
-	// Validate rule chain and context state
-	// 验证规则链和上下文状态
-	if err := e.validateRuleChainState(rootCtxCopy); err != nil {
-		e.onErrHandler(msg, rootCtxCopy, err, true)
-		return
-	}
-
-	// Execute start aspects
-	// 执行开始切面
-	processedMsg, err := e.onStart(rootCtxCopy, msg)
-	if err != nil {
-		e.onErrHandler(msg, rootCtxCopy, err, true)
-		return
-	}
-
-	// Setup end callback wrapper
-	// 设置结束回调包装器
-	e.setupEndCallback(rootCtxCopy)
-
-	// Process message with or without waiting
-	// 处理消息，可选择是否等待
-	e.processMessage(rootCtxCopy, processedMsg, wait)
+	return
 }
+
+// Handle uninitialized engine error through callback if options are provided
+// 如果提供了选项，通过回调处理未初始化引擎错误
+
+// Check if engine is shutting down first (before incrementing counter to avoid resource leak)
+// IMPORTANT: Check before incrementing counter to prevent resource leaks
+// 首先检查是否正在停机（在增加计数前检查以避免资源泄漏）
+// 重要：在增加计数前检查以防止资源泄漏
+
+// Create context and handle shutdown error through callback
+// 创建上下文并通过回调处理停机错误
+
+// Check if engine is reloading and wait for reload to complete (before incrementing counter)
+// CRITICAL: This prevents deadlock where messages wait for reload completion
+// while reload waits for active message count to reach zero
+// MEMORY SAFETY: Implements backpressure control to prevent memory overflow
+// 检查引擎是否正在重载并等待重载完成（在增加计数前检查）
+// 关键：这防止了消息等待重载完成而重载等待活跃消息计数归零的死锁
+// 内存安全：实现背压控制以防止内存溢出
+
+// Implement backpressure control to prevent memory overflow during reload
+// 实现背压控制以防止重载期间的内存溢出
+
+// Backpressure limit reached - reject message to prevent memory overflow
+// 达到背压限制 - 拒绝消息以防止内存溢出
+
+// Ensure we decrement the waiter count when done
+// 确保完成时减少等待者计数
+
+// Wait for reload to complete with timeout
+// 等待重载完成，设置超时
+
+// Reload timeout, handle as error
+// 重载超时，作为错误处理
+
+// Now increment active message count after all state checks pass
+// This ensures the counter is only incremented for messages that will actually be processed
+// 在所有状态检查通过后现在增加活跃消息计数
+// 这确保计数器只为实际将被处理的消息增加
+
+// Double-check shutdown status after incrementing counter to handle race condition
+// If shutdown was initiated between our first check and counter increment,
+// we need to decrement the counter and exit to prevent Stop() from hanging
+// 在增加计数器后再次检查停机状态以处理竞态条件
+// 如果在我们首次检查和计数器增加之间启动了停机，
+// 我们需要减少计数器并退出以防止Stop()挂起
+
+// Create context and handle shutdown error through callback
+// 创建上下文并通过回调处理停机错误
+
+// Create root context copy for message processing
+// 创建根上下文副本来处理消息
+
+// Apply graceful shutdown context handling
+// This combines user-provided context with shutdown context for proper cancellation
+// 应用优雅停机上下文处理
+// 这将用户提供的上下文与停机上下文组合以实现正确的取消
+
+// Validate rule chain and context state
+// 验证规则链和上下文状态
+
+// Execute start aspects
+// 执行开始切面
+
+// Setup end callback wrapper
+// 设置结束回调包装器
+
+// Process message with or without waiting
+// 处理消息，可选择是否等待
 
 // processRestoreNodes 处理多节点恢复执行
 // 1. 创建父节点上下文，设置waitingCount
 // 2. 遍历恢复节点，创建子上下文并执行
 func (e *RuleEngine) processRestoreNodes(rootCtxCopy *DefaultRuleContext, msg types.RuleMsg) {
-	restoreInfo := rootCtxCopy.restoreNodeInfo
-	// 获取父节点上下文
-	var parentNodeId string
-
-	// 尝试自动查找共同祖先
-	if rootCtxCopy.ruleChainCtx != nil {
-		var ruleNodeIds []types.RuleNodeId
-		for _, req := range restoreInfo.NodeRequests {
-			ruleNodeIds = append(ruleNodeIds, types.RuleNodeId{Id: req.NodeId})
-		}
-		if lca, ok := rootCtxCopy.ruleChainCtx.GetLCAOfNodes(ruleNodeIds); ok {
-			parentNodeId = lca.Id
-		}
-	}
-
-	var parentNode types.NodeCtx
-	if node, ok := rootCtxCopy.ruleChainCtx.GetNodeById(types.RuleNodeId{Id: parentNodeId}); ok {
-		parentNode = node
-	} else {
-		// 找不到父节点，报错
-		e.onErrHandler(msg, rootCtxCopy, fmt.Errorf("restore parent node id=%s not found", parentNodeId), true)
-		return
-	}
-
-	// 创建 parentCtx
-	parentCtx := rootCtxCopy.NewNextNodeRuleContext(parentNode)
-	// 手动设置 self 为 parentNode
-	parentCtx.self = parentNode
-	// 设置 waitingCount
-	parentCtx.waitingCount = int32(len(restoreInfo.NodeRequests))
-	// rootCtxCopy 是根，parentCtx 是 Fork 节点。
-	parentCtx.parentRuleCtx = rootCtxCopy
-
-	rootCtxCopy.childReady(msg, types.Success)
-
-	// 遍历恢复节点
-	for _, req := range restoreInfo.NodeRequests {
-		if node, ok := rootCtxCopy.ruleChainCtx.GetNodeById(types.RuleNodeId{Id: req.NodeId}); ok {
-			// 创建 childCtx，parent 指向 parentCtx
-			childCtx := parentCtx.NewNextNodeRuleContext(node)
-			childCtx.parentRuleCtx = parentCtx
-			// 如果没有指定关系，则执行当前节点 (isFirst = true)
-			// 如果指定了关系，则不执行当前节点，而是查找并执行下一个节点 (isFirst = false)
-			childCtx.isFirst = len(req.RelationTypes) == 0
-			childCtx.relationTypes = req.RelationTypes
-
-			// Use the message from the request if available, otherwise use the default message
-			var msgCopy types.RuleMsg
-			if req.Msg != nil {
-				msgCopy = req.Msg.Copy()
-			} else {
-				msgCopy = msg.Copy()
-			}
-
-			childCtx.TellNext(msgCopy, childCtx.relationTypes...)
-		} else {
-			// 节点找不到，减少 waitingCount
-			parentCtx.childDone()
-			e.Config.Logger.Printf("Restore node id=%s not found", req.NodeId)
-		}
-	}
-
+	_ = "STUB: not implemented"
+	return
 }
+
+// 获取父节点上下文
+
+// 尝试自动查找共同祖先
+
+// 找不到父节点，报错
+
+// 创建 parentCtx
+
+// 手动设置 self 为 parentNode
+
+// 设置 waitingCount
+
+// rootCtxCopy 是根，parentCtx 是 Fork 节点。
+
+// 遍历恢复节点
+
+// 创建 childCtx，parent 指向 parentCtx
+
+// 如果没有指定关系，则执行当前节点 (isFirst = true)
+// 如果指定了关系，则不执行当前节点，而是查找并执行下一个节点 (isFirst = false)
+
+// Use the message from the request if available, otherwise use the default message
+
+// 节点找不到，减少 waitingCount
 
 // onStart executes the list of start aspects before the rule chain begins processing a message.
 // onStart 在规则链开始处理消息前执行开始切面列表。
 // handleEngineNotInitializedError handles the case when the rule engine is not initialized.
 // handleEngineNotInitializedError 处理规则引擎未初始化的情况。
 func (e *RuleEngine) handleEngineNotInitializedError(msg types.RuleMsg, opts ...types.RuleContextOption) {
+	_ = "STUB: not implemented"
 	// Extract OnEnd callback from options if provided
 	// 从选项中提取 OnEnd 回调（如果提供）
-	var onEndCallback types.OnEndFunc
-	for _, opt := range opts {
-		// Create a temporary context to extract the OnEnd callback
-		// 创建临时上下文以提取 OnEnd 回调
-		tempCtx := &DefaultRuleContext{}
-		opt(tempCtx)
-		if tempCtx.onEnd != nil {
-			onEndCallback = tempCtx.onEnd
-			break
-		}
-		if tempCtx.config.OnEnd != nil {
-			onEndCallback = tempCtx.config.OnEnd
-			break
-		}
-	}
-
-	// Trigger the OnEnd callback with the initialization error if available
-	// 如果可用，使用初始化错误触发 OnEnd 回调
-	if onEndCallback != nil {
-		onEndCallback(nil, msg, types.ErrEngineNotInitialized, types.Failure)
-	}
+	return
 }
+
+// Create a temporary context to extract the OnEnd callback
+// 创建临时上下文以提取 OnEnd 回调
+
+// Trigger the OnEnd callback with the initialization error if available
+// 如果可用，使用初始化错误触发 OnEnd 回调
 
 // createRootContextCopy creates a copy of the root context for message processing.
 // createRootContextCopy 创建根上下文的副本来处理消息。
 func (e *RuleEngine) createRootContextCopy(msg types.RuleMsg, opts ...types.RuleContextOption) *DefaultRuleContext {
-	rootCtx := e.rootRuleChainCtx.rootRuleContext.(*DefaultRuleContext)
-	rootCtxCopy := NewRuleContext(rootCtx.GetContext(), rootCtx.config, rootCtx.ruleChainCtx, rootCtx.from, rootCtx.self, rootCtx.pool, rootCtx.onEnd, e.ruleChainPool)
-	rootCtxCopy.isFirst = rootCtx.isFirst
-	rootCtxCopy.runSnapshot = NewRunSnapshot(msg.Id, rootCtxCopy.ruleChainCtx, time.Now().UnixMilli())
-
-	// Create a new nodeOutputCache instance for current message processing and set cross-node dependencies
-	rootCtxCopy.nodeOutputCache.SetCacheableNodes(rootCtx.ruleChainCtx.referencedNodes)
-
-	// Apply the provided options to the context copy
-	// 将提供的选项应用于上下文副本
-	for _, opt := range opts {
-		opt(rootCtxCopy)
-	}
-
-	return rootCtxCopy
+	_ = "STUB: not implemented"
+	return nil
 }
+
+// Create a new nodeOutputCache instance for current message processing and set cross-node dependencies
+
+// Apply the provided options to the context copy
+// 将提供的选项应用于上下文副本
 
 // validateRuleChainState validates the rule chain and context state.
 // validateRuleChainState 验证规则链和上下文状态。
 func (e *RuleEngine) validateRuleChainState(rootCtxCopy *DefaultRuleContext) error {
+	_ = "STUB: not implemented"
 	// Check if the rule chain has no nodes
 	// 检查规则链是否没有节点
-	if rootCtxCopy.ruleChainCtx.isEmpty {
-		return types.ErrRuleChainHasNoNodes
-	}
-
-	// Check if there's an error in the context
-	// 检查上下文中是否有错误
-	if rootCtxCopy.err != nil {
-		return rootCtxCopy.err
-	}
-
 	return nil
 }
+
+// Check if there's an error in the context
+// 检查上下文中是否有错误
 
 // setupEndCallback sets up the end callback wrapper for the context.
 // setupEndCallback 为上下文设置结束回调包装器。
 func (e *RuleEngine) setupEndCallback(rootCtxCopy *DefaultRuleContext) {
-	customOnEndFunc := rootCtxCopy.onEnd
-	rootCtxCopy.onEnd = func(ctx types.RuleContext, msg types.RuleMsg, err error, relationType string) {
-		// Execute end aspects and update the message accordingly
-		// 执行结束切面并相应地更新消息
-		msg = e.onEnd(rootCtxCopy, msg, err, relationType)
-		// Trigger the custom end callback if provided
-		// 如果提供了自定义结束回调，则触发它
-		if customOnEndFunc != nil {
-			customOnEndFunc(ctx, msg, err, relationType)
-		}
-	}
+	_ = "STUB: not implemented"
+	return
 }
+
+// Execute end aspects and update the message accordingly
+// 执行结束切面并相应地更新消息
+
+// Trigger the custom end callback if provided
+// 如果提供了自定义结束回调，则触发它
 
 // processMessage processes the message through the rule chain with optional waiting.
 // processMessage 通过规则链处理消息，可选择等待。
 func (e *RuleEngine) processMessage(rootCtxCopy *DefaultRuleContext, msg types.RuleMsg, wait bool) {
+	_ = "STUB: not implemented"
 	// Set up a custom function to be called upon completion of all nodes
 	// 设置在所有节点完成时要调用的自定义函数
-	customFunc := rootCtxCopy.onAllNodeCompleted
-
-	if wait {
-		// If waiting is required, set up a channel to synchronize the completion
-		// 如果需要等待，设置通道来同步完成
-		c := make(chan struct{})
-		rootCtxCopy.onAllNodeCompleted = func() {
-			defer close(c)
-			// Execute the completion handling function
-			// 执行完成处理函数
-			e.doOnAllNodeCompleted(rootCtxCopy, msg, customFunc)
-		}
-		// Process the message through the rule chain
-		// 通过规则链处理消息
-		if rootCtxCopy.restoreNodeInfo != nil {
-			e.processRestoreNodes(rootCtxCopy, msg)
-		} else {
-			rootCtxCopy.TellNext(msg, rootCtxCopy.relationTypes...)
-		}
-		// Block until all nodes have completed
-		// 阻塞直到所有节点完成
-		<-c
-	} else {
-		// If not waiting, simply set the completion handling function
-		// 如果不等待，只需设置完成处理函数
-		rootCtxCopy.onAllNodeCompleted = func() {
-			e.doOnAllNodeCompleted(rootCtxCopy, msg, customFunc)
-		}
-		// Process the message through the rule chain
-		// 通过规则链处理消息
-		if rootCtxCopy.restoreNodeInfo != nil {
-			e.processRestoreNodes(rootCtxCopy, msg)
-		} else {
-			rootCtxCopy.TellNext(msg, rootCtxCopy.relationTypes...)
-		}
-	}
+	return
 }
 
+// If waiting is required, set up a channel to synchronize the completion
+// 如果需要等待，设置通道来同步完成
+
+// Execute the completion handling function
+// 执行完成处理函数
+
+// Process the message through the rule chain
+// 通过规则链处理消息
+
+// Block until all nodes have completed
+// 阻塞直到所有节点完成
+
+// If not waiting, simply set the completion handling function
+// 如果不等待，只需设置完成处理函数
+
+// Process the message through the rule chain
+// 通过规则链处理消息
+
 func (e *RuleEngine) onStart(ctx types.RuleContext, msg types.RuleMsg) (types.RuleMsg, error) {
-	var err error
-	if aspects := e.getAspectsHolder(); aspects != nil {
-		for _, aop := range aspects.startAspects {
-			if aop.PointCut(ctx, msg, "") {
-				if err != nil {
-					return msg, err
-				}
-				msg, err = aop.Start(ctx, msg)
-			}
-		}
-	}
-	return msg, err
+	_ = "STUB: not implemented"
+	return *new(types.RuleMsg), nil
 }
 
 // onEnd executes the list of end aspects when a branch of the rule chain ends.
 // onEnd 在规则链分支结束时执行结束切面列表。
 func (e *RuleEngine) onEnd(ctx types.RuleContext, msg types.RuleMsg, err error, relationType string) types.RuleMsg {
-	if aspects := e.getAspectsHolder(); aspects != nil {
-		for _, aop := range aspects.endAspects {
-			if aop.PointCut(ctx, msg, relationType) {
-				msg = aop.End(ctx, msg, err, relationType)
-			}
-		}
-	}
-	return msg
+	_ = "STUB: not implemented"
+	return *new(types.RuleMsg)
 }
 
 // onAllNodeCompleted executes the list of completed aspects after all branches of the rule chain have ended.
 // onAllNodeCompleted 在规则链的所有分支结束后执行完成切面列表。
 func (e *RuleEngine) onAllNodeCompleted(ctx types.RuleContext, msg types.RuleMsg) types.RuleMsg {
-	if aspects := e.getAspectsHolder(); aspects != nil {
-		for _, aop := range aspects.completedAspects {
-			if aop.PointCut(ctx, msg, "") {
-				msg = aop.Completed(ctx, msg)
-			}
-		}
-	}
-	return msg
+	_ = "STUB: not implemented"
+	return *new(types.RuleMsg)
 }
 
 // getAspectsHolder safely retrieves the aspects holder with high performance
 // using atomic operations to avoid lock contention.
 // getAspectsHolder 使用原子操作安全地获取切面持有者，以避免锁竞争的高性能方法。
-func (e *RuleEngine) getAspectsHolder() *aspectsHolder {
-	ptr := atomic.LoadPointer(&e.aspectsPtr)
-	if ptr == nil {
-		return nil
-	}
-	return (*aspectsHolder)(ptr)
-}
+func (e *RuleEngine) getAspectsHolder() *aspectsHolder { _ = "STUB: not implemented"; return nil }
 
 // NewConfig creates a new Config and applies the options.
 // It initializes all necessary components with sensible defaults.
@@ -1621,31 +1156,18 @@ func (e *RuleEngine) getAspectsHolder() *aspectsHolder {
 //   - User-defined functions registry  用户定义函数注册表
 //   - Default cache implementation  默认缓存实现
 func NewConfig(opts ...types.Option) types.Config {
-	c := types.NewConfig(opts...)
-	if c.Parser == nil {
-		c.Parser = &JsonParser{}
-	}
-	if c.ComponentsRegistry == nil {
-		c.ComponentsRegistry = Registry
-	}
-	// register all udfs
-	// 注册所有用户定义函数
-	for name, f := range funcs.ScriptFunc.GetAll() {
-		c.RegisterUdf(name, f)
-	}
-	if c.Cache == nil {
-		c.Cache = cache.DefaultCache
-	}
-	return c
+	_ = "STUB: not implemented"
+	return *new(types.Config)
 }
+
+// register all udfs
+// 注册所有用户定义函数
 
 // WithConfig is an option that sets the Config of the RuleEngine.
 // WithConfig 是设置 RuleEngine 配置的选项。
 func WithConfig(config types.Config) types.RuleEngineOption {
-	return func(re types.RuleEngine) error {
-		re.SetConfig(config)
-		return nil
-	}
+	_ = "STUB: not implemented"
+	return *new(types.RuleEngineOption)
 }
 
 // SetMaxReloadWaiters configures the maximum number of concurrent goroutines
@@ -1670,22 +1192,18 @@ func WithConfig(config types.Config) types.RuleEngineOption {
 //	This method is thread-safe and can be called during message processing.
 //	此方法是线程安全的，可以在消息处理期间调用。
 func (e *RuleEngine) SetMaxReloadWaiters(maxWaiters int64) {
-	if maxWaiters < 0 {
-		// Keep current setting unchanged for negative values
-		// 负数时保持当前设置不变
-		return
-	} else if maxWaiters == 0 {
-		// Disable backpressure control (unlimited waiters)
-		// 禁用背压控制（无限等待者）
-		e.reloadBackpressureEnabled = false
-		atomic.StoreInt64(&e.maxConcurrentReloadWaiters, 0)
-	} else {
-		// Enable backpressure control with specified limit
-		// 启用背压控制并设置指定限制
-		e.reloadBackpressureEnabled = true
-		atomic.StoreInt64(&e.maxConcurrentReloadWaiters, maxWaiters)
-	}
+	_ = "STUB: not implemented"
+
+	// Keep current setting unchanged for negative values
+	// 负数时保持当前设置不变
+	return
 }
+
+// Disable backpressure control (unlimited waiters)
+// 禁用背压控制（无限等待者）
+
+// Enable backpressure control with specified limit
+// 启用背压控制并设置指定限制
 
 // GetReloadWaitersStats returns current reload waiters statistics for monitoring.
 // This provides insight into reload behavior under load.
@@ -1702,12 +1220,8 @@ func (e *RuleEngine) SetMaxReloadWaiters(maxWaiters int64) {
 //   - isReloading: Whether engine is currently reloading
 //     isReloading: 引擎当前是否正在重载
 func (e *RuleEngine) GetReloadWaitersStats() (maxWaiters int64, currentWaiters int64, isReloading bool) {
-	if !e.reloadBackpressureEnabled {
-		return 0, atomic.LoadInt64(&e.currentReloadWaiters), e.IsReloading()
-	}
-	return atomic.LoadInt64(&e.maxConcurrentReloadWaiters),
-		atomic.LoadInt64(&e.currentReloadWaiters),
-		e.IsReloading()
+	_ = "STUB: not implemented"
+	return 0, 0, false
 }
 
 // incrementReloadWaiters atomically increments the reload waiter count.
@@ -1715,28 +1229,14 @@ func (e *RuleEngine) GetReloadWaitersStats() (maxWaiters int64, currentWaiters i
 //
 // incrementReloadWaiters 原子地增加重载等待者计数。
 // 如果增加会超过最大允许的等待者数量，则返回false。
-func (e *RuleEngine) incrementReloadWaiters() bool {
-	if !e.reloadBackpressureEnabled {
-		return true // No limit when backpressure is disabled
-	}
+func (e *RuleEngine) incrementReloadWaiters() bool { _ = "STUB: not implemented"; return false }
 
-	maxWaiters := atomic.LoadInt64(&e.maxConcurrentReloadWaiters)
-	for {
-		current := atomic.LoadInt64(&e.currentReloadWaiters)
-		if current >= maxWaiters {
-			return false // Would exceed maximum
-		}
-		if atomic.CompareAndSwapInt64(&e.currentReloadWaiters, current, current+1) {
-			return true
-		}
-		// Retry if another goroutine modified the counter
-	}
-}
+// No limit when backpressure is disabled
+
+// Would exceed maximum
+
+// Retry if another goroutine modified the counter
 
 // decrementReloadWaiters atomically decrements the reload waiter count.
 // decrementReloadWaiters 原子地减少重载等待者计数。
-func (e *RuleEngine) decrementReloadWaiters() {
-	if e.reloadBackpressureEnabled {
-		atomic.AddInt64(&e.currentReloadWaiters, -1)
-	}
-}
+func (e *RuleEngine) decrementReloadWaiters() { _ = "STUB: not implemented"; return }

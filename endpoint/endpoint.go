@@ -17,16 +17,10 @@
 package endpoint
 
 import (
-	"errors"
-	"reflect"
 	"sync"
 
 	"github.com/rulego/rulego/api/types"
 	"github.com/rulego/rulego/api/types/endpoint"
-	"github.com/rulego/rulego/builtin/processor"
-	"github.com/rulego/rulego/endpoint/impl"
-	"github.com/rulego/rulego/engine"
-	"github.com/rulego/rulego/utils/json"
 )
 
 // Endpoint is an alias for the Endpoint interface in the endpoint package.
@@ -51,7 +45,8 @@ type Exchange = endpoint.Exchange
 // 返回：
 //   - endpoint.Router: Configured router instance  配置的路由器实例
 func NewRouter(opts ...endpoint.RouterOption) endpoint.Router {
-	return impl.NewRouter(opts...)
+	_ = "STUB: not implemented"
+	return *new(endpoint.Router)
 }
 
 // Ensure DynamicEndpoint implements the DynamicEndpoint interface.
@@ -150,73 +145,61 @@ type DynamicEndpoint struct {
 //	  "routers": [{"id": "r1", "from": {"path": "/api"}}]
 //	}
 func NewFromDsl(def []byte, opts ...endpoint.DynamicEndpointOption) (*DynamicEndpoint, error) {
-	if len(def) == 0 {
-		return nil, errors.New("def cannot be nil")
-	}
-	e := &DynamicEndpoint{}
-	if err := e.Reload(def, opts...); err != nil {
-		return nil, err
-	}
-	if e.id == "" && e.definition.Id != "" {
-		e.id = e.definition.Id
-	}
-	return e, nil
+	_ = "STUB: not implemented"
+	return nil, nil
 }
 
 // NewFromDef creates a new DynamicEndpoint from the provided DSL definition structure and options.
 // NewFromDef 从提供的 DSL 定义结构和选项创建新的 DynamicEndpoint。
 func NewFromDef(def types.EndpointDsl, opts ...endpoint.DynamicEndpointOption) (*DynamicEndpoint, error) {
-	e := &DynamicEndpoint{}
-	if err := e.ReloadFromDef(def, opts...); err != nil {
-		return nil, err
-	}
-	if e.id == "" && e.definition.Id != "" {
-		e.id = e.definition.Id
-	}
-	return e, nil
+	_ = "STUB: not implemented"
+	return nil, nil
 }
 
 // Id returns the identifier of the DynamicEndpoint.
 // Id 返回 DynamicEndpoint 的标识符。
 func (e *DynamicEndpoint) Id() string {
-	return e.id
+	_ = "STUB: not implemented"
+
+	// SetId sets the identifier of the DynamicEndpoint.
+	// SetId 设置 DynamicEndpoint 的标识符。
+	return ""
 }
 
-// SetId sets the identifier of the DynamicEndpoint.
-// SetId 设置 DynamicEndpoint 的标识符。
 func (e *DynamicEndpoint) SetId(id string) {
-	e.id = id
+	_ = "STUB: not implemented"
+
+	// SetConfig sets the configuration for the DynamicEndpoint.
+	// SetConfig 设置 DynamicEndpoint 的配置。
+	return
 }
 
-// SetConfig sets the configuration for the DynamicEndpoint.
-// SetConfig 设置 DynamicEndpoint 的配置。
-func (e *DynamicEndpoint) SetConfig(config types.Config) {
-	e.ruleConfig = config
-}
+func (e *DynamicEndpoint) SetConfig(config types.Config) { _ = "STUB: not implemented"; return }
 
 // SetRouterOptions sets the router options for the DynamicEndpoint.
 // SetRouterOptions 设置 DynamicEndpoint 的路由器选项。
 func (e *DynamicEndpoint) SetRouterOptions(opts ...endpoint.RouterOption) {
-	e.routerOpts = opts
+	_ = "STUB: not implemented"
+	return
+
+	// SetRestart sets the restart flag for the DynamicEndpoint.
+	// SetRestart 设置 DynamicEndpoint 的重启标志。
 }
 
-// SetRestart sets the restart flag for the DynamicEndpoint.
-// SetRestart 设置 DynamicEndpoint 的重启标志。
-func (e *DynamicEndpoint) SetRestart(restart bool) {
-	e.restart = restart
-}
+func (e *DynamicEndpoint) SetRestart(restart bool) { _ = "STUB: not implemented"; return }
 
 // SetInterceptors sets the interceptors for the DynamicEndpoint.
 // SetInterceptors 设置 DynamicEndpoint 的拦截器。
 func (e *DynamicEndpoint) SetInterceptors(interceptors ...endpoint.Process) {
-	e.interceptors = interceptors
+	_ = "STUB: not implemented"
+	return
 }
 
 // AddInterceptors adds interceptors to the DynamicEndpoint.
 // AddInterceptors 向 DynamicEndpoint 添加拦截器。
 func (e *DynamicEndpoint) AddInterceptors(interceptors ...endpoint.Process) {
-	e.interceptors = append(e.interceptors, interceptors...)
-	e.Endpoint.AddInterceptors(interceptors...)
+	_ = "STUB: not implemented"
+	return
 }
 
 // Reload reloads the DynamicEndpoint with the provided definition and options.
@@ -242,11 +225,8 @@ func (e *DynamicEndpoint) AddInterceptors(interceptors ...endpoint.Process) {
 //  4. Apply configuration changes  应用配置更改
 //  5. Update routers as needed  根据需要更新路由器
 func (e *DynamicEndpoint) Reload(dsl []byte, opts ...endpoint.DynamicEndpointOption) error {
-	if dsl, err := e.unmarshal(dsl); err != nil {
-		return err
-	} else {
-		return e.ReloadFromDef(dsl, opts...)
-	}
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // AddOrReloadRouter reloads the router for the DynamicEndpoint with the provided definition and options.
@@ -271,274 +251,133 @@ func (e *DynamicEndpoint) Reload(dsl []byte, opts ...endpoint.DynamicEndpointOpt
 //   - Supports both addition and modification operations  支持添加和修改操作
 //   - Can trigger endpoint restart if configured  如果配置，可以触发端点重启
 func (e *DynamicEndpoint) AddOrReloadRouter(dsl []byte, opts ...endpoint.DynamicEndpointOption) error {
-	var routerDsl types.RouterDsl
-	if err := json.Unmarshal(dsl, &routerDsl); err != nil {
-		return err
-	}
-	_, err := e.AddRouterFromDef(&routerDsl)
-	e.restart = false
-	for _, opt := range opts {
-		_ = opt(e)
-	}
-	if e.restart {
-		return e.reloadEndpoint(e.definition)
-	}
-	return err
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // Definition returns the DSL definition of the DynamicEndpoint.
 func (e *DynamicEndpoint) Definition() types.EndpointDsl {
-	return e.definition
+	_ = "STUB: not implemented"
+	return *
+
+	// DSL returns the DSL as a byte slice.
+	new(types.EndpointDsl)
 }
 
-// DSL returns the DSL as a byte slice.
-func (e *DynamicEndpoint) DSL() []byte {
-	dsl, _ := json.Marshal(e.definition)
-	return dsl
-}
+func (e *DynamicEndpoint) DSL() []byte { _ = "STUB: not implemented"; return nil }
 
 // Target returns the underlying Endpoint of the DynamicEndpoint.
 func (e *DynamicEndpoint) Target() endpoint.Endpoint {
-	return e.Endpoint
+	_ = "STUB: not implemented"
+
+	// RemoveRouter removes a router from the DynamicEndpoint by its ID and parameters.
+	return *new(endpoint.Endpoint)
 }
 
-// RemoveRouter removes a router from the DynamicEndpoint by its ID and parameters.
 func (e *DynamicEndpoint) RemoveRouter(routerId string, params ...interface{}) error {
-	e.locker.Lock()
-	defer e.locker.Unlock()
-	if err := e.Endpoint.RemoveRouter(routerId, params...); err == nil {
-		var newRouters []*types.RouterDsl
-		for _, item := range e.definition.Routers {
-			if item.Id != routerId {
-				newRouters = append(newRouters, item)
-			}
-		}
-		e.definition.Routers = newRouters
-	}
+	_ = "STUB: not implemented"
 	return nil
 }
 
 // AddRouterFromDef adds a router to the DynamicEndpoint from the provided DSL.
 func (e *DynamicEndpoint) AddRouterFromDef(routerDsl *types.RouterDsl) (string, error) {
-	if routerDsl == nil {
-		return "", errors.New("routerDsl cannot be nil")
-	}
-	_ = e.RemoveRouter(routerDsl.Id, routerDsl.Params...)
-
-	var opts = []endpoint.RouterOption{endpoint.RouterOptions.WithDefinition(routerDsl)}
-	opts = append(opts, e.routerOpts...)
-
-	e.locker.Lock()
-	defer e.locker.Unlock()
-	from := NewRouter(opts...).SetId(routerDsl.Id).From(routerDsl.From.Path, routerDsl.From.Configuration)
-	for _, item := range routerDsl.From.Processors {
-		if p, ok := processor.InBuiltins.Get(item); ok {
-			from.Process(p)
-		} else {
-			return "", errors.New("processor not found: " + item)
-		}
-	}
-	if routerDsl.To.Path != "" {
-		to := from.To(routerDsl.To.Path, routerDsl.To.Configuration)
-		for _, item := range routerDsl.To.Processors {
-			if p, ok := processor.OutBuiltins.Get(item); ok {
-				to.Process(p)
-			} else {
-				return "", errors.New("processor not found: " + item)
-			}
-		}
-		if routerDsl.To.Wait {
-			to.Wait()
-		}
-	}
-	router := from.End()
-	if id, err := e.Endpoint.AddRouter(router, routerDsl.Params...); err != nil {
-		return "", err
-	} else {
-		routerDsl.Id = id
-		e.definition.Routers = append(e.definition.Routers, routerDsl)
-		return id, err
-	}
+	_ = "STUB: not implemented"
+	return "", nil
 }
 
 // ReloadFromDef initializes the DynamicEndpoint with the provided DSL and options.
 func (e *DynamicEndpoint) ReloadFromDef(def types.EndpointDsl, opts ...endpoint.DynamicEndpointOption) error {
-	e.restart = false
-	e.ruleConfig = engine.NewConfig(types.WithDefaultPool())
-	for _, opt := range opts {
-		_ = opt(e)
-	}
-	if e.Endpoint != nil {
-		return e.reloadEndpoint(def)
-	} else {
-		return e.newEndpoint(def)
-	}
-}
-
-func (e *DynamicEndpoint) Config() types.Config {
-	return e.ruleConfig
-}
-
-// IsDebugMode checks if the node is in debug mode.
-// True: When messages flow in and out of the node, the config.OnDebug callback function is called; otherwise, it is not.
-func (e *DynamicEndpoint) IsDebugMode() bool {
-	return false
-}
-
-// GetNodeId retrieves the component ID.
-func (e *DynamicEndpoint) GetNodeId() types.RuleNodeId {
-	return types.RuleNodeId{Id: e.Id(), Type: types.ENDPOINT}
-}
-
-// ReloadSelf refreshes the configuration of the component.
-func (e *DynamicEndpoint) ReloadSelf(def []byte) error {
-	return e.Reload(def)
-}
-
-// GetNodeById not supported.
-func (e *DynamicEndpoint) GetNodeById(_ types.RuleNodeId) (types.NodeCtx, bool) {
-	return nil, false
-}
-
-// SetRuleChain When initializing from the rule chain DSL, set the DSL definition of the original rule chain
-func (e *DynamicEndpoint) SetRuleChain(ruleChain *types.RuleChain) {
-	e.ruleChain = ruleChain
-}
-
-// GetRuleChain Obtain the original DSL initialized from the rule chain
-func (e *DynamicEndpoint) GetRuleChain() *types.RuleChain {
-	return e.ruleChain
-}
-
-// newEndpoint creates a new Endpoint with the provided DSL.
-func (e *DynamicEndpoint) newEndpoint(dsl types.EndpointDsl) error {
-	var configuration = make(types.Configuration)
-	if dsl.Configuration != nil {
-		configuration = dsl.Configuration.Copy()
-	}
-	//注入完整的规则链定义
-	def := e.GetRuleChain()
-
-	if def != nil {
-		configuration[types.NodeConfigurationKeyRuleChainDefinition] = def
-	}
-	if ep, err := Registry.New(dsl.Type, e.ruleConfig, configuration); err != nil {
-		return err
-	} else {
-		e.Endpoint = ep
-		e.definition = dsl
-		if e.id == "" && e.definition.Id != "" {
-			e.id = e.definition.Id
-		}
-		if e.id == "" {
-			e.id = ep.Id()
-		}
-		e.AddInterceptors(e.interceptors...)
-		for _, item := range dsl.Routers {
-			if _, err := e.AddRouterFromDef(item); err != nil {
-				return err
-			}
-		}
-		// Add interceptors
-		for _, item := range dsl.Processors {
-			if p, ok := processor.InBuiltins.Get(item); ok {
-				e.AddInterceptors(p)
-			} else {
-				return errors.New("processor not found: " + item)
-			}
-		}
-		if e.restart {
-			return ep.Start()
-		} else {
-			return nil
-		}
-	}
-}
-
-// reloadEndpoint reloads the Endpoint with the provided DSL.
-func (e *DynamicEndpoint) reloadEndpoint(def types.EndpointDsl) error {
-	if e.Endpoint != nil && (e.restart || needRestart(e.definition, def)) {
-		e.Endpoint.Destroy()
-		e.Endpoint = nil
-		e.restart = true
-		return e.newEndpoint(def)
-	}
-	// Check for changes in routers
-	added, removed, modified := checkRouterChanges(e.definition.Routers, def.Routers)
-	for _, item := range removed {
-		_ = e.RemoveRouter(item.Id, item.Params...)
-	}
-	for _, item := range added {
-		if _, err := e.AddRouterFromDef(item); err != nil {
-			return err
-		}
-	}
-	for _, item := range modified {
-		if _, err := e.AddRouterFromDef(item); err != nil {
-			return err
-		}
-	}
-	e.definition = def
+	_ = "STUB: not implemented"
 	return nil
 }
 
+func (e *DynamicEndpoint) Config() types.Config {
+	_ = "STUB: not implemented"
+	return *
+
+	// IsDebugMode checks if the node is in debug mode.
+	// True: When messages flow in and out of the node, the config.OnDebug callback function is called; otherwise, it is not.
+	new(types.Config)
+}
+
+func (e *DynamicEndpoint) IsDebugMode() bool {
+	_ = "STUB: not implemented"
+
+	// GetNodeId retrieves the component ID.
+	return false
+}
+
+func (e *DynamicEndpoint) GetNodeId() types.RuleNodeId {
+	_ = "STUB: not implemented"
+	return *new(types.RuleNodeId)
+}
+
+// ReloadSelf refreshes the configuration of the component.
+func (e *DynamicEndpoint) ReloadSelf(def []byte) error { _ = "STUB: not implemented"; return nil }
+
+// GetNodeById not supported.
+func (e *DynamicEndpoint) GetNodeById(_ types.RuleNodeId) (types.NodeCtx, bool) {
+	_ = "STUB: not implemented"
+
+	// SetRuleChain When initializing from the rule chain DSL, set the DSL definition of the original rule chain
+	return *new(types.NodeCtx), false
+}
+
+func (e *DynamicEndpoint) SetRuleChain(ruleChain *types.RuleChain) {
+	_ = "STUB: not implemented"
+	return
+
+	// GetRuleChain Obtain the original DSL initialized from the rule chain
+}
+
+func (e *DynamicEndpoint) GetRuleChain() *types.RuleChain {
+	_ = "STUB: not implemented"
+
+	// newEndpoint creates a new Endpoint with the provided DSL.
+	return nil
+}
+
+func (e *DynamicEndpoint) newEndpoint(dsl types.EndpointDsl) error {
+	_ = "STUB: not implemented"
+	return nil
+}
+
+//注入完整的规则链定义
+
+// Add interceptors
+
+// reloadEndpoint reloads the Endpoint with the provided DSL.
+func (e *DynamicEndpoint) reloadEndpoint(def types.EndpointDsl) error {
+	_ = "STUB: not implemented"
+	return nil
+}
+
+// Check for changes in routers
+
 // unmarshal converts the provided byte slice into an EndpointDsl.
 func (e *DynamicEndpoint) unmarshal(def []byte) (types.EndpointDsl, error) {
-	var dsl types.EndpointDsl
-	if len(def) != 0 {
-		if err := json.Unmarshal(def, &dsl); err != nil {
-			return types.EndpointDsl{}, err
-		}
-	} else {
-		dsl = e.definition
-	}
-	return dsl, nil
+	_ = "STUB: not implemented"
+	return *new(types.EndpointDsl), nil
 }
 
 // needRestart determines whether the endpoint needs to be restarted based on the old and new EndpointBaseInfo
-func needRestart(old, new types.EndpointDsl) bool {
-	if old.Type != new.Type {
-		return true
-	}
-	return !reflect.DeepEqual(old.Configuration, new.Configuration) || !reflect.DeepEqual(old.Processors, new.Processors)
-}
+func needRestart(old, new types.EndpointDsl) bool { _ = "STUB: not implemented"; return false }
 
 // checkRouterChanges checks for added, removed, and modified routers in a list of RouterDsl.
 func checkRouterChanges(oldRouters, newRouters []*types.RouterDsl) (added, removed, modified []*types.RouterDsl) {
+	_ = "STUB: not implemented"
 	// Create a map to hold the old routers with their ID as the key.
-	oldMap := make(map[string]*types.RouterDsl)
-	// Create a map to hold the new routers with their ID as the key.
-	newMap := make(map[string]*types.RouterDsl)
-
-	// Convert the old and new routers into maps using their ID as the key.
-	for _, r := range oldRouters {
-		oldMap[r.Id] = r
-	}
-	for _, r := range newRouters {
-		newMap[r.Id] = r
-	}
-
-	// Check for routers that are new in the newMap but not present in the oldMap.
-	for id, r := range newMap {
-		if _, exists := oldMap[id]; !exists {
-			added = append(added, r) // Add new routers to the added slice.
-		}
-	}
-
-	// Check for routers that are present in the oldMap but not in the newMap.
-	for id, r := range oldMap {
-		if _, exists := newMap[id]; !exists {
-			removed = append(removed, r)
-		}
-	}
-
-	// Check for routers that are modified, i.e., present in both maps but not equal.
-	for id, newR := range newMap {
-		if oldR, exists := oldMap[id]; exists {
-			if !reflect.DeepEqual(oldR, newR) {
-				modified = append(modified, newR)
-			}
-		}
-	}
-	return added, removed, modified
+	return nil, nil, nil
 }
+
+// Create a map to hold the new routers with their ID as the key.
+
+// Convert the old and new routers into maps using their ID as the key.
+
+// Check for routers that are new in the newMap but not present in the oldMap.
+
+// Add new routers to the added slice.
+
+// Check for routers that are present in the oldMap but not in the newMap.
+
+// Check for routers that are modified, i.e., present in both maps but not equal.

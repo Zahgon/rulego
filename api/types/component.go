@@ -17,8 +17,6 @@
 package types
 
 import (
-	"fmt"
-	"sort"
 	"sync"
 )
 
@@ -96,12 +94,8 @@ type ComponentFormList map[string]ComponentForm
 // GetComponent 通过类型名称检索组件表单。
 // 返回组件表单和表示是否找到的布尔值。
 func (c ComponentFormList) GetComponent(name string) (ComponentForm, bool) {
-	for _, item := range c {
-		if item.Type == name {
-			return item, true
-		}
-	}
-	return ComponentForm{}, false
+	_ = "STUB: not implemented"
+	return *new(ComponentForm), false
 }
 
 // Values returns all component forms sorted by category and then by type.
@@ -109,25 +103,16 @@ func (c ComponentFormList) GetComponent(name string) (ComponentForm, bool) {
 //
 // Values 返回按类别然后按类型排序的所有组件表单。
 // 这为 UI 显示提供了一致的排序。
-func (c ComponentFormList) Values() []ComponentForm {
-	var values []ComponentForm
-	for _, item := range c {
-		values = append(values, item)
-	}
-	// Sort by category first, then by type
-	// 先按类别排序，再按类型排序
-	sort.Slice(values, func(i, j int) bool {
-		// If categories are different, sort by category
-		// 如果类别不同，按类别排序
-		if values[i].Category != values[j].Category {
-			return values[i].Category < values[j].Category
-		}
-		// Otherwise, sort by type
-		// 否则，按类型排序
-		return values[i].Type < values[j].Type
-	})
-	return values
-}
+func (c ComponentFormList) Values() []ComponentForm { _ = "STUB: not implemented"; return nil }
+
+// Sort by category first, then by type
+// 先按类别排序，再按类型排序
+
+// If categories are different, sort by category
+// 如果类别不同，按类别排序
+
+// Otherwise, sort by type
+// 否则，按类型排序
 
 // GetByPage returns component forms with pagination support.
 // Returns the forms for the specified page, total count, and any error.
@@ -146,28 +131,8 @@ func (c ComponentFormList) Values() []ComponentForm {
 //   - int: Total number of available forms  可用表单的总数
 //   - error: Any error that occurred  发生的任何错误
 func (c ComponentFormList) GetByPage(page, pageSize int) ([]ComponentForm, int, error) {
-	if page < 1 || pageSize < 1 {
-		return nil, 0, fmt.Errorf("invalid page or pageSize")
-	}
-
-	values := c.Values()
-	total := len(values)
-	if total == 0 {
-		return nil, 0, nil
-	}
-
-	start := (page - 1) * pageSize
-	end := start + pageSize
-
-	if start > total {
-		return nil, 0, fmt.Errorf("page out of range")
-	}
-
-	if end > total {
-		end = total
-	}
-
-	return values[start:end], total, nil
+	_ = "STUB: not implemented"
+	return nil, 0, nil
 }
 
 // ComponentFormFieldList represents a list of component form fields.
@@ -183,12 +148,8 @@ type ComponentFormFieldList []ComponentFormField
 // GetField 通过名称检索字段。
 // 返回字段和表示是否找到的布尔值。
 func (c ComponentFormFieldList) GetField(name string) (ComponentFormField, bool) {
-	for _, field := range c {
-		if field.Name == name {
-			return field, true
-		}
-	}
-	return ComponentFormField{}, false
+	_ = "STUB: not implemented"
+	return *new(ComponentFormField), false
 }
 
 // ComponentForm represents the metadata and configuration structure for a component.
@@ -314,21 +275,11 @@ type SafeComponentSlice struct {
 //
 // Add 安全地将一个或多个 Node 组件追加到切片中。
 // 此方法是线程安全的，可以并发调用。
-func (p *SafeComponentSlice) Add(nodes ...Node) {
-	p.Lock()
-	defer p.Unlock()
-	for _, node := range nodes {
-		p.components = append(p.components, node)
-	}
-}
+func (p *SafeComponentSlice) Add(nodes ...Node) { _ = "STUB: not implemented"; return }
 
 // Components returns a copy of the current component list.
 // This method is thread-safe and returns a snapshot of the components.
 //
 // Components 返回当前组件列表的副本。
 // 此方法是线程安全的，返回组件的快照。
-func (p *SafeComponentSlice) Components() []Node {
-	p.Lock()
-	defer p.Unlock()
-	return p.components
-}
+func (p *SafeComponentSlice) Components() []Node { _ = "STUB: not implemented"; return nil }

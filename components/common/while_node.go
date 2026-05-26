@@ -18,18 +18,9 @@ package common
 
 import (
 	"context"
-	"errors"
-	"fmt"
-	"strconv"
-	"strings"
-	"sync"
 
 	"github.com/rulego/rulego/api/types"
-	"github.com/rulego/rulego/components/base"
 	"github.com/rulego/rulego/utils/el"
-	"github.com/rulego/rulego/utils/json"
-	"github.com/rulego/rulego/utils/maps"
-	"github.com/rulego/rulego/utils/str"
 )
 
 func init() {
@@ -74,219 +65,61 @@ type WhileNode struct {
 }
 
 // Type returns the component type.
-func (x *WhileNode) Type() string {
-	return "while"
-}
+func (x *WhileNode) Type() string { _ = "STUB: not implemented"; return "" }
 
-func (x *WhileNode) New() types.Node {
-	return &WhileNode{Config: WhileNodeConfiguration{
-		Condition: "msg.count==nil || msg.count < 3",
-		Mode:      ReplaceValues,
-	}}
-}
+func (x *WhileNode) New() types.Node { _ = "STUB: not implemented"; return *new(types.Node) }
 
 // Init initializes the node.
 func (x *WhileNode) Init(_ types.Config, configuration types.Configuration) error {
-	if err := maps.Map2Struct(configuration, &x.Config); err != nil {
-		return err
-	}
-	x.Config.Condition = strings.TrimSpace(x.Config.Condition)
-	if x.Config.Condition != "" {
-		if template, err := el.NewExprTemplate(x.Config.Condition); err != nil {
-			return fmt.Errorf("failed to create condition template: %w", err)
-		} else {
-			x.conditionTemplate = template
-		}
-	} else {
-		return errors.New("condition is empty")
-	}
-
-	x.Config.Do = strings.TrimSpace(x.Config.Do)
-	if x.Config.Do == "" {
-		return errors.New("do is empty")
-	}
-	return x.formDoVar()
+	_ = "STUB: not implemented"
+	return nil
 }
 
-func (x *WhileNode) toMap(data string) interface{} {
-	var dataMap interface{}
-	if err := json.Unmarshal([]byte(data), &dataMap); err == nil {
-		return dataMap
-	} else {
-		return data
-	}
-}
+func (x *WhileNode) toMap(data string) interface{} { _ = "STUB: not implemented"; return nil }
 
 func (x *WhileNode) toList(dataType types.DataType, itemDataList []string) []interface{} {
-	var resultData []interface{}
-	for _, itemData := range itemDataList {
-		if dataType == types.JSON {
-			resultData = append(resultData, x.toMap(itemData))
-		} else {
-			resultData = append(resultData, itemData)
-		}
-	}
-	return resultData
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // OnMsg processes the message.
 func (x *WhileNode) OnMsg(ctx types.RuleContext, msg types.RuleMsg) {
-	var err error
+	_ = "STUB: not implemented"
 
 	// Create a context with cancel for the loop execution
-	ctxWithCancel, cancelFunc := context.WithCancel(ctx.GetContext())
-	defer cancelFunc()
-
-	var inData = msg.GetData()
-	var inMsg = msg.Copy()
-	var lastMsg = msg
-	var index = 0
-
-	var resultData []interface{}
-	var itemDataList []string
-
-	for {
-		// Update loop index in metadata
-		msg.Metadata.PutValue(KeyLoopIndex, strconv.Itoa(index))
-
-		// Check condition
-		var conditionMet bool
-		if x.conditionTemplate != nil {
-			evn := base.NodeUtils.GetEvn(ctx, msg)
-			if out, err := x.conditionTemplate.Execute(evn); err != nil {
-				ctx.TellFailure(msg, err)
-				return
-			} else {
-				// Parse result to boolean
-				conditionMet = castToBool(out)
-			}
-		} else {
-			conditionMet = false
-		}
-
-		if !conditionMet {
-			break
-		}
-
-		// Execute the iteration
-		var loopErr error
-		if lastMsg, itemDataList, loopErr = x.executeItem(ctxWithCancel, ctx, msg); loopErr != nil {
-			err = loopErr
-			break
-		}
-
-		if x.Config.Mode == MergeValues {
-			resultData = append(resultData, x.toList(msg.DataType, itemDataList)...)
-		}
-		// Always pass the updated msg to the next iteration so the condition can evaluate it
-		msg = lastMsg
-
-		// Check for break signal
-		if msg.Metadata.GetValue(MdKeyBreak) == MdValueBreak {
-			msg.Metadata.Delete(MdKeyBreak)
-			break
-		}
-
-		index++
-	}
-
-	if err != nil {
-		ctx.TellFailure(msg, err)
-	} else {
-		if x.Config.Mode == DoNotProcess {
-			inMsg.SetData(inData)
-			ctx.TellSuccess(inMsg)
-		} else if x.Config.Mode == MergeValues {
-			msg.SetData(str.ToString(resultData))
-			ctx.TellSuccess(msg)
-		} else {
-			// msg is already lastMsg (final state).
-			ctx.TellSuccess(msg)
-		}
-	}
+	return
 }
+
+// Update loop index in metadata
+
+// Check condition
+
+// Parse result to boolean
+
+// Execute the iteration
+
+// Always pass the updated msg to the next iteration so the condition can evaluate it
+
+// Check for break signal
+
+// msg is already lastMsg (final state).
 
 // Destroy cleans up resources.
 func (x *WhileNode) Destroy() {
+	_ = "STUB: not implemented"
+
+	// executeItem processes the 'Do' node/chain.
+	return
 }
 
-// executeItem processes the 'Do' node/chain.
 func (x *WhileNode) executeItem(ctxWithCancel context.Context, ctx types.RuleContext, fromMsg types.RuleMsg) (types.RuleMsg, []string, error) {
-	var wg sync.WaitGroup
-	wg.Add(1)
-	var returnErr error
-	var lock sync.Mutex
-	var msgData []string
-	var lastMsg = fromMsg
-
-	// Prepare callback
-	onEnd := func(ctx types.RuleContext, msg types.RuleMsg, err error, relationType string) {
-		if err != nil {
-			returnErr = err
-		} else {
-			lock.Lock()
-			defer lock.Unlock()
-			lastMsg = msg
-			msgData = append(msgData, msg.GetData())
-		}
-	}
-
-	onAllCompleted := func() {
-		wg.Done()
-	}
-
-	if x.ruleNodeId.Type == types.CHAIN {
-		ctx.TellFlow(x.ruleNodeId.Id, fromMsg, types.WithContext(ctx.GetContext()), types.WithOnEnd(onEnd), types.WithOnAllNodeCompleted(onAllCompleted))
-	} else {
-		ctx.TellNode(ctx.GetContext(), x.ruleNodeId.Id, fromMsg, false, onEnd, onAllCompleted)
-	}
-
-	wg.Wait()
-
-	if returnErr != nil {
-		return lastMsg, msgData, returnErr
-	}
-	return lastMsg, msgData, ctxWithCancel.Err()
+	_ = "STUB: not implemented"
+	return *new(types.RuleMsg), nil, nil
 }
 
-func (x *WhileNode) formDoVar() error {
-	values := strings.Split(x.Config.Do, ":")
-	length := len(values)
-	if length == 1 {
-		x.ruleNodeId = types.RuleNodeId{
-			Id:   strings.TrimSpace(values[0]),
-			Type: types.NODE,
-		}
-	} else if length == 2 {
-		if strings.TrimSpace(values[0]) == "chain" {
-			x.ruleNodeId = types.RuleNodeId{
-				Id:   strings.TrimSpace(values[1]),
-				Type: types.CHAIN,
-			}
-		} else {
-			x.ruleNodeId = types.RuleNodeId{
-				Id:   strings.TrimSpace(values[1]),
-				Type: types.NODE,
-			}
-		}
-	} else {
-		return fmt.Errorf("do variable should be nodeId or chain:chainId style")
-	}
-	return nil
-}
+// Prepare callback
+
+func (x *WhileNode) formDoVar() error { _ = "STUB: not implemented"; return nil }
 
 // castToBool converts interface{} to bool.
-func castToBool(val interface{}) bool {
-	switch v := val.(type) {
-	case bool:
-		return v
-	case string:
-		return strings.ToLower(v) == "true"
-	case int, int8, int16, int32, int64:
-		return v != 0
-	case float32, float64:
-		return v != 0
-	default:
-		return false
-	}
-}
+func castToBool(val interface{}) bool { _ = "STUB: not implemented"; return false }

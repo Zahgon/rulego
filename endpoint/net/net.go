@@ -32,26 +32,15 @@
 package net
 
 import (
-	"bufio"
-	"context"
-	"encoding/base64"
-	"encoding/hex"
-	"errors"
-	"fmt"
 	"net"
 	"net/textproto"
-	"os"
 	"regexp"
-	"strings"
 	"sync"
-	"sync/atomic"
 	"time"
 
 	"github.com/rulego/rulego/api/types"
 	"github.com/rulego/rulego/api/types/endpoint"
 	"github.com/rulego/rulego/endpoint/impl"
-	"github.com/rulego/rulego/utils/maps"
-	"github.com/rulego/rulego/utils/runtime"
 )
 
 const (
@@ -111,120 +100,95 @@ type RequestMessage struct {
 	dataType types.DataType // 添加数据类型字段
 }
 
-func (r *RequestMessage) Body() []byte {
-	return r.body
-}
+func (r *RequestMessage) Body() []byte { _ = "STUB: not implemented"; return nil }
 
 func (r *RequestMessage) Headers() textproto.MIMEHeader {
-	if r.headers == nil {
-		r.headers = make(map[string][]string)
-	}
-	if r.conn != nil {
-		r.headers.Set(RemoteAddrKey, r.From())
-	}
-	return r.headers
+	_ = "STUB: not implemented"
+	return *new(textproto.MIMEHeader)
 }
 
 // From 返回客户端Addr
-func (r RequestMessage) From() string {
-	return r.from
-}
+func (r RequestMessage) From() string { _ = "STUB: not implemented"; return "" }
 
-func (r *RequestMessage) GetParam(key string) string {
-	return ""
-}
+func (r *RequestMessage) GetParam(key string) string { _ = "STUB: not implemented"; return "" }
 
 func (r *RequestMessage) SetMsg(msg *types.RuleMsg) {
-	r.msg = msg
+	_ = "STUB: not implemented"
+
+	// GetMsg returns the RuleMsg associated with this request.
+	// If no message exists, creates a new one with the request data.
+	//
+	// GetMsg 返回与此请求关联的 RuleMsg。
+	// 如果不存在消息，则使用请求数据创建新消息。
+	//
+	// Data Type Handling:
+	// 数据类型处理：
+	//
+	// By default, all network data is treated as BINARY type to preserve data integrity.
+	// This ensures that binary protocols, raw sensor data, and any byte sequences are
+	// handled correctly without character encoding issues.
+	//
+	// 默认情况下，所有网络数据都被视为 BINARY 类型以保持数据完整性。
+	// 这确保二进制协议、原始传感器数据和任何字节序列都能正确处理，不会出现字符编码问题。
+	//
+	// Changing Data Type with Processors:
+	// 使用处理器更改数据类型：
+	//
+	// The data type can be changed using built-in processors to optimize downstream
+	// component processing. Use processors in router configuration:
+	// 可以使用内置处理器更改数据类型以优化下游组件处理。在路由配置中使用处理器：
+	//
+	//	router := impl.NewRouter().From("").
+	//	  Process("setJsonDataType").   // Changes to JSON type
+	//	  To("chain:jsonProcessor").End()
+	//
+	// Available data type processors:
+	// 可用的数据类型处理器：
+	//   - setJsonDataType: For JSON protocols and REST APIs
+	//     用于 JSON 协议和 REST API
+	//   - setTextDataType: For text-based protocols like HTTP, SMTP, etc.
+	//     用于基于文本的协议，如 HTTP、SMTP 等
+	//   - setBinaryDataType: For binary protocols (default, explicit setting)
+	//     用于二进制协议（默认，显式设置）
+	//
+	// Protocol-Specific Recommendations:
+	// 协议特定建议：
+	//   - IoT sensors: Keep BINARY for raw data integrity
+	//     物联网传感器：保持 BINARY 以确保原始数据完整性
+	//   - JSON APIs: Use setJsonDataType processor
+	//     JSON API：使用 setJsonDataType 处理器
+	//   - Text protocols: Use setTextDataType processor
+	//     文本协议：使用 setTextDataType 处理器
+	return
 }
 
-// GetMsg returns the RuleMsg associated with this request.
-// If no message exists, creates a new one with the request data.
-//
-// GetMsg 返回与此请求关联的 RuleMsg。
-// 如果不存在消息，则使用请求数据创建新消息。
-//
-// Data Type Handling:
-// 数据类型处理：
-//
-// By default, all network data is treated as BINARY type to preserve data integrity.
-// This ensures that binary protocols, raw sensor data, and any byte sequences are
-// handled correctly without character encoding issues.
-//
-// 默认情况下，所有网络数据都被视为 BINARY 类型以保持数据完整性。
-// 这确保二进制协议、原始传感器数据和任何字节序列都能正确处理，不会出现字符编码问题。
-//
-// Changing Data Type with Processors:
-// 使用处理器更改数据类型：
-//
-// The data type can be changed using built-in processors to optimize downstream
-// component processing. Use processors in router configuration:
-// 可以使用内置处理器更改数据类型以优化下游组件处理。在路由配置中使用处理器：
-//
-//	router := impl.NewRouter().From("").
-//	  Process("setJsonDataType").   // Changes to JSON type
-//	  To("chain:jsonProcessor").End()
-//
-// Available data type processors:
-// 可用的数据类型处理器：
-//   - setJsonDataType: For JSON protocols and REST APIs
-//     用于 JSON 协议和 REST API
-//   - setTextDataType: For text-based protocols like HTTP, SMTP, etc.
-//     用于基于文本的协议，如 HTTP、SMTP 等
-//   - setBinaryDataType: For binary protocols (default, explicit setting)
-//     用于二进制协议（默认，显式设置）
-//
-// Protocol-Specific Recommendations:
-// 协议特定建议：
-//   - IoT sensors: Keep BINARY for raw data integrity
-//     物联网传感器：保持 BINARY 以确保原始数据完整性
-//   - JSON APIs: Use setJsonDataType processor
-//     JSON API：使用 setJsonDataType 处理器
-//   - Text protocols: Use setTextDataType processor
-//     文本协议：使用 setTextDataType 处理器
 func (r *RequestMessage) GetMsg() *types.RuleMsg {
-	if r.msg == nil {
-		// 使用实际的数据类型，如果未设置则默认为BINARY（网络数据默认为二进制类型）
-		// Use the actual data type, default to BINARY if not set (network data defaults to binary type)
-		dataType := r.dataType
-		if dataType == "" {
-			dataType = types.BINARY
-		}
+	_ = "STUB: not implemented"
 
-		// 根据数据类型决定如何创建消息
-		// Decide how to create the message based on data type
-		var ruleMsg types.RuleMsg
-		if dataType == types.BINARY {
-			ruleMsg = types.NewMsgFromBytes(0, r.From(), dataType, types.NewMetadata(), r.Body())
-		} else {
-			ruleMsg = types.NewMsg(0, r.From(), dataType, types.NewMetadata(), string(r.Body()))
-		}
-		r.msg = &ruleMsg
-	}
-	return r.msg
+	// 使用实际的数据类型，如果未设置则默认为BINARY（网络数据默认为二进制类型）
+	// Use the actual data type, default to BINARY if not set (network data defaults to binary type)
+	return nil
 }
+
+// 根据数据类型决定如何创建消息
+// Decide how to create the message based on data type
 
 // SetStatusCode 不提供设置响应状态码
-func (r *RequestMessage) SetStatusCode(statusCode int) {
-}
+func (r *RequestMessage) SetStatusCode(statusCode int) { _ = "STUB: not implemented"; return }
 
-func (r *RequestMessage) SetBody(body []byte) {
-	r.body = body
-}
+func (r *RequestMessage) SetBody(body []byte) { _ = "STUB: not implemented"; return }
 
-func (r *RequestMessage) SetError(err error) {
-	r.err = err
-}
+func (r *RequestMessage) SetError(err error) { _ = "STUB: not implemented"; return }
 
-func (r *RequestMessage) GetError() error {
-	return r.err
-}
+func (r *RequestMessage) GetError() error { _ = "STUB: not implemented"; return nil }
 
 func (r *RequestMessage) Conn() net.Conn {
-	return r.conn
+	_ = "STUB: not implemented"
+
+	// ResponseMessage 响应消息
+	return *new(net.Conn)
 }
 
-// ResponseMessage 响应消息
 type ResponseMessage struct {
 	headers textproto.MIMEHeader
 	conn    net.Conn
@@ -237,90 +201,30 @@ type ResponseMessage struct {
 	mu      sync.RWMutex
 }
 
-func (r *ResponseMessage) Body() []byte {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-	return r.body
-}
+func (r *ResponseMessage) Body() []byte { _ = "STUB: not implemented"; return nil }
 
 func (r *ResponseMessage) Headers() textproto.MIMEHeader {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-	if r.headers == nil {
-		r.headers = make(map[string][]string)
-	}
-	if r.conn != nil {
-		r.headers.Set(RemoteAddrKey, r.from)
-	}
-	return r.headers
+	_ = "STUB: not implemented"
+	return *new(textproto.MIMEHeader)
 }
 
-func (r *ResponseMessage) From() string {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-	return r.from
-}
+func (r *ResponseMessage) From() string { _ = "STUB: not implemented"; return "" }
 
-func (r *ResponseMessage) GetParam(key string) string {
-	return ""
-}
+func (r *ResponseMessage) GetParam(key string) string { _ = "STUB: not implemented"; return "" }
 
-func (r *ResponseMessage) SetMsg(msg *types.RuleMsg) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-	r.msg = msg
-}
-func (r *ResponseMessage) GetMsg() *types.RuleMsg {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-	return r.msg
-}
+func (r *ResponseMessage) SetMsg(msg *types.RuleMsg) { _ = "STUB: not implemented"; return }
 
-func (r *ResponseMessage) SetStatusCode(statusCode int) {
-}
+func (r *ResponseMessage) GetMsg() *types.RuleMsg { _ = "STUB: not implemented"; return nil }
 
-func (r *ResponseMessage) SetBody(body []byte) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-	if r.msg != nil && r.msg.GetDataType() == types.JSON {
-		// 检查JSON数据是否以换行符结尾，如果没有则添加
-		if len(body) > 0 && !strings.HasSuffix(string(body), LineBreak) {
-			body = append(body, LineBreak...)
-		}
-		r.body = body
-	} else {
-		r.body = body
-	}
-	if r.conn == nil {
-		r.err = errors.New("write err: conn is nil")
-		return
-	}
-	if r.udpAddr != nil {
-		if udpConn, ok := r.conn.(*net.UDPConn); ok {
-			if _, err := udpConn.WriteToUDP(body, r.udpAddr); err != nil {
-				r.err = err
-			}
-		} else {
-			r.err = errors.New("write err: conn is not udp")
-		}
-	} else {
-		if _, err := r.conn.Write(body); err != nil {
-			r.err = err
-		}
-	}
-}
+func (r *ResponseMessage) SetStatusCode(statusCode int) { _ = "STUB: not implemented"; return }
 
-func (r *ResponseMessage) SetError(err error) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-	r.err = err
-}
+func (r *ResponseMessage) SetBody(body []byte) { _ = "STUB: not implemented"; return }
 
-func (r *ResponseMessage) GetError() error {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-	return r.err
-}
+// 检查JSON数据是否以换行符结尾，如果没有则添加
+
+func (r *ResponseMessage) SetError(err error) { _ = "STUB: not implemented"; return }
+
+func (r *ResponseMessage) GetError() error { _ = "STUB: not implemented"; return nil }
 
 // Config endpoint组件的配置
 // Configuration for the NET endpoint component that creates TCP/UDP servers
@@ -478,76 +382,37 @@ type Net struct {
 	udpConn *net.UDPConn
 	// 路由映射表
 	routers map[string]*RegexpRouter
-	closed  int32 // 使用int32类型支持原子操作，0表示未关闭，1表示已关闭
+	closed  int32        // 使用int32类型支持原子操作，0表示未关闭，1表示已关闭
 	mu      sync.RWMutex // 保护listener和udpConn的并发访问
 }
 
 // Type 组件类型
-func (ep *Net) Type() string {
-	return Type
-}
+func (ep *Net) Type() string { _ = "STUB: not implemented"; return "" }
 
-func (ep *Net) New() types.Node {
-	return &Net{
-		Config: Config{
-			Protocol:      ProtocolTCP,
-			ReadTimeout:   60,
-			Server:        ":6335",
-			PacketMode:    PacketModeLine.String(), // 默认按行分割保持向后兼容
-			PacketSize:    2,
-			Encode:        "none",
-			MaxPacketSize: DefaultMaxPacketSize, // 默认64KB最大包大小
-		},
-	}
-}
+func (ep *Net) New() types.Node { _ = "STUB: not implemented"; return *new(types.Node) }
+
+// 默认按行分割保持向后兼容
+
+// 默认64KB最大包大小
 
 // Init 初始化
 func (ep *Net) Init(ruleConfig types.Config, configuration types.Configuration) error {
+	_ = "STUB: not implemented"
 	// 将配置转换为EndpointConfiguration结构体
-	err := maps.Map2Struct(configuration, &ep.Config)
-	if ep.Config.Protocol == "" {
-		ep.Config.Protocol = ProtocolTCP
-	}
-	if ep.Config.PacketMode == "" {
-		ep.Config.PacketMode = PacketModeLine.String()
-	}
-	if ep.Config.MaxPacketSize <= 0 {
-		ep.Config.MaxPacketSize = DefaultMaxPacketSize
-	}
-	ep.RuleConfig = ruleConfig
-	return err
+	return nil
 }
 
 // Destroy 销毁
 func (ep *Net) Destroy() {
-	_ = ep.Close()
+	_ = "STUB: not implemented"
+
+	// Close 关闭网络端点
+	return
 }
 
-// Close 关闭网络端点
-func (ep *Net) Close() error {
-	atomic.StoreInt32(&ep.closed, 1)
-	
-	ep.mu.Lock()
-	defer ep.mu.Unlock()
-	
-	var err error
-	if ep.listener != nil {
-		err = ep.listener.Close()
-		ep.listener = nil
-	}
-	if ep.udpConn != nil {
-		udpErr := ep.udpConn.Close()
-		ep.udpConn = nil
-		if err == nil {
-			err = udpErr
-		}
-	}
-	return err
-}
+func (ep *Net) Close() error { _ = "STUB: not implemented"; return nil }
 
-func (ep *Net) Id() string {
-	return ep.Config.Server
-}
+func (ep *Net) Id() string { _ = "STUB: not implemented"; return "" }
 
 // AddRouter 添加路由规则
 //
@@ -562,215 +427,76 @@ func (ep *Net) Id() string {
 // 返回：
 //   - 路由ID和错误信息
 func (ep *Net) AddRouter(router endpoint.Router, params ...interface{}) (string, error) {
-	if router == nil {
-		return "", errors.New("router can not nil")
-	} else {
-		expr := router.GetFrom().ToString()
-		//允许空expr，表示匹配所有
-		var regexpV *regexp.Regexp
-		// 特殊路由表达式不创建正则表达式，在matchesRouter中通过regexp==nil判断
-		if expr != "" && expr != MatchAll && expr != RouteMatchDotStar {
-			//编译表达式
-			if re, err := regexp.Compile(expr); err != nil {
-				return "", err
-			} else {
-				regexpV = re
-			}
-		}
-
-		// 解析路由匹配选项
-		var matchOptions *RouterMatchOptions
-		if len(params) > 0 {
-			if opts, ok := params[0].(*RouterMatchOptions); ok {
-				matchOptions = opts
-			}
-		}
-
-		ep.CheckAndSetRouterId(router)
-		ep.Lock()
-		defer ep.Unlock()
-		if ep.routers == nil {
-			ep.routers = make(map[string]*RegexpRouter)
-		}
-		if _, ok := ep.routers[router.GetId()]; ok {
-			return router.GetId(), fmt.Errorf("duplicate router %s", expr)
-		} else {
-			ep.routers[router.GetId()] = &RegexpRouter{
-				router:       router,
-				regexp:       regexpV,
-				matchOptions: matchOptions,
-			}
-			return router.GetId(), nil
-		}
-
-	}
+	_ = "STUB: not implemented"
+	return "", nil
 }
+
+//允许空expr，表示匹配所有
+
+// 特殊路由表达式不创建正则表达式，在matchesRouter中通过regexp==nil判断
+
+//编译表达式
+
+// 解析路由匹配选项
 
 func (ep *Net) RemoveRouter(routerId string, params ...interface{}) error {
-	ep.Lock()
-	defer ep.Unlock()
-	if ep.routers != nil {
-		if _, ok := ep.routers[routerId]; ok {
-			delete(ep.routers, routerId)
-		} else {
-			return fmt.Errorf("router: %s not found", routerId)
-		}
-	}
+	_ = "STUB: not implemented"
 	return nil
 }
+
 // Start 启动Net端点
 func (ep *Net) Start() error {
-	var err error
-	// 根据配置的协议和地址，创建一个服务器监听器
-	switch ep.Config.Protocol {
+	_ = "STUB: not implemented"
 
-	case ProtocolTCP, ProtocolTCP4, ProtocolTCP6, ProtocolUnix, ProtocolUnixPacket:
-		listener, err := net.Listen(ep.Config.Protocol, ep.Config.Server)
-		if err != nil {
-			return err
-		}
-		
-		ep.mu.Lock()
-		ep.listener = listener
-		ep.mu.Unlock()
-		
-		ep.Printf("started TCP server on %s", ep.Config.Server)
-		go ep.acceptTCPConnections()
-	case ProtocolUDP, ProtocolUDP4, ProtocolUDP6:
-		err = ep.listenUDP()
-		if err != nil {
-			return err
-		}
-		ep.Printf("started UDP server on %s", ep.Config.Server)
-		h := UDPHandler{
-			endpoint: ep,
-			config:   ep.Config,
-		}
-		ep.submitTask(h.handler)
-	default:
-		return fmt.Errorf("unsupported protocol: %s", ep.Config.Protocol)
-	}
+	// 根据配置的协议和地址，创建一个服务器监听器
 	return nil
 }
 
 // listenUDP 启动UDP监听
-func (ep *Net) listenUDP() error {
-	udpAddr, err := net.ResolveUDPAddr(ep.Config.Protocol, ep.Config.Server)
-	if err != nil {
-		return err
-	}
-	udpConn, err := net.ListenUDP(ep.Config.Protocol, udpAddr)
-	if err != nil {
-		return err
-	}
-	
-	ep.mu.Lock()
-	ep.udpConn = udpConn
-	ep.mu.Unlock()
-	
-	return nil
-}
+func (ep *Net) listenUDP() error { _ = "STUB: not implemented"; return nil }
 
 func (ep *Net) acceptTCPConnections() {
+	_ = "STUB: not implemented"
 	// 循环接受客户端的连接请求
-	for {
-		// 检查是否已关闭，避免数据竞争
-		if atomic.LoadInt32(&ep.closed) == 1 {
-			ep.Printf("net endpoint stop")
-			return
-		}
-
-		// 获取监听器引用，避免在Close()过程中访问nil指针
-		ep.mu.RLock()
-		listener := ep.listener
-		ep.mu.RUnlock()
-		
-		if listener == nil {
-			ep.Printf("net endpoint stop - listener is nil")
-			return
-		}
-
-		// 从监听器中获取一个客户端连接，返回连接对象和错误信息
-		conn, err := listener.Accept()
-		if err != nil {
-			if opError, ok := err.(*net.OpError); ok && opError.Err == net.ErrClosed {
-				ep.Printf("net endpoint stop")
-				return
-				//return endpoint.ErrServerStopped
-			} else {
-				ep.Printf("accept:", err)
-				continue
-			}
-		}
-
-		// 再次检查关闭状态，防止在Accept()期间被关闭
-		if atomic.LoadInt32(&ep.closed) == 1 {
-			_ = conn.Close()
-			ep.Printf("net endpoint stop - closing accepted connection")
-			return
-		}
-
-		// 打印客户端连接的信息
-		//ep.Printf("new connection from:", conn.RemoteAddr().String())
-		h := TcpHandler{
-			endpoint: ep,
-			conn:     conn,
-			config:   ep.Config,
-		}
-		// 启动一个协端处理客户端连接
-		ep.submitTask(h.handler)
-		//go ep.handler(conn)
-	}
+	return
 }
 
-func (ep *Net) submitTask(fn func()) {
-	if ep.RuleConfig.Pool != nil {
-		err := ep.RuleConfig.Pool.Submit(fn)
-		if err != nil {
-			ep.Printf("redis consumer handler err :%v", err)
-		}
-	} else {
-		go fn()
-	}
-}
+// 检查是否已关闭，避免数据竞争
 
-func (ep *Net) Printf(format string, v ...interface{}) {
-	if ep.RuleConfig.Logger != nil {
-		ep.RuleConfig.Logger.Printf(format, v...)
-	}
-}
+// 获取监听器引用，避免在Close()过程中访问nil指针
+
+// 从监听器中获取一个客户端连接，返回连接对象和错误信息
+
+//return endpoint.ErrServerStopped
+
+// 再次检查关闭状态，防止在Accept()期间被关闭
+
+// 打印客户端连接的信息
+//ep.Printf("new connection from:", conn.RemoteAddr().String())
+
+// 启动一个协端处理客户端连接
+
+//go ep.handler(conn)
+
+func (ep *Net) submitTask(fn func()) { _ = "STUB: not implemented"; return }
+
+func (ep *Net) Printf(format string, v ...interface{}) { _ = "STUB: not implemented"; return }
 
 // encode 对数据进行编码处理并返回编码后的数据和对应的数据类型
 // ⚠️  该方法计划在未来版本中弃用，建议在规则链中处理数据编码
 func (ep *Net) encode(src []byte) ([]byte, types.DataType) {
+	_ = "STUB: not implemented"
 	// 编码处理
-	var encodedMessage []byte
-	var dataType types.DataType
-
-	switch strings.ToLower(ep.Config.Encode) {
-	case EncodeHex:
-		encodedMessage = make([]byte, hex.EncodedLen(len(src)))
-		hex.Encode(encodedMessage, src)
-		dataType = types.TEXT // 十六进制编码后为文本
-	case EncodeBase64:
-		encodedMessage = make([]byte, base64.StdEncoding.EncodedLen(len(src)))
-		base64.StdEncoding.Encode(encodedMessage, src)
-		dataType = types.TEXT // Base64编码后为文本
-	default:
-		encodedMessage = src
-		// 网络数据默认为二进制类型
-		dataType = types.BINARY
-	}
-	return encodedMessage, dataType
+	return nil, *new(types.DataType)
 }
 
-func (ep *Net) handler(conn net.Conn) {
-	h := TcpHandler{
-		endpoint: ep,
-		conn:     conn,
-	}
-	h.handler()
-}
+// 十六进制编码后为文本
+
+// Base64编码后为文本
+
+// 网络数据默认为二进制类型
+
+func (ep *Net) handler(conn net.Conn) { _ = "STUB: not implemented"; return }
 
 type TcpHandler struct {
 	endpoint *Net
@@ -784,156 +510,54 @@ type TcpHandler struct {
 	splitter PacketSplitter
 }
 
-func (x *TcpHandler) handler() {
-	defer func() {
-		_ = x.conn.Close()
-		//捕捉异常
-		if e := recover(); e != nil {
-			x.endpoint.Printf("net endpoint handler err :\n%v", runtime.Stack())
-		}
-	}()
+func (x *TcpHandler) handler() { _ = "STUB: not implemented"; return }
 
-	// 创建数据包分割器
-	splitter, err := CreatePacketSplitter(x.endpoint.Config)
-	if err != nil {
-		x.endpoint.Printf("failed to create packet splitter: %v", err)
-		return
-	}
-	x.splitter = splitter
+//捕捉异常
 
-	readTimeoutDuration := time.Duration(x.endpoint.Config.ReadTimeout+5) * time.Second
-	//读超时，断开连接
-	x.readTimeoutTimer = time.AfterFunc(readTimeoutDuration, func() {
-		if x.endpoint.Config.ReadTimeout > 0 {
-			x.onDisconnect()
-		}
-	})
-	// 创建一个缓冲读取器，用于读取客户端发送的数据
-	reader := bufio.NewReader(x.conn)
-	// 循环读取客户端发送的数据
-	for {
-		// 设置读取超时
-		if x.endpoint.Config.ReadTimeout > 0 {
-			err := x.conn.SetReadDeadline(time.Now().Add(readTimeoutDuration))
-			if err != nil {
-				x.onDisconnect()
-				break
-			}
-		}
+// 创建数据包分割器
 
-		// 使用数据包分割器读取数据
-		data, err := x.splitter.ReadPacket(reader)
+//读超时，断开连接
 
-		if err != nil && err.Error() != os.ErrDeadlineExceeded.Error() {
-			if e, ok := err.(*net.OpError); ok {
-				if e.Err != os.ErrDeadlineExceeded {
-					x.onDisconnect()
-					break
-				} else {
-					continue
-				}
-			} else {
-				x.onDisconnect()
-				break
-			}
-		}
-		//重置读超时定时器
-		if x.endpoint.Config.ReadTimeout > 0 {
-			x.readTimeoutTimer.Reset(readTimeoutDuration)
-		}
-		if string(data) == PingData {
-			continue
-		}
-		// 编码处理
-		encodedMessage, dataType := x.endpoint.encode(data)
+// 创建一个缓冲读取器，用于读取客户端发送的数据
 
-		from := ""
-		if x.conn.RemoteAddr() != nil {
-			from = x.conn.RemoteAddr().String()
-		}
-		// 创建一个交换对象，用于存储输入和输出的消息
-		exchange := &endpoint.Exchange{
-			In: &RequestMessage{
-				conn:     x.conn,
-				body:     encodedMessage,
-				from:     from,
-				dataType: dataType, // 设置正确的数据类型
-			},
-			Out: &ResponseMessage{
-				log: func(format string, v ...interface{}) {
-					x.endpoint.Printf(format, v...)
-				},
-				conn: x.conn,
-				from: from,
-			}}
+// 循环读取客户端发送的数据
 
-		msg := exchange.In.GetMsg()
-		// 把客户端连接的地址放到msg元数据中
-		msg.Metadata.PutValue(RemoteAddrKey, from)
+// 设置读取超时
 
-		// 匹配符合的路由，处理消息
-		for _, v := range x.endpoint.routers {
-			if x.matchesRouter(v, data, encodedMessage, exchange) {
-				x.endpoint.DoProcess(context.Background(), v.router, exchange)
-			}
-		}
-	}
+// 使用数据包分割器读取数据
 
-}
+//重置读超时定时器
+
+// 编码处理
+
+// 创建一个交换对象，用于存储输入和输出的消息
+
+// 设置正确的数据类型
+
+// 把客户端连接的地址放到msg元数据中
+
+// 匹配符合的路由，处理消息
 
 // matchesRouter 检查数据是否匹配指定的路由
 func (x *TcpHandler) matchesRouter(router *RegexpRouter, rawData, encodedData []byte, exchange *endpoint.Exchange) bool {
+	_ = "STUB: not implemented"
 	// 获取匹配选项
-	opts := router.matchOptions
-	if opts == nil {
-		// 如果没有正则表达式，表示匹配所有数据（特殊路由）
-		if router.regexp == nil {
-			return true
-		}
-		// 使用正则匹配逻辑
-		return router.regexp.Match(encodedData)
-	}
-
-	// 数据长度检查
-	dataLen := len(rawData)
-	if opts.MinDataLength > 0 && dataLen < opts.MinDataLength {
-		return false
-	}
-	if opts.MaxDataLength > 0 && dataLen > opts.MaxDataLength {
-		return false
-	}
-
-	// 数据类型过滤
-	if opts.DataTypeFilter != "" {
-		msg := exchange.In.GetMsg()
-		if strings.ToUpper(opts.DataTypeFilter) != strings.ToUpper(string(msg.GetDataType())) {
-			return false
-		}
-	}
-
-	// 选择匹配的数据：原始数据或编码数据
-	var dataToMatch []byte
-	if opts.MatchRawData {
-		dataToMatch = rawData
-	} else {
-		dataToMatch = encodedData
-	}
-
-	// 正则表达式匹配
-	return router.regexp == nil || router.regexp.Match(dataToMatch)
+	return false
 }
 
-func (x *TcpHandler) onDisconnect() {
-	if x.conn != nil {
-		_ = x.conn.Close()
-	}
-	if x.readTimeoutTimer != nil {
-		x.readTimeoutTimer.Stop()
-	}
-	if x.conn.RemoteAddr() != nil {
-		x.endpoint.Printf("onDisconnect:" + x.conn.RemoteAddr().String())
-	}
-}
+// 如果没有正则表达式，表示匹配所有数据（特殊路由）
+
+// 使用正则匹配逻辑
+
+// 数据长度检查
+
+// 数据类型过滤
+
+// 选择匹配的数据：原始数据或编码数据
+
+// 正则表达式匹配
+
+func (x *TcpHandler) onDisconnect() { _ = "STUB: not implemented"; return }
 
 type UDPHandler struct {
 	endpoint *Net
@@ -944,126 +568,38 @@ type UDPHandler struct {
 }
 
 func (x *UDPHandler) handler() {
+	_ = "STUB: not implemented"
 	// UDP使用配置的最大包大小，但不小于原来的BufferSize
-	bufferSize := x.endpoint.Config.MaxPacketSize
-	if bufferSize < BufferSize {
-		bufferSize = BufferSize
-	}
-	buffer := make([]byte, bufferSize)
-
-	for {
-		if atomic.LoadInt32(&x.endpoint.closed) == 1 {
-			break
-		}
-		
-		x.endpoint.mu.RLock()
-		udpConn := x.endpoint.udpConn
-		x.endpoint.mu.RUnlock()
-		
-		if udpConn == nil {
-			break
-		}
-		
-		n, addr, err := udpConn.ReadFromUDP(buffer)
-		if err != nil {
-			time.Sleep(time.Second)
-			if atomic.LoadInt32(&x.endpoint.closed) == 1 {
-				break
-			}
-			err = x.endpoint.listenUDP()
-			if err != nil {
-				x.endpoint.Printf("Error listenUDP: %v", err)
-				time.Sleep(time.Second)
-			}
-			continue
-		}
-
-		msgBuffer := buffer[:n]
-		if string(msgBuffer) == PingData {
-			continue
-		}
-
-		// 检查包大小限制
-		if len(msgBuffer) > x.endpoint.Config.MaxPacketSize {
-			x.endpoint.Printf("UDP packet too large: %d > %d from %s", len(msgBuffer), x.endpoint.Config.MaxPacketSize, addr)
-			continue
-		}
-
-		from := ""
-		if addr != nil {
-			from = addr.String()
-		}
-		// 编码处理
-		encodedMessage, dataType := x.endpoint.encode(msgBuffer)
-
-		// 创建一个交换对象，用于存储输入和输出的消息
-		exchange := &endpoint.Exchange{
-			In: &RequestMessage{
-				conn:     x.endpoint.udpConn,
-				body:     encodedMessage,
-				from:     from,
-				dataType: dataType, // 设置正确的数据类型
-			},
-			Out: &ResponseMessage{
-				log: func(format string, v ...interface{}) {
-					x.endpoint.Printf(format, v...)
-				},
-				conn:    x.endpoint.udpConn,
-				udpAddr: addr,
-				from:    from,
-			}}
-
-		msg := exchange.In.GetMsg()
-		// 把客户端连接的地址放到msg元数据中
-		msg.Metadata.PutValue(RemoteAddrKey, from)
-
-		// 匹配符合的路由，处理消息
-		for _, v := range x.endpoint.routers {
-			if x.matchesRouter(v, msgBuffer, encodedMessage, exchange) {
-				x.endpoint.DoProcess(context.Background(), v.router, exchange)
-			}
-		}
-	}
+	return
 }
+
+// 检查包大小限制
+
+// 编码处理
+
+// 创建一个交换对象，用于存储输入和输出的消息
+
+// 设置正确的数据类型
+
+// 把客户端连接的地址放到msg元数据中
+
+// 匹配符合的路由，处理消息
 
 // matchesRouter 检查数据是否匹配指定的路由（UDP版本）
 func (x *UDPHandler) matchesRouter(router *RegexpRouter, rawData, encodedData []byte, exchange *endpoint.Exchange) bool {
+	_ = "STUB: not implemented"
 	// 获取匹配选项
-	opts := router.matchOptions
-	if opts == nil {
-		// 如果没有正则表达式，表示匹配所有数据（特殊路由）
-		if router.regexp == nil {
-			return true
-		}
-		// 使用正则匹配逻辑（向后兼容）
-		return router.regexp.Match(encodedData)
-	}
-
-	// 数据长度检查
-	dataLen := len(rawData)
-	if opts.MinDataLength > 0 && dataLen < opts.MinDataLength {
-		return false
-	}
-	if opts.MaxDataLength > 0 && dataLen > opts.MaxDataLength {
-		return false
-	}
-
-	// 数据类型过滤
-	if opts.DataTypeFilter != "" {
-		msg := exchange.In.GetMsg()
-		if strings.ToUpper(opts.DataTypeFilter) != strings.ToUpper(string(msg.GetDataType())) {
-			return false
-		}
-	}
-
-	// 选择匹配的数据：原始数据或编码数据
-	var dataToMatch []byte
-	if opts.MatchRawData {
-		dataToMatch = rawData
-	} else {
-		dataToMatch = encodedData
-	}
-
-	// 正则表达式匹配
-	return router.regexp == nil || router.regexp.Match(dataToMatch)
+	return false
 }
+
+// 如果没有正则表达式，表示匹配所有数据（特殊路由）
+
+// 使用正则匹配逻辑（向后兼容）
+
+// 数据长度检查
+
+// 数据类型过滤
+
+// 选择匹配的数据：原始数据或编码数据
+
+// 正则表达式匹配

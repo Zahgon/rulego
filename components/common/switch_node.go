@@ -30,10 +30,8 @@ package common
 //      }
 import (
 	"github.com/rulego/rulego/api/types"
-	"github.com/rulego/rulego/components/base"
 	"github.com/rulego/rulego/components/filter"
 	"github.com/rulego/rulego/utils/el"
-	"github.com/rulego/rulego/utils/maps"
 )
 
 // init 注册SwitchNode组件
@@ -137,61 +135,31 @@ type caseProgram struct {
 // Type 返回组件类型
 // Type returns the component type identifier.
 func (x *SwitchNode) Type() string {
-	return "switch"
+	_ = "STUB: not implemented"
+
+	// New 创建新实例
+	// New creates a new instance.
+	return ""
 }
 
-// New 创建新实例
-// New creates a new instance.
-func (x *SwitchNode) New() types.Node {
-	return &SwitchNode{Config: SwitchNodeConfiguration{
-		Cases: []Case{
-			{Case: "msg.temperature>=20 && msg.temperature<=50", Then: "Case1"},
-			{Case: "msg.temperature>50", Then: "Case2"},
-		},
-	}}
-}
+func (x *SwitchNode) New() types.Node { _ = "STUB: not implemented"; return *new(types.Node) }
 
 // Init 初始化组件，编译所有case表达式
 // Init initializes the component.
 func (x *SwitchNode) Init(ruleConfig types.Config, configuration types.Configuration) error {
-	err := maps.Map2Struct(configuration, &x.Config)
-	if err == nil {
-		x.Cases = nil
-		for _, item := range x.Config.Cases {
-			if template, err := el.NewExprTemplate(item.Case); err != nil {
-				return err
-			} else {
-				x.Cases = append(x.Cases, &caseProgram{
-					relationType: item.Then,
-					template:     template,
-				})
-			}
-		}
-	}
-	return err
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // OnMsg 处理消息，按顺序评估case表达式并路由到第一个匹配的case或默认关系
 // OnMsg processes incoming messages by evaluating case expressions sequentially.
 func (x *SwitchNode) OnMsg(ctx types.RuleContext, msg types.RuleMsg) {
-	evn := base.NodeUtils.GetEvn(ctx, msg)
-
-	for _, p := range x.Cases {
-		if out, err := p.template.Execute(evn); err != nil {
-			ctx.TellFailure(msg, err)
-			return
-		} else {
-			if result, ok := out.(bool); ok && result {
-				ctx.TellNext(msg, p.relationType)
-				return
-			}
-		}
-	}
-	//没匹配到，默认转发到Default链
-	ctx.TellNext(msg, types.DefaultRelationType)
+	_ = "STUB: not implemented"
+	return
 }
+
+//没匹配到，默认转发到Default链
 
 // Destroy 清理资源
 // Destroy cleans up resources.
-func (x *SwitchNode) Destroy() {
-}
+func (x *SwitchNode) Destroy() { _ = "STUB: not implemented"; return }

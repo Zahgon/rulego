@@ -113,7 +113,6 @@ import (
 	"github.com/rulego/rulego/builtin/aspect"
 	"github.com/rulego/rulego/endpoint"
 	"github.com/rulego/rulego/engine"
-	"github.com/rulego/rulego/node_pool"
 )
 
 // Registry is the default registrar for rule engine components.
@@ -139,128 +138,129 @@ type RuleGo struct {
 }
 
 // NewRuleGo creates a new RuleGo instance.
-func NewRuleGo() *RuleGo {
-	return &RuleGo{
-		pool: engine.NewPool(),
-	}
-}
+func NewRuleGo() *RuleGo { _ = "STUB: not implemented"; return nil }
 
 // Pool returns the rule engine pool.
 func (g *RuleGo) Pool() *engine.Pool {
-	return g.pool
+	_ = "STUB: not implemented"
+
+	// Load loads all rule chain configurations from the specified folder and its subFolders into the rule engine instance pool.
+	// The rule chain ID is taken from the ruleChain.id specified in the rule chain file.
+	return nil
 }
 
-// Load loads all rule chain configurations from the specified folder and its subFolders into the rule engine instance pool.
-// The rule chain ID is taken from the ruleChain.id specified in the rule chain file.
 func (g *RuleGo) Load(folderPath string, opts ...types.RuleEngineOption) error {
-	if g.pool == nil {
-		g.pool = engine.NewPool()
-	}
-	return g.pool.Load(folderPath, opts...)
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // New creates a new RuleEngine and stores it in the RuleGo rule chain pool.
 // If the specified id is empty (""), the ruleChain.id from the rule chain file is used.
 func (g *RuleGo) New(id string, rootRuleChainSrc []byte, opts ...types.RuleEngineOption) (types.RuleEngine, error) {
-	return g.pool.New(id, rootRuleChainSrc, opts...)
+	_ = "STUB: not implemented"
+	return *new(types.RuleEngine), nil
 }
 
 // Get retrieves a rule engine instance by its ID.
 func (g *RuleGo) Get(id string) (types.RuleEngine, bool) {
-	return g.pool.Get(id)
+	_ = "STUB: not implemented"
+	return *
+
+	// Del removes a rule engine instance by its ID.
+	new(types.RuleEngine), false
 }
 
-// Del removes a rule engine instance by its ID.
 func (g *RuleGo) Del(id string) {
-	g.pool.Del(id)
+	_ = "STUB: not implemented"
+
+	// Stop releases all rule engine instances.
+	return
 }
 
-// Stop releases all rule engine instances.
 func (g *RuleGo) Stop() {
-	g.pool.Stop()
+	_ = "STUB: not implemented"
+
+	// Range iterates over all rule engine instances.
+	return
 }
 
-// Range iterates over all rule engine instances.
 func (g *RuleGo) Range(f func(key, value any) bool) {
-	g.pool.Range(f)
+	_ = "STUB: not implemented"
+
+	// Reload reloads all rule engine instances.
+	return
 }
 
-// Reload reloads all rule engine instances.
-func (g *RuleGo) Reload(opts ...types.RuleEngineOption) {
-	g.pool.Reload(opts...)
-}
+func (g *RuleGo) Reload(opts ...types.RuleEngineOption) { _ = "STUB: not implemented"; return }
 
 // OnMsg calls all rule engine instances to process a message.
 // All rule chains in the rule engine instance pool will attempt to process the message.
-func (g *RuleGo) OnMsg(msg types.RuleMsg) {
-	g.pool.Range(func(key, value any) bool {
-		if item, ok := value.(types.RuleEngine); ok {
-			item.OnMsg(msg)
-		}
-		return true
-	})
-}
+func (g *RuleGo) OnMsg(msg types.RuleMsg) { _ = "STUB: not implemented"; return }
 
 // SetCallbacks sets the callbacks for the rule engine pool.
-func (g *RuleGo) SetCallbacks(callbacks types.Callbacks) {
-	g.Pool().SetCallbacks(callbacks)
-}
+func (g *RuleGo) SetCallbacks(callbacks types.Callbacks) { _ = "STUB: not implemented"; return }
 
 // Load loads all rule chain configurations from the specified folder and its subFolders into the rule engine instance pool.
 // The rule chain ID is taken from the ruleChain.id specified in the rule chain file.
 func Load(folderPath string, opts ...types.RuleEngineOption) error {
-	return Rules.Load(folderPath, opts...)
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // New creates a new RuleEngine and stores it in the RuleGo rule chain pool.
 func New(id string, rootRuleChainSrc []byte, opts ...types.RuleEngineOption) (types.RuleEngine, error) {
-	return Rules.New(id, rootRuleChainSrc, opts...)
+	_ = "STUB: not implemented"
+	return *new(types.RuleEngine), nil
 }
 
 // Get retrieves a rule engine instance by its ID.
 func Get(id string) (types.RuleEngine, bool) {
-	return Rules.Get(id)
+	_ = "STUB: not implemented"
+	return *
+
+	// Del removes a rule engine instance by its ID.
+	new(types.RuleEngine), false
 }
 
-// Del removes a rule engine instance by its ID.
 func Del(id string) {
-	Rules.Del(id)
+	_ = "STUB: not implemented"
+
+	// Stop releases all rule engine instances.
+	return
 }
 
-// Stop releases all rule engine instances.
 func Stop() {
-	Rules.Stop()
+	_ = "STUB: not implemented"
+
+	// OnMsg calls all rule engine instances to process a message.
+	// All rule chains in the rule engine instance pool will attempt to process the message.
+	return
 }
 
-// OnMsg calls all rule engine instances to process a message.
-// All rule chains in the rule engine instance pool will attempt to process the message.
 func OnMsg(msg types.RuleMsg) {
-	Rules.OnMsg(msg)
+	_ = "STUB: not implemented"
+
+	// Reload reloads all rule engine instances.
+	return
 }
 
-// Reload reloads all rule engine instances.
-func Reload(opts ...types.RuleEngineOption) {
-	Rules.Range(func(key, value any) bool {
-		_ = value.(types.RuleEngine).Reload(opts...)
-		return true
-	})
-}
+func Reload(opts ...types.RuleEngineOption) { _ = "STUB: not implemented"; return }
 
 // Range iterates over all rule engine instances.
 func Range(f func(key, value any) bool) {
-	Rules.Range(f)
+	_ = "STUB: not implemented"
+
+	// NewConfig creates a new Config and applies the options.
+	return
 }
 
-// NewConfig creates a new Config and applies the options.
 func NewConfig(opts ...types.Option) types.Config {
-	config := engine.NewConfig(opts...)
-	if config.NodePool == nil {
-		config.NodePool = node_pool.DefaultNodePool
-	}
-	return config
+	_ = "STUB: not implemented"
+	return *new(types.Config)
 }
 
 // WithConfig is an option that sets the Config of the RuleEngine.
 func WithConfig(config types.Config) types.RuleEngineOption {
-	return engine.WithConfig(config)
+	_ = "STUB: not implemented"
+	return *new(types.RuleEngineOption)
 }

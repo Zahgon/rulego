@@ -72,12 +72,8 @@ var _ types.CompletedAspect = (*MetricsAspect)(nil)
 //   - *MetricsAspect: Configured metrics aspect
 //     *MetricsAspect：配置好的指标切面
 func NewMetricsAspect(m *metrics.EngineMetrics) *MetricsAspect {
-	if m == nil {
-		m = metrics.NewEngineMetrics()
-	}
-	return &MetricsAspect{
-		metrics: m,
-	}
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // Order returns the execution order of this aspect. Lower values execute earlier.
@@ -86,23 +82,17 @@ func NewMetricsAspect(m *metrics.EngineMetrics) *MetricsAspect {
 // Order 返回此切面的执行顺序。值越低，执行越早。
 // 指标切面的顺序为 20，在控制切面之后但在日志记录之前执行。
 func (a *MetricsAspect) Order() int {
-	return 20
+	_ = "STUB: not implemented"
+
+	// New creates a new instance of the metrics aspect for each rule engine.
+	// Each new instance resets the metrics to start with clean counters.
+	//
+	// New 为每个规则引擎创建指标切面的新实例。
+	// 每个新实例重置指标以从干净的计数器开始。
+	return 0
 }
 
-// New creates a new instance of the metrics aspect for each rule engine.
-// Each new instance resets the metrics to start with clean counters.
-//
-// New 为每个规则引擎创建指标切面的新实例。
-// 每个新实例重置指标以从干净的计数器开始。
-func (a *MetricsAspect) New() types.Aspect {
-	if a.metrics == nil {
-		a.metrics = metrics.NewEngineMetrics()
-	}
-	a.metrics.Reset()
-	return &MetricsAspect{
-		metrics: a.metrics,
-	}
-}
+func (a *MetricsAspect) New() types.Aspect { _ = "STUB: not implemented"; return *new(types.Aspect) }
 
 // PointCut determines which nodes this aspect applies to.
 // Returns true for all nodes to collect comprehensive metrics.
@@ -110,22 +100,23 @@ func (a *MetricsAspect) New() types.Aspect {
 // PointCut 确定此切面应用于哪些节点。
 // 对所有节点返回 true 以收集全面的指标。
 func (a *MetricsAspect) PointCut(ctx types.RuleContext, msg types.RuleMsg, relationType string) bool {
-	return true
+	_ = "STUB: not implemented"
+
+	// Start is called at the beginning of rule processing. It increments both
+	// the current active execution counter and the total processed counter.
+	//
+	// Start 在规则处理开始时调用。它同时增加当前活跃执行计数器和总处理计数器。
+	//
+	// Metrics Updated:
+	// 更新的指标：
+	//   - CurrentActive: Incremented by 1  当前活跃数增加 1
+	//   - TotalProcessed: Incremented by 1  总处理数增加 1
+	return false
 }
 
-// Start is called at the beginning of rule processing. It increments both
-// the current active execution counter and the total processed counter.
-//
-// Start 在规则处理开始时调用。它同时增加当前活跃执行计数器和总处理计数器。
-//
-// Metrics Updated:
-// 更新的指标：
-//   - CurrentActive: Incremented by 1  当前活跃数增加 1
-//   - TotalProcessed: Incremented by 1  总处理数增加 1
 func (a *MetricsAspect) Start(ctx types.RuleContext, msg types.RuleMsg) (types.RuleMsg, error) {
-	a.metrics.IncrementCurrent()
-	a.metrics.IncrementTotal()
-	return msg, nil
+	_ = "STUB: not implemented"
+	return *new(types.RuleMsg), nil
 }
 
 // End is called at the end of rule processing. It updates success or failure
@@ -138,12 +129,8 @@ func (a *MetricsAspect) Start(ctx types.RuleContext, msg types.RuleMsg) (types.R
 //   - SuccessCount: Incremented if no error  如果没有错误则成功计数增加
 //   - FailureCount: Incremented if error occurred  如果发生错误则失败计数增加
 func (a *MetricsAspect) End(ctx types.RuleContext, msg types.RuleMsg, err error, relationType string) types.RuleMsg {
-	if err != nil {
-		a.metrics.IncrementFailed()
-	} else {
-		a.metrics.IncrementSuccess()
-	}
-	return msg
+	_ = "STUB: not implemented"
+	return *new(types.RuleMsg)
 }
 
 // Completed is called when rule processing is fully completed. It decrements
@@ -155,8 +142,8 @@ func (a *MetricsAspect) End(ctx types.RuleContext, msg types.RuleMsg, err error,
 // 更新的指标：
 //   - CurrentActive: Decremented by 1  当前活跃数减少 1
 func (a *MetricsAspect) Completed(ctx types.RuleContext, msg types.RuleMsg) types.RuleMsg {
-	a.metrics.DecrementCurrent()
-	return msg
+	_ = "STUB: not implemented"
+	return *new(types.RuleMsg)
 }
 
 // GetMetrics returns the current metrics instance containing all collected
@@ -168,6 +155,4 @@ func (a *MetricsAspect) Completed(ctx types.RuleContext, msg types.RuleMsg) type
 // Returns:
 // 返回：
 //   - *metrics.EngineMetrics: Current metrics data  当前指标数据
-func (a *MetricsAspect) GetMetrics() *metrics.EngineMetrics {
-	return a.metrics
-}
+func (a *MetricsAspect) GetMetrics() *metrics.EngineMetrics { _ = "STUB: not implemented"; return nil }

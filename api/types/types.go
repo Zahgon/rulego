@@ -224,16 +224,7 @@ type Configuration map[string]interface{}
 // 返回值：
 //   - Configuration: A new Configuration containing copies of all key-value pairs
 //     Configuration：包含所有键值对副本的新 Configuration
-func (c Configuration) Copy() Configuration {
-	if c == nil {
-		return nil
-	}
-	copy := make(Configuration, len(c))
-	for key, value := range c {
-		copy[key] = value
-	}
-	return copy
-}
+func (c Configuration) Copy() Configuration { _ = "STUB: not implemented"; return *new(Configuration) }
 
 // ComponentType is an enum for component types: rule nodes or sub-rule chains.
 // ComponentType 是组件类型的枚举：规则节点或子规则链。
@@ -869,43 +860,24 @@ type NodeRequest struct {
 }
 
 // ExecuteNode creates a NodeRequest to execute the specified node itself.
-func ExecuteNode(nodeId string) NodeRequest {
-	return NodeRequest{
-		NodeId:        nodeId,
-		RelationTypes: nil,
-	}
-}
+func ExecuteNode(nodeId string) NodeRequest { _ = "STUB: not implemented"; return *new(NodeRequest) }
 
 // ExecuteNodeWithMsg creates a NodeRequest to execute the specified node itself with the specified message.
 func ExecuteNodeWithMsg(nodeId string, msg RuleMsg) NodeRequest {
-	return NodeRequest{
-		NodeId:        nodeId,
-		RelationTypes: nil,
-		Msg:           &msg,
-	}
+	_ = "STUB: not implemented"
+	return *new(NodeRequest)
 }
 
 // ExecuteNext creates a NodeRequest to find and execute the child nodes of the specified node.
 func ExecuteNext(nodeId string, relationTypes ...string) NodeRequest {
-	if relationTypes == nil {
-		relationTypes = []string{}
-	}
-	return NodeRequest{
-		NodeId:        nodeId,
-		RelationTypes: relationTypes,
-	}
+	_ = "STUB: not implemented"
+	return *new(NodeRequest)
 }
 
 // ExecuteNextWithMsg creates a NodeRequest to find and execute the child nodes of the specified node with the specified message.
 func ExecuteNextWithMsg(nodeId string, msg RuleMsg, relationTypes ...string) NodeRequest {
-	if relationTypes == nil {
-		relationTypes = []string{}
-	}
-	return NodeRequest{
-		NodeId:        nodeId,
-		RelationTypes: relationTypes,
-		Msg:           &msg,
-	}
+	_ = "STUB: not implemented"
+	return *new(NodeRequest)
 }
 
 // RuleContext is the interface for message processing context within the rule engine.
@@ -1016,11 +988,8 @@ type RuleContextOption func(RuleContext)
 // when the message flow reaches that specific end node branch.
 // Deprecated: Use `types.WithOnEnd` instead.
 func WithEndFunc(endFunc func(ctx RuleContext, msg RuleMsg, err error)) RuleContextOption {
-	return func(rc RuleContext) {
-		rc.SetEndFunc(func(ctx RuleContext, msg RuleMsg, err error, relationType string) {
-			endFunc(ctx, msg, err)
-		})
-	}
+	_ = "STUB: not implemented"
+	return *new(RuleContextOption)
 }
 
 // WithOnEnd is a callback function for when a branch of the rule chain completes.
@@ -1028,79 +997,60 @@ func WithEndFunc(endFunc func(ctx RuleContext, msg RuleMsg, err error)) RuleCont
 // If an explicit end node is configured in the rule chain, the callback will only be triggered
 // when the message flow reaches that specific end node branch.
 func WithOnEnd(endFunc func(ctx RuleContext, msg RuleMsg, err error, relationType string)) RuleContextOption {
-	return func(rc RuleContext) {
-		rc.SetEndFunc(endFunc)
-	}
+	_ = "STUB: not implemented"
+	return *new(RuleContextOption)
 }
 
 // WithContext sets a context for sharing data or semaphores between different component instances.
 // It is also used for timeout cancellation.
 func WithContext(c context.Context) RuleContextOption {
-	return func(rc RuleContext) {
-		rc.SetContext(c)
-	}
+	_ = "STUB: not implemented"
+	return *new(RuleContextOption)
 }
 
 // WithOnAllNodeCompleted is a callback function for when the rule chain execution completes.
 func WithOnAllNodeCompleted(onAllNodeCompleted func()) RuleContextOption {
-	return func(rc RuleContext) {
-		rc.SetOnAllNodeCompleted(onAllNodeCompleted)
-	}
+	_ = "STUB: not implemented"
+	return *new(RuleContextOption)
 }
 
 // WithOnRuleChainCompleted is a callback function for when the rule chain execution completes and collects the runtime logs of each node.
 func WithOnRuleChainCompleted(onCallback func(ctx RuleContext, snapshot RuleChainRunSnapshot)) RuleContextOption {
-	return func(rc RuleContext) {
-		rc.SetCallbackFunc(CallbackFuncOnRuleChainCompleted, onCallback)
-	}
+	_ = "STUB: not implemented"
+	return *new(RuleContextOption)
 }
 
 // WithOnNodeCompleted is a callback function for when a node execution completes and collects the node's runtime log.
 func WithOnNodeCompleted(onCallback func(ctx RuleContext, nodeRunLog RuleNodeRunLog)) RuleContextOption {
-	return func(rc RuleContext) {
-		rc.SetCallbackFunc(CallbackFuncOnNodeCompleted, onCallback)
-	}
+	_ = "STUB: not implemented"
+	return *new(RuleContextOption)
 }
 
 // WithOnNodeDebug is a callback function for node debug logs, called in real-time asynchronously. It is triggered only if the node is configured with debugMode.
 func WithOnNodeDebug(onDebug func(ruleChainId string, flowType string, nodeId string, msg RuleMsg, relationType string, err error)) RuleContextOption {
-	return func(rc RuleContext) {
-		rc.SetCallbackFunc(CallbackFuncDebug, onDebug)
-	}
+	_ = "STUB: not implemented"
+	return *new(RuleContextOption)
 }
 
 // WithStartNode sets the first node to start execution.
 func WithStartNode(nodeIds ...string) RuleContextOption {
-	return func(rc RuleContext) {
-		if len(nodeIds) == 0 {
-			return
-		}
-		requests := make([]NodeRequest, len(nodeIds))
-		for i, id := range nodeIds {
-			requests[i] = ExecuteNode(id)
-		}
-		rc.SetExecuteNodes(requests...)
-	}
+	_ = "STUB: not implemented"
+	return *new(RuleContextOption)
 }
 
 // WithTellNext 设置通过指定节点Id，查找下一个或者多个执行节点。用于恢复规则链执行链路
 // WithTellNext sets the next or multiple execution nodes by specifying the node ID.
 // It is used to restore the execution path of the rule chain.
 func WithTellNext(fromNodeId string, relationTypes ...string) RuleContextOption {
-	return func(rc RuleContext) {
-		if fromNodeId == "" {
-			return
-		}
-		rc.SetExecuteNodes(ExecuteNext(fromNodeId, relationTypes...))
-	}
+	_ = "STUB: not implemented"
+	return *new(RuleContextOption)
 }
 
 // WithRestoreNodes sets the nodes to execute.
 // You can use types.ExecuteNode(id) or types.ExecuteNext(id, relationTypes...) to create the request.
 func WithRestoreNodes(nodes ...NodeRequest) RuleContextOption {
-	return func(rc RuleContext) {
-		rc.SetExecuteNodes(nodes...)
-	}
+	_ = "STUB: not implemented"
+	return *new(RuleContextOption)
 }
 
 // JsEngine is a JavaScript script engine interface.

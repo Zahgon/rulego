@@ -17,10 +17,8 @@
 package types
 
 import (
-	"fmt"
 	"io"
 	"log"
-	"os"
 	"sync"
 )
 
@@ -43,20 +41,7 @@ const (
 )
 
 // String 返回日志级别的字符串表示
-func (l LogLevel) String() string {
-	switch l {
-	case DebugLevel:
-		return "DEBUG"
-	case InfoLevel:
-		return "INFO"
-	case WarnLevel:
-		return "WARN"
-	case ErrorLevel:
-		return "ERROR"
-	default:
-		return "UNKNOWN"
-	}
-}
+func (l LogLevel) String() string { _ = "STUB: not implemented"; return "" }
 
 // ============================================
 // Field 结构化字段（可选扩展）
@@ -69,9 +54,7 @@ type Field struct {
 }
 
 // F 创建日志字段的快捷方法
-func F(key string, value any) Field {
-	return Field{Key: key, Value: value}
-}
+func F(key string, value any) Field { _ = "STUB: not implemented"; return *new(Field) }
 
 // ============================================
 // Logger 接口
@@ -111,87 +94,47 @@ type StdLogger struct {
 }
 
 // NewStdLogger 创建标准日志器
-func NewStdLogger(w io.Writer) *StdLogger {
-	if w == nil {
-		w = os.Stdout
-	}
-	return &StdLogger{w: w, level: InfoLevel}
-}
+func NewStdLogger(w io.Writer) *StdLogger { _ = "STUB: not implemented"; return nil }
 
 // SetLevel 设置日志级别
-func (l *StdLogger) SetLevel(level LogLevel) {
-	l.mu.Lock()
-	l.level = level
-	l.mu.Unlock()
-}
+func (l *StdLogger) SetLevel(level LogLevel) { _ = "STUB: not implemented"; return }
 
 // GetLevel 获取日志级别
-func (l *StdLogger) GetLevel() LogLevel {
-	l.mu.Lock()
-	defer l.mu.Unlock()
-	return l.level
-}
+func (l *StdLogger) GetLevel() LogLevel { _ = "STUB: not implemented"; return *new(LogLevel) }
 
 // SetOutput 设置输出目标
-func (l *StdLogger) SetOutput(w io.Writer) {
-	l.mu.Lock()
-	l.w = w
-	l.mu.Unlock()
-}
+func (l *StdLogger) SetOutput(w io.Writer) { _ = "STUB: not implemented"; return }
 
 func (l *StdLogger) output(level LogLevel, format string, v ...interface{}) {
-	l.mu.Lock()
-	defer l.mu.Unlock()
-	if level < l.level {
-		return
-	}
-	fmt.Fprintf(l.w, "[%s] %s\n", level, fmt.Sprintf(format, v...))
+	_ = "STUB: not implemented"
+	return
 }
 
 // Printf 实现 Logger 接口
-func (l *StdLogger) Printf(format string, v ...interface{}) {
-	l.output(InfoLevel, format, v...)
-}
+func (l *StdLogger) Printf(format string, v ...interface{}) { _ = "STUB: not implemented"; return }
 
 // Debugf 调试日志
-func (l *StdLogger) Debugf(format string, v ...interface{}) {
-	l.output(DebugLevel, format, v...)
-}
+func (l *StdLogger) Debugf(format string, v ...interface{}) { _ = "STUB: not implemented"; return }
 
 // Infof 信息日志
-func (l *StdLogger) Infof(format string, v ...interface{}) {
-	l.output(InfoLevel, format, v...)
-}
+func (l *StdLogger) Infof(format string, v ...interface{}) { _ = "STUB: not implemented"; return }
 
 // Warnf 警告日志
-func (l *StdLogger) Warnf(format string, v ...interface{}) {
-	l.output(WarnLevel, format, v...)
-}
+func (l *StdLogger) Warnf(format string, v ...interface{}) { _ = "STUB: not implemented"; return }
 
 // Errorf 错误日志
-func (l *StdLogger) Errorf(format string, v ...interface{}) {
-	l.output(ErrorLevel, format, v...)
-}
+func (l *StdLogger) Errorf(format string, v ...interface{}) { _ = "STUB: not implemented"; return }
 
 // ============================================
 // 工厂函数
 // ============================================
 
 // DefaultLogger 返回默认日志器
-func DefaultLogger() Logger {
-	return NewStdLogger(os.Stdout)
-}
+func DefaultLogger() Logger { _ = "STUB: not implemented"; return *new(Logger) }
 
 // NewLogger 创建日志器
-func NewLogger(custom Logger) Logger {
-	if custom != nil {
-		return custom
-	}
-	return DefaultLogger()
-}
+func NewLogger(custom Logger) Logger { _ = "STUB: not implemented"; return *new(Logger) }
 
 // IsNilLogger 判断日志器是否为空或使用空实现
 // 用于在打印日志前进行判断，避免空指针
-func IsNilLogger(logger Logger) bool {
-	return logger == nil
-}
+func IsNilLogger(logger Logger) bool { _ = "STUB: not implemented"; return false }

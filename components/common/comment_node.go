@@ -55,27 +55,35 @@ type CommentNode struct {
 // Type 返回组件类型
 // Type returns the component type identifier.
 func (x *CommentNode) Type() string {
-	return "comment"
+	_ = "STUB: not implemented"
+
+	// New 创建新实例
+	// New creates a new instance.
+	return ""
 }
 
-// New 创建新实例
-// New creates a new instance.
 func (x *CommentNode) New() types.Node {
-	return &CommentNode{}
+	_ = "STUB: not implemented"
+	return *
+
+	// Init 初始化组件
+	// Init initializes the component.
+	new(types.Node)
 }
 
-// Init 初始化组件
-// Init initializes the component.
 func (x *CommentNode) Init(_ types.Config, _ types.Configuration) error {
+	_ = "STUB: not implemented"
+
+	// OnMsg 直通传递消息
+	// OnMsg forwards messages unchanged.
 	return nil
 }
 
-// OnMsg 直通传递消息
-// OnMsg forwards messages unchanged.
 func (x *CommentNode) OnMsg(ctx types.RuleContext, msg types.RuleMsg) {
-	ctx.TellSuccess(msg)
+	_ = "STUB: not implemented"
+	return
+
+	// Destroy cleans up resources.
 }
 
-// Destroy cleans up resources.
-func (x *CommentNode) Destroy() {
-}
+func (x *CommentNode) Destroy() { _ = "STUB: not implemented"; return }

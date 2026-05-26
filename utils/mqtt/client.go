@@ -39,16 +39,10 @@ package mqtt
 import (
 	"context"
 	"crypto/tls"
-	"crypto/x509"
-	"errors"
-	"fmt"
 
 	paho "github.com/eclipse/paho.mqtt.golang"
-	string2 "github.com/rulego/rulego/utils/str"
 
-	"io/ioutil"
 	"sync"
-	"sync/atomic"
 	"time"
 )
 
@@ -95,230 +89,108 @@ type Client struct {
 // NewClient 创建一个MQTT客户端实例
 // 支持自动重连和指数退避重试策略
 func NewClient(ctx context.Context, conf Config) (*Client, error) {
-	var err error
-
-	b := Client{
-		msgHandlerMap: make(map[string]Handler),
-		isConnected:   0, // 初始化为未连接状态
-	}
-
-	opts := paho.NewClientOptions()
-	opts.AddBroker(conf.Server)
-	opts.SetUsername(conf.Username)
-	opts.SetPassword(conf.Password)
-	opts.SetCleanSession(conf.CleanSession)
-	if conf.ClientID == "" {
-		//随机clientId
-		opts.SetClientID("rulego/" + string2.RandomStr(8))
-	} else {
-		opts.SetClientID(conf.ClientID)
-	}
-
-	// 设置回调函数
-	opts.SetOnConnectHandler(b.onConnected)
-	opts.SetConnectionLostHandler(b.onConnectionLost)
-	opts.SetReconnectingHandler(b.onReconnecting)
-
-	// 配置自动重连
-	opts.SetAutoReconnect(true)
-	if conf.MaxReconnectInterval <= 0 {
-		conf.MaxReconnectInterval = time.Second * 60
-	}
-	opts.SetMaxReconnectInterval(conf.MaxReconnectInterval)
-
-	tlsconfig, err := newTLSConfig(conf.CAFile, conf.CertFile, conf.CertKeyFile)
-	if err != nil {
-		return nil, fmt.Errorf("error loading mqtt certificate files,ca_cert=%s,tls_cert=%s,tls_key=%s", conf.CAFile, conf.CertFile, conf.CertKeyFile)
-	}
-	//tls
-	if tlsconfig != nil {
-		opts.SetTLSConfig(tlsconfig)
-	}
-	b.client = paho.NewClient(opts)
-
-	// 初始连接重试逻辑，使用指数退避策略
-	maxRetries := 5
-	retryInterval := time.Second * 2
-
-	for i := 0; i < maxRetries; i++ {
-		if token := b.client.Connect(); token.Wait() && token.Error() != nil {
-			select {
-			case <-ctx.Done():
-				// context被取消或超时，返回错误
-				return nil, ctx.Err()
-			case <-time.After(retryInterval):
-				// 指数退避：每次重试间隔增加50%
-				retryInterval = time.Duration(float64(retryInterval) * 1.5)
-				if retryInterval > conf.MaxReconnectInterval {
-					retryInterval = conf.MaxReconnectInterval
-				}
-			}
-		} else {
-			// 连接成功，设置连接状态
-			atomic.StoreInt32(&b.isConnected, 1)
-			return &b, nil
-		}
-	}
-
-	// 达到最大重试次数，返回最后一次连接错误
-	if token := b.client.Connect(); token.Wait() && token.Error() != nil {
-		return nil, fmt.Errorf("failed to connect after %d retries: %v", maxRetries, token.Error())
-	}
-
-	atomic.StoreInt32(&b.isConnected, 1)
-	return &b, nil
+	_ = "STUB: not implemented"
+	return nil, nil
 }
+
+// 初始化为未连接状态
+
+//随机clientId
+
+// 设置回调函数
+
+// 配置自动重连
+
+//tls
+
+// 初始连接重试逻辑，使用指数退避策略
+
+// context被取消或超时，返回错误
+
+// 指数退避：每次重试间隔增加50%
+
+// 连接成功，设置连接状态
+
+// 达到最大重试次数，返回最后一次连接错误
 
 // RegisterHandler 注册订阅数据处理器
-func (b *Client) RegisterHandler(handler Handler) {
-	b.Lock()
-	defer b.Unlock()
-	b.msgHandlerMap[handler.Topic] = handler
-	b.subscribeHandler(handler)
-}
+func (b *Client) RegisterHandler(handler Handler) { _ = "STUB: not implemented"; return }
 
 // UnregisterHandler 删除订阅数据处理器
-func (b *Client) UnregisterHandler(topic string) error {
-	b.Lock()
-	defer b.Unlock()
+func (b *Client) UnregisterHandler(topic string) error { _ = "STUB: not implemented"; return nil }
 
-	// Check if handler exists before unsubscribing
-	if _, exists := b.msgHandlerMap[topic]; !exists {
-		return nil // Already unregistered, no error
-	}
+// Check if handler exists before unsubscribing
 
-	if token := b.client.Unsubscribe(topic); token.Wait() && token.Error() != nil {
-		return token.Error()
-	} else {
-		delete(b.msgHandlerMap, topic)
-		return nil
-	}
-}
+// Already unregistered, no error
 
 // GetHandlerByUpTopic 通过主题获取数据处理器
 func (b *Client) GetHandlerByUpTopic(topic string) Handler {
-	b.RLock()
-	defer b.RUnlock()
-	return b.msgHandlerMap[topic]
+	_ = "STUB: not implemented"
+	return *new(Handler)
 }
 
 func (b *Client) Close() error {
-	b.RLock()
-	// Create a copy to avoid holding lock during unsubscribe operations
-	handlers := make([]Handler, 0, len(b.msgHandlerMap))
-	for _, v := range b.msgHandlerMap {
-		handlers = append(handlers, v)
-	}
-	b.RUnlock()
+	_ = "STUB: not implemented"
 
-	// Unsubscribe from all topics without holding locks
-	for _, v := range handlers {
-		b.client.Unsubscribe(v.Topic)
-	}
-	b.client.Disconnect(500)
+	// Create a copy to avoid holding lock during unsubscribe operations
 	return nil
 }
 
+// Unsubscribe from all topics without holding locks
+
 // IsConnected 检查MQTT客户端是否已连接
-func (b *Client) IsConnected() bool {
-	return atomic.LoadInt32(&b.isConnected) == 1
-}
+func (b *Client) IsConnected() bool { _ = "STUB: not implemented"; return false }
 
 // Publish 发布数据
 func (b *Client) Publish(topic string, qos byte, data []byte) error {
+	_ = "STUB: not implemented"
 	// 检查连接状态
-	if !b.IsConnected() {
-		return errors.New("MQTT client is not connected")
-	}
-
-	token := b.client.Publish(topic, qos, false, data)
-	// 使用5秒超时等待发布完成
-	if !token.WaitTimeout(5 * time.Second) {
-		return errors.New("publish timeout after 5 seconds")
-	}
-
-	if token.Error() != nil {
-		return token.Error()
-	}
-
 	return nil
 }
 
+// 使用5秒超时等待发布完成
+
 // onConnected MQTT连接成功回调
-func (b *Client) onConnected(c paho.Client) {
-	atomic.StoreInt32(&b.isConnected, 1)
-	b.subscribe()
-}
+func (b *Client) onConnected(c paho.Client) { _ = "STUB: not implemented"; return }
 
 func (b *Client) subscribe() {
-	b.RLock()
+	_ = "STUB: not implemented"
+
 	// 创建处理器副本以避免在迭代过程中持有锁
-	handlers := make([]Handler, 0, len(b.msgHandlerMap))
-	for _, handler := range b.msgHandlerMap {
-		handlers = append(handlers, handler)
-	}
-	b.RUnlock()
-
-	// 在不持有锁的情况下订阅
-	for _, handler := range handlers {
-		b.subscribeHandler(handler)
-	}
+	return
 }
 
-func (b *Client) subscribeHandler(handler Handler) {
-	topic := handler.Topic
-	for {
-		if token := b.client.Subscribe(topic, handler.Qos, handler.Handle).(*paho.SubscribeToken); token.Wait() && (token.Error() != nil || is128Err(token, topic)) { //128 ACK错误
-			time.Sleep(2 * time.Second)
-			continue
-		}
-		break
-	}
-}
+// 在不持有锁的情况下订阅
+
+func (b *Client) subscribeHandler(handler Handler) { _ = "STUB: not implemented"; return }
+
+//128 ACK错误
 
 // 判断是否是acl 128错误
 func is128Err(token *paho.SubscribeToken, topic string) bool {
-	result, ok := token.Result()[topic]
-	return ok && result == 128
+	_ = "STUB: not implemented"
+	return false
 }
 
 // onReconnecting MQTT重连中回调
 // 在客户端尝试重新连接时被调用
 func (b *Client) onReconnecting(c paho.Client, opts *paho.ClientOptions) {
+	_ = "STUB: not implemented"
+
+	// onConnectionLost MQTT连接丢失回调
+	// 当与MQTT代理的连接意外丢失时被调用
+	return
 }
 
-// onConnectionLost MQTT连接丢失回调
-// 当与MQTT代理的连接意外丢失时被调用
-func (b *Client) onConnectionLost(c paho.Client, reason error) {
-	atomic.StoreInt32(&b.isConnected, 0)
-}
+func (b *Client) onConnectionLost(c paho.Client, reason error) { _ = "STUB: not implemented"; return }
 
 func newTLSConfig(CAFile, certFile, certKeyFile string) (*tls.Config, error) {
-	if CAFile == "" && certFile == "" && certKeyFile == "" {
-		return nil, nil
-	}
-
-	tlsConfig := &tls.Config{}
-
-	// Import trusted certificates from CAFile.pem.
-	if CAFile != "" {
-		caCert, err := ioutil.ReadFile(CAFile)
-		if err != nil {
-			return nil, err
-		}
-		certPool := x509.NewCertPool()
-		certPool.AppendCertsFromPEM(caCert)
-
-		tlsConfig.RootCAs = certPool // RootCAs = certs used to verify server cert.
-	}
-
-	// Import certificate and the key
-	if certFile != "" && certKeyFile != "" {
-		kp, err := tls.LoadX509KeyPair(certFile, certKeyFile)
-		if err != nil {
-			return nil, err
-		}
-		tlsConfig.Certificates = []tls.Certificate{kp}
-	}
-	return tlsConfig, nil
+	_ = "STUB: not implemented"
+	return nil, nil
 }
+
+// Import trusted certificates from CAFile.pem.
+
+// RootCAs = certs used to verify server cert.
+
+// Import certificate and the key

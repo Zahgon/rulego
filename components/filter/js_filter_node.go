@@ -27,13 +27,7 @@ package filter
 //        }
 //      }
 import (
-	"fmt"
-
-	"github.com/rulego/rulego/utils/js"
-
 	"github.com/rulego/rulego/api/types"
-	"github.com/rulego/rulego/components/base"
-	"github.com/rulego/rulego/utils/maps"
 )
 
 const (
@@ -76,47 +70,23 @@ type JsFilterNode struct {
 }
 
 // Type 返回组件类型
-func (x *JsFilterNode) Type() string {
-	return JsFilterType
-}
+func (x *JsFilterNode) Type() string { _ = "STUB: not implemented"; return "" }
 
 // New 创建新实例
-func (x *JsFilterNode) New() types.Node {
-	return &JsFilterNode{Config: JsFilterNodeConfiguration{
-		JsScript: "return msg.temperature > 50;",
-	}}
-}
+func (x *JsFilterNode) New() types.Node { _ = "STUB: not implemented"; return *new(types.Node) }
 
 // Init 初始化节点
 func (x *JsFilterNode) Init(ruleConfig types.Config, configuration types.Configuration) error {
-	err := maps.Map2Struct(configuration, &x.Config)
-	if err == nil {
-		jsScript := fmt.Sprintf(JsFilterFuncTemplate, x.Config.JsScript)
-		x.jsEngine, err = js.NewGojaJsEngine(ruleConfig, jsScript, base.NodeUtils.GetVars(configuration))
-	}
-	return err
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // OnMsg 处理消息，执行JavaScript过滤条件
 func (x *JsFilterNode) OnMsg(ctx types.RuleContext, msg types.RuleMsg) {
+	_ = "STUB: not implemented"
 	// 准备传递给JS脚本的数据
-	data := base.NodeUtils.GetDataByType(msg, true)
-
-	out, err := x.jsEngine.Execute(ctx, JsFilterFuncName, data, msg.Metadata.Values(), msg.Type, string(msg.DataType))
-	if err != nil {
-		ctx.TellFailure(msg, err)
-	} else {
-		if formatData, ok := out.(bool); ok && formatData {
-			ctx.TellNext(msg, types.True)
-		} else {
-			ctx.TellNext(msg, types.False)
-		}
-	}
+	return
 }
 
 // Destroy 清理资源
-func (x *JsFilterNode) Destroy() {
-	if x.jsEngine != nil {
-		x.jsEngine.Stop()
-	}
-}
+func (x *JsFilterNode) Destroy() { _ = "STUB: not implemented"; return }

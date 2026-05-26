@@ -17,6 +17,8 @@
 package main
 
 import (
+	"log"
+
 	"github.com/rulego/rulego"
 	"github.com/rulego/rulego/api/types"
 	endpointApi "github.com/rulego/rulego/api/types/endpoint"
@@ -24,7 +26,6 @@ import (
 	mqttEndpoint "github.com/rulego/rulego/endpoint/mqtt"
 	"github.com/rulego/rulego/endpoint/rest"
 	"github.com/rulego/rulego/utils/mqtt"
-	"log"
 )
 
 // 使用相同路由逻辑处理http和mqtt数据

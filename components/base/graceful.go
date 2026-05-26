@@ -19,8 +19,6 @@ package base
 
 import (
 	"context"
-	"fmt"
-	"sync/atomic"
 	"time"
 
 	"github.com/rulego/rulego/api/types"
@@ -99,14 +97,8 @@ type GracefulShutdown struct {
 //   - timeout: Maximum time to wait for graceful shutdown, 0 uses default (10s)
 //     timeout: 优雅停机的最大等待时间，0 使用默认值（10秒）
 func (g *GracefulShutdown) InitGracefulShutdown(logger types.Logger, timeout time.Duration) {
-	if timeout == 0 {
-		timeout = DefaultShutdownTimeout
-	}
-
-	g.shutdownTimeout = timeout
-	g.logger = logger
-	g.shutdownCtx, g.shutdownCancel = context.WithCancel(context.Background())
-	atomic.StoreInt32(&g.isShuttingDown, 0)
+	_ = "STUB: not implemented"
+	return
 }
 
 // GetShutdownContext returns the shutdown context for checking shutdown signals.
@@ -130,21 +122,22 @@ func (g *GracefulShutdown) InitGracefulShutdown(logger types.Logger, timeout tim
 //	    // Continue normal operation
 //	}
 func (g *GracefulShutdown) GetShutdownContext() context.Context {
-	return g.shutdownCtx
+	_ = "STUB: not implemented"
+	return *
+
+	// IsShuttingDown returns whether the component is currently in shutdown process.
+	// This is a thread-safe way to check shutdown status.
+	//
+	// IsShuttingDown 返回组件当前是否处于停机过程中。
+	// 这是检查停机状态的线程安全方式。
+	//
+	// Returns:
+	// 返回：
+	//   - bool: true if shutdown is in progress  如果正在停机则为 true
+	new(context.Context)
 }
 
-// IsShuttingDown returns whether the component is currently in shutdown process.
-// This is a thread-safe way to check shutdown status.
-//
-// IsShuttingDown 返回组件当前是否处于停机过程中。
-// 这是检查停机状态的线程安全方式。
-//
-// Returns:
-// 返回：
-//   - bool: true if shutdown is in progress  如果正在停机则为 true
-func (g *GracefulShutdown) IsShuttingDown() bool {
-	return atomic.LoadInt32(&g.isShuttingDown) == 1
-}
+func (g *GracefulShutdown) IsShuttingDown() bool { _ = "STUB: not implemented"; return false }
 
 // GracefulStop initiates graceful shutdown with two-phase design.
 // Phase 1: Sets shutdown flag to reject new operations but allows ongoing operations to complete.
@@ -166,17 +159,13 @@ func (g *GracefulShutdown) IsShuttingDown() bool {
 //  3. Only cancels context if timeout is exceeded  只有超时时才取消上下文
 //  4. Calls stopFunc() for cleanup  调用 stopFunc() 进行清理
 func (g *GracefulShutdown) GracefulStop(stopFunc func()) {
+	_ = "STUB: not implemented"
 	// 如果已经在停机，直接返回
-	if !atomic.CompareAndSwapInt32(&g.isShuttingDown, 0, 1) {
-		return
-	}
-
-	// 如果提供了停机函数，同步调用它
-	// stopFunc 应该包含等待逻辑和超时处理
-	if stopFunc != nil {
-		stopFunc()
-	}
+	return
 }
+
+// 如果提供了停机函数，同步调用它
+// stopFunc 应该包含等待逻辑和超时处理
 
 // ForceStop immediately cancels the shutdown context to interrupt all ongoing operations.
 // This should only be called after graceful shutdown timeout.
@@ -184,10 +173,9 @@ func (g *GracefulShutdown) GracefulStop(stopFunc func()) {
 // ForceStop 立即取消停机上下文以中断所有正在进行的操作。
 // 这应该只在优雅停机超时后调用。
 func (g *GracefulShutdown) ForceStop() {
+	_ = "STUB: not implemented"
 	// 强制取消上下文，中断所有正在进行的操作
-	if g.shutdownCancel != nil {
-		g.shutdownCancel()
-	}
+	return
 }
 
 // CheckShutdownSignal is a convenience method for components to check shutdown signals.
@@ -207,23 +195,14 @@ func (g *GracefulShutdown) ForceStop() {
 //	    return err // Exit the operation
 //	}
 func (g *GracefulShutdown) CheckShutdownSignal() error {
+	_ = "STUB: not implemented"
 	// First check if shutdown flag is set (phase 1 of graceful shutdown)
 	// 首先检查停机标志是否已设置（优雅停机的第一阶段）
-	if atomic.LoadInt32(&g.isShuttingDown) == 1 {
-		return fmt.Errorf("operation cancelled due to shutdown")
-	}
-
-	// Also check if context has been cancelled (phase 2 of graceful shutdown)
-	// 同时检查上下文是否已被取消（优雅停机的第二阶段）
-	if g.shutdownCtx != nil {
-		select {
-		case <-g.shutdownCtx.Done():
-			return fmt.Errorf("operation cancelled due to shutdown")
-		default:
-		}
-	}
 	return nil
 }
+
+// Also check if context has been cancelled (phase 2 of graceful shutdown)
+// 同时检查上下文是否已被取消（优雅停机的第二阶段）
 
 // CheckShutdownContext checks if the provided context has been cancelled due to shutdown.
 // This is useful when components have their own context and want to check for shutdown.
@@ -246,13 +225,7 @@ func (g *GracefulShutdown) CheckShutdownSignal() error {
 //	    return err
 //	}
 func (g *GracefulShutdown) CheckShutdownContext(ctx context.Context) error {
-	if ctx != nil {
-		select {
-		case <-ctx.Done():
-			return fmt.Errorf("operation cancelled: %w", ctx.Err())
-		default:
-		}
-	}
+	_ = "STUB: not implemented"
 	return nil
 }
 
@@ -271,9 +244,7 @@ func (g *GracefulShutdown) CheckShutdownContext(ctx context.Context) error {
 //
 //	count := g.IncrementActiveOperations()
 //	defer g.DecrementActiveOperations()
-func (g *GracefulShutdown) IncrementActiveOperations() int64 {
-	return atomic.AddInt64(&g.activeOperations, 1)
-}
+func (g *GracefulShutdown) IncrementActiveOperations() int64 { _ = "STUB: not implemented"; return 0 }
 
 // DecrementActiveOperations atomically decrements the active operations counter.
 // This should be called when an operation completes, either successfully or with error.
@@ -289,9 +260,7 @@ func (g *GracefulShutdown) IncrementActiveOperations() int64 {
 // 使用示例：
 //
 //	defer g.DecrementActiveOperations()
-func (g *GracefulShutdown) DecrementActiveOperations() int64 {
-	return atomic.AddInt64(&g.activeOperations, -1)
-}
+func (g *GracefulShutdown) DecrementActiveOperations() int64 { _ = "STUB: not implemented"; return 0 }
 
 // GetActiveOperations returns the current number of active operations.
 // This is useful for monitoring or debugging purposes.
@@ -302,9 +271,7 @@ func (g *GracefulShutdown) DecrementActiveOperations() int64 {
 // Returns:
 // 返回：
 //   - int64: Current count of active operations  当前活跃操作的计数
-func (g *GracefulShutdown) GetActiveOperations() int64 {
-	return atomic.LoadInt64(&g.activeOperations)
-}
+func (g *GracefulShutdown) GetActiveOperations() int64 { _ = "STUB: not implemented"; return 0 }
 
 // WaitForActiveOperations waits for all active operations to complete with a timeout.
 // This is typically used during graceful shutdown to ensure operations finish cleanly.
@@ -327,32 +294,19 @@ func (g *GracefulShutdown) GetActiveOperations() int64 {
 //	    g.logf("Timeout waiting for operations to complete")
 //	}
 func (g *GracefulShutdown) WaitForActiveOperations(timeout time.Duration) bool {
-	ticker := time.NewTicker(100 * time.Millisecond)
-	defer ticker.Stop()
-
-	timeoutCtx, cancel := context.WithTimeout(context.Background(), timeout)
-	defer cancel()
-
-	for {
-		select {
-		case <-timeoutCtx.Done():
-			// Timeout reached
-			return false
-		case <-ticker.C:
-			if atomic.LoadInt64(&g.activeOperations) <= 0 {
-				// All operations completed
-				return true
-			}
-		}
-	}
+	_ = "STUB: not implemented"
+	return false
 }
+
+// Timeout reached
+
+// All operations completed
 
 // logf provides internal logging with null-check
 // logf 提供带空检查的内部日志记录
 func (g *GracefulShutdown) logf(format string, args ...interface{}) {
-	if g.logger != nil {
-		g.logger.Printf(format, args...)
-	}
+	_ = "STUB: not implemented"
+	return
 }
 
 // ContextUtils provides utility functions for context checking in components.
@@ -391,16 +345,7 @@ type contextUtils struct{}
 //	    // Continue with normal processing
 //	}
 func (u *contextUtils) CheckContext(ctx context.Context, operation string) error {
-	if ctx != nil {
-		select {
-		case <-ctx.Done():
-			if operation != "" {
-				return fmt.Errorf("%s cancelled: %w", operation, ctx.Err())
-			}
-			return fmt.Errorf("operation cancelled: %w", ctx.Err())
-		default:
-		}
-	}
+	_ = "STUB: not implemented"
 	return nil
 }
 
@@ -428,26 +373,11 @@ func (u *contextUtils) CheckContext(ctx context.Context, operation string) error
 //	    return err
 //	}
 func (u *contextUtils) CheckContextWithTimeout(ctx context.Context, timeout time.Duration, operation string) error {
-	if ctx == nil {
-		return nil
-	}
-
-	checkCtx, cancel := context.WithTimeout(context.Background(), timeout)
-	defer cancel()
-
-	select {
-	case <-ctx.Done():
-		if operation != "" {
-			return fmt.Errorf("%s cancelled: %w", operation, ctx.Err())
-		}
-		return fmt.Errorf("operation cancelled: %w", ctx.Err())
-	case <-checkCtx.Done():
-		// Timeout reached, assume context is not cancelled
-		return nil
-	default:
-		return nil
-	}
+	_ = "STUB: not implemented"
+	return nil
 }
+
+// Timeout reached, assume context is not cancelled
 
 // ShouldStop provides a simple boolean check for whether an operation should stop.
 // This is useful for components that prefer boolean checks over error handling.
@@ -471,13 +401,7 @@ func (u *contextUtils) CheckContextWithTimeout(ctx context.Context, timeout time
 //	    doWork()
 //	}
 func (u *contextUtils) ShouldStop(ctx context.Context) bool {
-	if ctx != nil {
-		select {
-		case <-ctx.Done():
-			return true
-		default:
-		}
-	}
+	_ = "STUB: not implemented"
 	return false
 }
 
@@ -507,10 +431,8 @@ func (u *contextUtils) ShouldStop(ctx context.Context) bool {
 //	    return
 //	}
 func (u *contextUtils) WithGracefulShutdown(ctx context.Context, operation func() error) error {
-	if err := u.CheckContext(ctx, ""); err != nil {
-		return err
-	}
-	return operation()
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // IsContextCancelled provides a simple check if context is cancelled without returning an error.
@@ -536,13 +458,7 @@ func (u *contextUtils) WithGracefulShutdown(ctx context.Context, operation func(
 //	    return
 //	}
 func (u *contextUtils) IsContextCancelled(ctx context.Context) (bool, error) {
-	if ctx != nil {
-		select {
-		case <-ctx.Done():
-			return true, ctx.Err()
-		default:
-		}
-	}
+	_ = "STUB: not implemented"
 	return false, nil
 }
 
@@ -555,9 +471,7 @@ func (u *contextUtils) IsContextCancelled(ctx context.Context) (bool, error) {
 // Returns:
 // 返回：
 //   - bool: true if reload is in progress  如果正在重载则为 true
-func (g *GracefulShutdown) IsReloading() bool {
-	return atomic.LoadInt32(&g.isReloading) == 1
-}
+func (g *GracefulShutdown) IsReloading() bool { _ = "STUB: not implemented"; return false }
 
 // SetReloading sets the reload status atomically.
 // This should be called when starting or finishing a reload operation.
@@ -568,13 +482,7 @@ func (g *GracefulShutdown) IsReloading() bool {
 // Parameters:
 // 参数：
 //   - reloading: true to set reloading state, false to clear it  true 设置重载状态，false 清除状态
-func (g *GracefulShutdown) SetReloading(reloading bool) {
-	if reloading {
-		atomic.StoreInt32(&g.isReloading, 1)
-	} else {
-		atomic.StoreInt32(&g.isReloading, 0)
-	}
-}
+func (g *GracefulShutdown) SetReloading(reloading bool) { _ = "STUB: not implemented"; return }
 
 // WaitForReloadComplete waits for reload operation to complete with a timeout.
 // This can be used by message processing to wait for reload to finish.
@@ -590,22 +498,10 @@ func (g *GracefulShutdown) SetReloading(reloading bool) {
 // 返回：
 //   - bool: true if reload completed, false if timeout occurred  如果重载完成则为 true，如果超时则为 false
 func (g *GracefulShutdown) WaitForReloadComplete(timeout time.Duration) bool {
-	ticker := time.NewTicker(10 * time.Millisecond)
-	defer ticker.Stop()
-
-	timeoutCtx, cancel := context.WithTimeout(context.Background(), timeout)
-	defer cancel()
-
-	for {
-		select {
-		case <-timeoutCtx.Done():
-			// Timeout reached
-			return false
-		case <-ticker.C:
-			if !g.IsReloading() {
-				// Reload completed
-				return true
-			}
-		}
-	}
+	_ = "STUB: not implemented"
+	return false
 }
+
+// Timeout reached
+
+// Reload completed

@@ -13,35 +13,21 @@ type UserService struct {
 }
 
 func NewUserService(config config.Config) (*UserService, error) {
-	if userDao, err := dao.NewUserDao(config); err != nil {
-		return nil, err
-	} else {
-		return &UserService{
-			UserDao: userDao,
-			Config:  config,
-		}, nil
-	}
+	_ = "STUB: not implemented"
+	return nil, nil
 }
 
 func (s *UserService) CheckPassword(username, password string) bool {
-	if username == "" {
-		return false
-	}
-	return s.Config.CheckPassword(username, password)
+	_ = "STUB: not implemented"
+	return false
 }
 
 func (s *UserService) GetUsernameByApiKey(apikey string) string {
-	if apikey == "" {
-		return ""
-	}
-	return s.Config.GetUsernameByApiKey(apikey)
-
+	_ = "STUB: not implemented"
+	return ""
 }
 
 func (s *UserService) GetApiKeyByUsername(username string) string {
-	if username == "" {
-		return ""
-	}
-	return s.Config.GetApiKeyByUsername(username)
-
+	_ = "STUB: not implemented"
+	return ""
 }

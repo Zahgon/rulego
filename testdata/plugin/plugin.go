@@ -1,9 +1,10 @@
 package main
 
 import (
-	"github.com/rulego/rulego/api/types"
 	"strings"
 	"time"
+
+	"github.com/rulego/rulego/api/types"
 )
 
 //go build -buildmode=plugin -o plugin.so plugin.go # Compile the plugin and generate the plugin.so file

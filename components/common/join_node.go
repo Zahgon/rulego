@@ -26,12 +26,7 @@ package common
 //	}
 //}
 import (
-	"context"
-	"time"
-
 	"github.com/rulego/rulego/api/types"
-	"github.com/rulego/rulego/utils/maps"
-	"github.com/rulego/rulego/utils/str"
 )
 
 // init 注册JoinNode组件
@@ -78,92 +73,32 @@ type JoinNode struct {
 // Type 返回组件类型
 // Type returns the component type identifier.
 func (x *JoinNode) Type() string {
-	return "join"
+	_ = "STUB: not implemented"
+
+	// New 创建新实例
+	// New creates a new instance.
+	return ""
 }
 
-// New 创建新实例
-// New creates a new instance.
-func (x *JoinNode) New() types.Node {
-	return &JoinNode{Config: JoinNodeConfiguration{}}
-}
+func (x *JoinNode) New() types.Node { _ = "STUB: not implemented"; return *new(types.Node) }
 
 // Init 初始化组件
 // Init initializes the component.
 func (x *JoinNode) Init(_ types.Config, configuration types.Configuration) error {
-	return maps.Map2Struct(configuration, &x.Config)
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // OnMsg 处理消息，收集并合并来自并行分支的结果
 // OnMsg processes incoming messages by collecting results from parallel branches and merging them.
 func (x *JoinNode) OnMsg(ctx types.RuleContext, msg types.RuleMsg) {
-	c := make(chan struct{}, 1)
-	var chanCtx context.Context
-	var cancel context.CancelFunc
-	if x.Config.Timeout > 0 {
-		chanCtx, cancel = context.WithTimeout(ctx.GetContext(), time.Duration(x.Config.Timeout)*time.Second)
-	} else {
-		chanCtx, cancel = context.WithCancel(ctx.GetContext())
-	}
-	defer cancel()
-
-	var wrapperMsg = msg.Copy()
-
-	var err error
-	ok := ctx.TellCollect(msg, func(msgList []types.WrapperMsg) {
-		// 检查context是否已被取消
-		select {
-		case <-chanCtx.Done():
-			return
-		default:
-		}
-
-		wrapperMsg.SetDataType(types.JSON)
-		err = mergeMetadata(msgList, &wrapperMsg)
-		if x.Config.MergeToMap {
-			mergedMap := make(map[string]interface{})
-			for _, val := range msgList {
-				if val.NodeId != "" {
-					switch val.Msg.DataType {
-					case types.JSON:
-						if dataMap, err := val.Msg.GetJsonData(); err == nil {
-							if m, ok := dataMap.(map[string]interface{}); ok {
-								for k, v := range m {
-									mergedMap[k] = v
-								}
-							} else {
-								mergedMap[val.NodeId] = dataMap
-							}
-						} else {
-							mergedMap[val.NodeId] = val.Msg.GetData()
-						}
-					default:
-						mergedMap[val.NodeId] = val.Msg.GetData()
-					}
-				}
-			}
-			wrapperMsg.SetData(str.ToString(mergedMap))
-		} else {
-			wrapperMsg.SetData(str.ToString(filterEmptyAndRemoveMeta(msgList)))
-		}
-		select {
-		case c <- struct{}{}:
-		default: // 防止阻塞
-		}
-	})
-	if ok {
-		select {
-		case <-chanCtx.Done():
-			ctx.TellFailure(wrapperMsg, chanCtx.Err())
-		case <-c:
-			if err != nil {
-				ctx.TellFailure(wrapperMsg, err)
-			} else {
-				ctx.TellSuccess(wrapperMsg)
-			}
-		}
-	}
+	_ = "STUB: not implemented"
+	return
 }
+
+// 检查context是否已被取消
+
+// 防止阻塞
 
 // Destroy 清理资源
-func (x *JoinNode) Destroy() {
-}
+func (x *JoinNode) Destroy() { _ = "STUB: not implemented"; return }

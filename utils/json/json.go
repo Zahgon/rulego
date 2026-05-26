@@ -26,41 +26,18 @@
 // flexibility for common JSON operations in the RuleGo project.
 package json
 
-import (
-	"bytes"
-	"encoding/json"
-)
-
 // Marshal marshals the struct to json data.
 // escapeHTML=false
 // disables this behavior.escape &, <, and > to \u0026, \u003c, and \u003e
-func Marshal(v interface{}) ([]byte, error) {
-	return Marshal2(v, false)
-}
+func Marshal(v interface{}) ([]byte, error) { _ = "STUB: not implemented"; return nil, nil }
 
 func Marshal2(v interface{}, escapeHTML bool) ([]byte, error) {
-	var byteBuf bytes.Buffer
-	encoder := json.NewEncoder(&byteBuf)
-	encoder.SetEscapeHTML(escapeHTML)
-	err := encoder.Encode(v)
-	if err == nil && byteBuf.Len() > 0 {
-		return byteBuf.Bytes()[:byteBuf.Len()-1], err
-	} else {
-		return byteBuf.Bytes(), err
-	}
+	_ = "STUB: not implemented"
+	return nil, nil
 }
 
 // Unmarshal json data to struct
-func Unmarshal(b []byte, m interface{}) error {
-	return json.Unmarshal(b, m)
-}
+func Unmarshal(b []byte, m interface{}) error { _ = "STUB: not implemented"; return nil }
 
 // Format json格式化
-func Format(jsonStr []byte) ([]byte, error) {
-	var buf bytes.Buffer
-	err := json.Indent(&buf, jsonStr, "", "  ")
-	if err != nil {
-		return nil, err
-	}
-	return buf.Bytes(), nil
-}
+func Format(jsonStr []byte) ([]byte, error) { _ = "STUB: not implemented"; return nil, nil }

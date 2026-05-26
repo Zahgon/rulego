@@ -18,10 +18,11 @@ package main
 
 import (
 	"fmt"
-	"github.com/rulego/rulego"
-	"github.com/rulego/rulego/api/types"
 	"log"
 	"time"
+
+	"github.com/rulego/rulego"
+	"github.com/rulego/rulego/api/types"
 )
 
 // js处理后，并调用http服务对数据进行增加处理，并得到响应结果，后继续处理http响应的body数据

@@ -28,13 +28,7 @@ package action
 //        }
 //  }
 import (
-	"errors"
-	"fmt"
-
-	"github.com/rulego/rulego/components/base"
-
 	"github.com/rulego/rulego/api/types"
-	"github.com/rulego/rulego/utils/maps"
 )
 
 // 注册节点
@@ -77,45 +71,28 @@ type FetchNodeOutputNode struct {
 }
 
 // Type 组件类型
-func (x *FetchNodeOutputNode) Type() string {
-	return "fetchNodeOutput"
-}
+func (x *FetchNodeOutputNode) Type() string { _ = "STUB: not implemented"; return "" }
 
 // New 创建新实例
-func (x *FetchNodeOutputNode) New() types.Node {
-	return &FetchNodeOutputNode{
-		Config: NodeOutputNodeConfiguration{},
-	}
-}
+func (x *FetchNodeOutputNode) New() types.Node { _ = "STUB: not implemented"; return *new(types.Node) }
 
 // Init initializes the node
 // Establishes node dependency during initialization to ensure target node output is cached
 func (x *FetchNodeOutputNode) Init(ruleConfig types.Config, configuration types.Configuration) error {
-	err := maps.Map2Struct(configuration, &x.Config)
-	if err != nil {
-		return err
-	}
-	chainCtx := base.NodeUtils.GetChainCtx(configuration)
-	if chainCtx == nil {
-		return errors.New("chain ctx is nil")
-	}
-	self := base.NodeUtils.GetSelfDefinition(configuration)
-	// Establish node dependency to enable target node output caching and access
-	chainCtx.AddNodeDependency(self.Id, x.Config.NodeId)
-	return err
+	_ = "STUB: not implemented"
+	return nil
 }
+
+// Establish node dependency to enable target node output caching and access
 
 // OnMsg processes the message
 // Retrieves target node's cached output via GetNodeRuleMsg, sends to failure chain if not found
 func (x *FetchNodeOutputNode) OnMsg(ctx types.RuleContext, msg types.RuleMsg) {
-	if targetMsg, exists := ctx.GetNodeRuleMsg(x.Config.NodeId); exists {
-		ctx.TellSuccess(targetMsg)
-	} else {
-		// Target node has no output or dependency not established, send to failure chain
-		ctx.TellFailure(msg, fmt.Errorf("node %s output not found", x.Config.NodeId))
-	}
+	_ = "STUB: not implemented"
+	return
 }
 
+// Target node has no output or dependency not established, send to failure chain
+
 // Destroy 销毁节点
-func (x *FetchNodeOutputNode) Destroy() {
-}
+func (x *FetchNodeOutputNode) Destroy() { _ = "STUB: not implemented"; return }

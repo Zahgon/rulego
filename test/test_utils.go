@@ -17,17 +17,9 @@
 package test
 
 import (
-	"context"
-	"reflect"
-	"strings"
-	"sync"
 	"time"
 
-	"github.com/gofrs/uuid/v5"
 	"github.com/rulego/rulego/api/types"
-	"github.com/rulego/rulego/test/assert"
-	"github.com/rulego/rulego/utils/cache"
-	reflect2 "github.com/rulego/rulego/utils/reflect"
 
 	"testing"
 )
@@ -44,89 +36,30 @@ var (
 
 // CreateAndInitNode 创建并初始化一个节点实例
 func CreateAndInitNode(targetNodeType string, initConfig types.Configuration, registry *types.SafeComponentSlice) (types.Node, error) {
-	var nodeFactory types.Node
-	for _, component := range registry.Components() {
-		if component.Type() == targetNodeType {
-			nodeFactory = component
-		}
-	}
-	node := nodeFactory.New()
-
-	err := node.Init(types.NewConfig(), initConfig)
-	return node, err
+	_ = "STUB: not implemented"
+	return *new(types.Node), nil
 }
 
 func InitNode(targetNodeType string, initConfig types.Configuration, registry *types.SafeComponentSlice) types.Node {
-	node, err := CreateAndInitNode(targetNodeType, initConfig, registry)
-	if err != nil {
-		return nil
-	}
-	return node
+	_ = "STUB: not implemented"
+	return *new(types.Node)
 }
 
 func InitNodeByConfig(config types.Config, targetNodeType string, initConfig types.Configuration, registry *types.SafeComponentSlice) types.Node {
-	var nodeFactory types.Node
-	for _, component := range registry.Components() {
-		if component.Type() == targetNodeType {
-			nodeFactory = component
-		}
-	}
-	node := nodeFactory.New()
-	err := node.Init(config, initConfig)
-	if err != nil {
-		return nil
-	}
-	return node
+	_ = "STUB: not implemented"
+	return *new(types.Node)
 }
 
 // NodeNew 测试创建节点实例
 func NodeNew(t *testing.T, targetNodeType string, targetNode types.Node, defaultConfig types.Configuration, registry *types.SafeComponentSlice) {
-	var nodeFactory types.Node
-	for _, component := range registry.Components() {
-		if component.Type() == targetNode.Type() {
-			nodeFactory = component
-		}
-	}
-	assert.NotNil(t, nodeFactory)
-
-	assert.Equal(t, targetNodeType, nodeFactory.Type())
-
-	node := nodeFactory.New()
-
-	assert.True(t, reflect.ValueOf(node).Kind() == reflect.ValueOf(targetNode).Kind())
-
-	componentForm := reflect2.GetComponentForm(node)
-	var count = 0
-	for k, v := range defaultConfig {
-		for _, field := range componentForm.Fields {
-			if field.Name == k {
-				count++
-				assert.Equal(t, field.DefaultValue, v)
-				break
-			}
-		}
-	}
-	assert.Equal(t, len(defaultConfig), count)
-
+	_ = "STUB: not implemented"
+	return
 }
 
 // NodeInit 测试初始化
 func NodeInit(t *testing.T, targetNodeType string, initConfig types.Configuration, expected types.Configuration, registry *types.SafeComponentSlice) {
-	node, err := CreateAndInitNode(targetNodeType, initConfig, registry)
-	assert.Nil(t, err)
-	componentForm := reflect2.GetComponentForm(node)
-	var count = 0
-	for k, v := range expected {
-		for _, field := range componentForm.Fields {
-			if field.Name == k {
-				count++
-				assert.Equal(t, field.DefaultValue, v)
-				break
-			}
-		}
-	}
-
-	assert.Equal(t, len(expected), count)
+	_ = "STUB: not implemented"
+	return
 }
 
 type NodeAndCallback struct {
@@ -149,118 +82,71 @@ type Msg struct {
 
 // NodeOnMsg 发送消息
 func NodeOnMsg(t *testing.T, node types.Node, msgList []Msg, callback func(msg types.RuleMsg, relationType string, err error)) {
-	NodeOnMsgWithChildren(t, node, msgList, nil, callback)
+	_ = "STUB: not implemented"
+	return
 }
 
 // NodeOnMsgWithChildren 发送消息
 func NodeOnMsgWithChildren(t *testing.T, node types.Node, msgList []Msg, childrenNodes map[string]types.Node, callback func(msg types.RuleMsg, relationType string, err error)) {
-	config := types.NewConfig(types.WithCache(cache.DefaultCache))
-	NodeOnMsgWithChildrenAndConfig(t, config, node, msgList, childrenNodes, callback)
+	_ = "STUB: not implemented"
+	return
 }
 
 func NodeOnMsgWithChildrenAndConfig(t *testing.T, config types.Config, node types.Node, msgList []Msg, childrenNodes map[string]types.Node, callback func(msg types.RuleMsg, relationType string, err error)) {
-	var callbackMutex sync.Mutex
-
-	safeCallback := func(msg types.RuleMsg, relationType string, err error) {
-		callbackMutex.Lock()
-		defer callbackMutex.Unlock()
-		if callback != nil {
-			callback(msg, relationType, err)
-		}
-	}
-
-	ctx := NewRuleContextFull(config, node, childrenNodes, safeCallback)
-
-	for _, item := range msgList {
-		dataType := types.JSON
-		if item.DataType != "" {
-			dataType = item.DataType
-		}
-		if item.Id == "" {
-			uuId, _ := uuid.NewV4()
-			item.Id = uuId.String()
-		}
-		if item.Ts == 0 {
-			item.Ts = time.Now().UnixMilli()
-		}
-		msg := types.RuleMsg{
-			Id:       item.Id,
-			Ts:       item.Ts,
-			Type:     item.MsgType,
-			Data:     types.NewSharedData(item.Data),
-			DataType: dataType,
-			Metadata: types.BuildMetadataFromMetadata(item.MetaData),
-		}
-
-		go node.OnMsg(ctx, msg)
-		if item.AfterSleep > 0 {
-			time.Sleep(item.AfterSleep)
-		}
-	}
-
+	_ = "STUB: not implemented"
+	return
 }
 
 // UpperNode A plugin that converts the message data to uppercase
 type UpperNode struct{}
 
-func (n *UpperNode) Type() string {
-	return "test/upper"
-}
-func (n *UpperNode) New() types.Node {
-	return &UpperNode{}
-}
+func (n *UpperNode) Type() string { _ = "STUB: not implemented"; return "" }
+
+func (n *UpperNode) New() types.Node { _ = "STUB: not implemented"; return *new(types.Node) }
+
 func (n *UpperNode) Init(ruleConfig types.Config, configuration types.Configuration) error {
+	_ = "STUB: not implemented"
 	// Do some initialization work
 	return nil
 }
 
 func (n *UpperNode) OnMsg(ctx types.RuleContext, msg types.RuleMsg) {
-	msg.SetData(strings.ToUpper(msg.GetData()))
-	v := ctx.GetContext().Value(shareKey)
-	if v != nil {
-		msg.Metadata.PutValue(shareKey, v.(string))
-	}
-	//增加新的共享数据
-	modifyCtx := context.WithValue(ctx.GetContext(), addShareKey, addShareValue)
-	ctx.SetContext(modifyCtx)
-	// Send the modified message to the next node
-	ctx.TellSuccess(msg)
+	_ = "STUB: not implemented"
+	return
 }
 
+//增加新的共享数据
+
+// Send the modified message to the next node
+
 func (n *UpperNode) Destroy() {
+	_ = "STUB: not implemented"
 	// Do some cleanup work
+	return
 }
 
 // TimeNode A plugin that adds a timestamp to the message metadata
 type TimeNode struct{}
 
-func (n *TimeNode) Type() string {
-	return "test/time"
-}
+func (n *TimeNode) Type() string { _ = "STUB: not implemented"; return "" }
 
-func (n *TimeNode) New() types.Node {
-	return &TimeNode{}
-}
+func (n *TimeNode) New() types.Node { _ = "STUB: not implemented"; return *new(types.Node) }
 
 func (n *TimeNode) Init(ruleConfig types.Config, configuration types.Configuration) error {
+	_ = "STUB: not implemented"
 	// Do some initialization work
 	return nil
 }
 
 func (n *TimeNode) OnMsg(ctx types.RuleContext, msg types.RuleMsg) {
-	msg.Metadata.PutValue("timestamp", time.Now().Format(time.RFC3339))
-	v1 := ctx.GetContext().Value(shareKey)
-	if v1 != nil {
-		msg.Metadata.PutValue(shareKey, v1.(string))
-	}
-	v2 := ctx.GetContext().Value(addShareKey)
-	if v2 != nil {
-		msg.Metadata.PutValue(addShareKey, v2.(string))
-	}
-	// Send the modified message to the next node
-	ctx.TellSuccess(msg)
+	_ = "STUB: not implemented"
+	return
 }
 
+// Send the modified message to the next node
+
 func (n *TimeNode) Destroy() {
+	_ = "STUB: not implemented"
 	// Do some cleanup work
+	return
 }

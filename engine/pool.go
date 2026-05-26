@@ -17,14 +17,9 @@
 package engine
 
 import (
-	"context"
-	"log"
-	"strings"
 	"sync"
 
 	"github.com/rulego/rulego/api/types"
-	"github.com/rulego/rulego/utils/fs"
-	"github.com/rulego/rulego/utils/str"
 )
 
 var _ types.RuleEnginePool = (*Pool)(nil)
@@ -86,167 +81,95 @@ type Pool struct {
 //	pool := NewPool()
 //	engine, err := pool.New("engine1", ruleChainBytes)
 func NewPool() *Pool {
-	return &Pool{}
-}
+	_ = "STUB: not implemented"
 
-// Load loads all rule chain configurations from a specified folder and its subfolders into the rule engine instance pool.
-// The rule chain ID is taken from the configuration file's ruleChain.id.
-//
-// Load 从指定文件夹及其子文件夹加载所有规则链配置到规则引擎实例池中。
-// 规则链 ID 取自配置文件的 ruleChain.id。
-//
-// Parameters:
-// 参数：
-//   - folderPath: Path to the folder containing rule chain files  包含规则链文件的文件夹路径
-//   - opts: Optional configuration functions for the rule engines  规则引擎的可选配置函数
-//
-// Returns:
-// 返回：
-//   - error: Loading error if any  如果有的话，加载错误
-//
-// File Processing:
-// 文件处理：
-//   - Supports JSON files (*.json, *.JSON)  支持 JSON 文件（*.json、*.JSON）
-//   - Recursively processes subdirectories  递归处理子目录
-//   - Uses glob patterns for file matching  使用 glob 模式进行文件匹配
-//   - Automatically extracts rule chain ID from file content  自动从文件内容提取规则链 ID
-//
-// Error Handling:
-// 错误处理：
-//   - Individual file errors are logged but don't stop the overall process
-//     单个文件错误会被记录但不会停止整个过程
-//   - Returns error only for critical failures like invalid folder path
-//     仅对关键故障（如无效文件夹路径）返回错误
-//
-// Callback Integration:
-// 回调集成：
-//   - Triggers OnNew callback for each successfully loaded rule chain
-//     为每个成功加载的规则链触发 OnNew 回调
-//   - Enables custom processing and validation of loaded chains
-//     支持已加载链的自定义处理和验证
-func (g *Pool) Load(folderPath string, opts ...types.RuleEngineOption) error {
-	// Ensure the folder path ends with a pattern that matches JSON files.
-	if !strings.HasSuffix(folderPath, "*.json") && !strings.HasSuffix(folderPath, "*.JSON") {
-		if strings.HasSuffix(folderPath, "/") || strings.HasSuffix(folderPath, "\\") {
-			folderPath = folderPath + "*.json"
-		} else if folderPath == "" {
-			folderPath = "./*.json"
-		} else {
-			folderPath = folderPath + "/*.json"
-		}
-	}
-	// Get all file paths that match the pattern.
-	paths, err := fs.GetFilePaths(folderPath)
-	if err != nil {
-		return err
-	}
-	// Load each file and create a new rule engine instance from its contents.
-	for _, path := range paths {
-		b := fs.LoadFile(path)
-		if b != nil {
-			if e, err := g.New("", b, opts...); err != nil {
-				log.Println("Load rule chain error:", err)
-			} else {
-				if g.Callbacks.OnNew != nil {
-					g.Callbacks.OnNew(e.Id(), b)
-				}
-			}
-		}
-	}
+	// Load loads all rule chain configurations from a specified folder and its subfolders into the rule engine instance pool.
+	// The rule chain ID is taken from the configuration file's ruleChain.id.
+	//
+	// Load 从指定文件夹及其子文件夹加载所有规则链配置到规则引擎实例池中。
+	// 规则链 ID 取自配置文件的 ruleChain.id。
+	//
+	// Parameters:
+	// 参数：
+	//   - folderPath: Path to the folder containing rule chain files  包含规则链文件的文件夹路径
+	//   - opts: Optional configuration functions for the rule engines  规则引擎的可选配置函数
+	//
+	// Returns:
+	// 返回：
+	//   - error: Loading error if any  如果有的话，加载错误
+	//
+	// File Processing:
+	// 文件处理：
+	//   - Supports JSON files (*.json, *.JSON)  支持 JSON 文件（*.json、*.JSON）
+	//   - Recursively processes subdirectories  递归处理子目录
+	//   - Uses glob patterns for file matching  使用 glob 模式进行文件匹配
+	//   - Automatically extracts rule chain ID from file content  自动从文件内容提取规则链 ID
+	//
+	// Error Handling:
+	// 错误处理：
+	//   - Individual file errors are logged but don't stop the overall process
+	//     单个文件错误会被记录但不会停止整个过程
+	//   - Returns error only for critical failures like invalid folder path
+	//     仅对关键故障（如无效文件夹路径）返回错误
+	//
+	// Callback Integration:
+	// 回调集成：
+	//   - Triggers OnNew callback for each successfully loaded rule chain
+	//     为每个成功加载的规则链触发 OnNew 回调
+	//   - Enables custom processing and validation of loaded chains
+	//     支持已加载链的自定义处理和验证
 	return nil
 }
+
+func (g *Pool) Load(folderPath string, opts ...types.RuleEngineOption) error {
+	_ = "STUB: not implemented"
+	// Ensure the folder path ends with a pattern that matches JSON files.
+	return nil
+}
+
+// Get all file paths that match the pattern.
+
+// Load each file and create a new rule engine instance from its contents.
 
 // New creates a new RuleEngine instance and stores it in the rule chain pool.
 // If the specified id is empty, the ruleChain.id from the rule chain file is used.
 func (g *Pool) New(id string, rootRuleChainSrc []byte, opts ...types.RuleEngineOption) (types.RuleEngine, error) {
+	_ = "STUB: not implemented"
 	// Check if an instance with the given ID already exists.
-	if v, ok := g.entries.Load(id); ok {
-		return v.(*RuleEngine), nil
-	} else {
-		opts = append(opts, types.WithRuleEnginePool(g))
-		// Create a new rule engine instance.
-		if ruleEngine, err := NewRuleEngine(id, rootRuleChainSrc, opts...); err != nil {
-			return nil, err
-		} else {
-			// Store the new rule engine instance in the pool.
-			if ruleEngine.Id() != "" {
-				g.entries.Store(ruleEngine.Id(), ruleEngine)
-			}
-			if g.Callbacks.OnUpdated != nil {
-				ruleEngine.OnUpdated = g.Callbacks.OnUpdated
-			}
-			if g.Callbacks.OnNew != nil {
-				g.Callbacks.OnNew(id, rootRuleChainSrc)
-			}
-			return ruleEngine, err
-		}
-
-	}
+	return *new(types.RuleEngine), nil
 }
+
+// Create a new rule engine instance.
+
+// Store the new rule engine instance in the pool.
 
 // Get retrieves a rule engine instance by its ID.
 func (g *Pool) Get(id string) (types.RuleEngine, bool) {
-	v, ok := g.entries.Load(id)
-	if ok {
-		return v.(*RuleEngine), ok
-	} else {
-		return nil, false
-	}
+	_ = "STUB: not implemented"
+	return *new(types.RuleEngine), false
 }
 
 // Del deletes a rule engine instance by its ID.
-func (g *Pool) Del(id string) {
-	v, ok := g.entries.Load(id)
-	if ok {
-		v.(*RuleEngine).Stop(context.Background())
-		g.entries.Delete(id)
-		if g.Callbacks.OnDeleted != nil {
-			g.Callbacks.OnDeleted(id)
-		}
-	}
-}
+func (g *Pool) Del(id string) { _ = "STUB: not implemented"; return }
 
 // Stop releases all rule engine instances in the pool.
-func (g *Pool) Stop() {
-	g.entries.Range(func(key, value any) bool {
-		if item, ok := value.(*RuleEngine); ok {
-			item.Stop(context.Background())
-		}
-		g.entries.Delete(key)
-		if g.Callbacks.OnDeleted != nil {
-			g.Callbacks.OnDeleted(str.ToString(key))
-		}
-		return true
-	})
-}
+func (g *Pool) Stop() { _ = "STUB: not implemented"; return }
 
 // Range iterates over all rule engine instances in the pool.
 func (g *Pool) Range(f func(key, value any) bool) {
-	g.entries.Range(f)
+	_ = "STUB: not implemented"
+
+	// Reload reloads all rule engine instances in the pool with the given options.
+	return
 }
 
-// Reload reloads all rule engine instances in the pool with the given options.
-func (g *Pool) Reload(opts ...types.RuleEngineOption) {
-	g.entries.Range(func(key, value any) bool {
-		_ = value.(*RuleEngine).Reload(opts...)
-		return true
-	})
-}
+func (g *Pool) Reload(opts ...types.RuleEngineOption) { _ = "STUB: not implemented"; return }
 
 // OnMsg invokes all rule engine instances to process a message.
 // All rule chains in the rule engine instance pool will attempt to process the message.
-func (g *Pool) OnMsg(msg types.RuleMsg) {
-	g.entries.Range(func(key, value any) bool {
-		if item, ok := value.(*RuleEngine); ok {
-			item.OnMsg(msg)
-		}
-		return true
-	})
-}
+func (g *Pool) OnMsg(msg types.RuleMsg) { _ = "STUB: not implemented"; return }
 
-func (g *Pool) SetCallbacks(callbacks types.Callbacks) {
-	g.Callbacks = callbacks
-}
+func (g *Pool) SetCallbacks(callbacks types.Callbacks) { _ = "STUB: not implemented"; return }
 
 // Load loads all rule chain configurations from the specified folder and its subfolders into the default rule engine instance pool.
 // The rule chain ID is taken from the configuration file's ruleChain.id.
@@ -268,7 +191,8 @@ func (g *Pool) SetCallbacks(callbacks types.Callbacks) {
 //
 //	err := Load("path/to/rulechains", types.WithRuleEnginePool(pool))
 func Load(folderPath string, opts ...types.RuleEngineOption) error {
-	return DefaultPool.Load(folderPath, opts...)
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // New creates a new RuleEngine and stores it in the default rule chain pool.
@@ -291,7 +215,8 @@ func Load(folderPath string, opts ...types.RuleEngineOption) error {
 //
 //	engine, err := New("engine1", ruleChainBytes)
 func New(id string, rootRuleChainSrc []byte, opts ...types.RuleEngineOption) (types.RuleEngine, error) {
-	return DefaultPool.New(id, rootRuleChainSrc, opts...)
+	_ = "STUB: not implemented"
+	return *new(types.RuleEngine), nil
 }
 
 // Get retrieves a specified ID rule engine instance from the default rule chain pool.
@@ -312,7 +237,8 @@ func New(id string, rootRuleChainSrc []byte, opts ...types.RuleEngineOption) (ty
 //
 //	engine, exists := Get("engine1")
 func Get(id string) (types.RuleEngine, bool) {
-	return DefaultPool.Get(id)
+	_ = "STUB: not implemented"
+	return *new(types.RuleEngine), false
 }
 
 // Del deletes a specified ID rule engine instance from the default rule chain pool.
@@ -327,9 +253,7 @@ func Get(id string) (types.RuleEngine, bool) {
 // 使用：
 //
 //	Del("engine1")
-func Del(id string) {
-	DefaultPool.Del(id)
-}
+func Del(id string) { _ = "STUB: not implemented"; return }
 
 // Stop releases all rule engine instances in the default rule chain pool.
 //
@@ -340,26 +264,26 @@ func Del(id string) {
 //
 //	Stop()
 func Stop() {
-	DefaultPool.Stop()
+	_ = "STUB: not implemented"
+
+	// OnMsg calls all rule engine instances in the default rule chain pool to process a message.
+	// All rule chains in the rule engine instance pool will attempt to process the message.
+	//
+	// OnMsg 调用默认规则链池中的所有规则引擎实例来处理消息。
+	// 所有规则引擎实例池中的所有规则链将尝试处理消息。
+	//
+	// Parameters:
+	// 参数：
+	//   - msg: Rule message to be processed  要处理的消息
+	//
+	// Usage:
+	// 使用：
+	//
+	//	OnMsg(ruleMsg)
+	return
 }
 
-// OnMsg calls all rule engine instances in the default rule chain pool to process a message.
-// All rule chains in the rule engine instance pool will attempt to process the message.
-//
-// OnMsg 调用默认规则链池中的所有规则引擎实例来处理消息。
-// 所有规则引擎实例池中的所有规则链将尝试处理消息。
-//
-// Parameters:
-// 参数：
-//   - msg: Rule message to be processed  要处理的消息
-//
-// Usage:
-// 使用：
-//
-//	OnMsg(ruleMsg)
-func OnMsg(msg types.RuleMsg) {
-	DefaultPool.OnMsg(msg)
-}
+func OnMsg(msg types.RuleMsg) { _ = "STUB: not implemented"; return }
 
 // Reload reloads all rule engine instances in the default rule chain pool.
 //
@@ -373,12 +297,7 @@ func OnMsg(msg types.RuleMsg) {
 // 使用：
 //
 //	Reload(types.WithRuleEnginePool(pool))
-func Reload(opts ...types.RuleEngineOption) {
-	DefaultPool.entries.Range(func(key, value any) bool {
-		_ = value.(types.RuleEngine).Reload(opts...)
-		return true
-	})
-}
+func Reload(opts ...types.RuleEngineOption) { _ = "STUB: not implemented"; return }
 
 // Range iterates over all rule engine instances in the default rule chain pool.
 //
@@ -395,6 +314,4 @@ func Reload(opts ...types.RuleEngineOption) {
 //	  // Use key and value as needed
 //	  return true
 //	})
-func Range(f func(key, value any) bool) {
-	DefaultPool.entries.Range(f)
-}
+func Range(f func(key, value any) bool) { _ = "STUB: not implemented"; return }

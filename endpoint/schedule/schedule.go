@@ -170,21 +170,13 @@
 package schedule
 
 import (
-	"context"
-	"encoding/json"
-	"errors"
-	"fmt"
 	"net/textproto"
-	"strconv"
 	"sync"
 
-	"github.com/gofrs/uuid/v5"
 	"github.com/robfig/cron/v3"
 	"github.com/rulego/rulego/api/types"
 	"github.com/rulego/rulego/api/types/endpoint"
 	"github.com/rulego/rulego/endpoint/impl"
-	"github.com/rulego/rulego/utils/runtime"
-	"github.com/rulego/rulego/utils/str"
 )
 
 // Type defines the component type identifier for the Schedule endpoint.
@@ -232,67 +224,43 @@ type RequestMessage struct {
 	metadata map[string]string
 }
 
-func (r *RequestMessage) Body() []byte {
-	return r.body
-}
+func (r *RequestMessage) Body() []byte { _ = "STUB: not implemented"; return nil }
 
 func (r *RequestMessage) Headers() textproto.MIMEHeader {
-	if r.headers == nil {
-		r.headers = make(map[string][]string)
-	}
-	return r.headers
+	_ = "STUB: not implemented"
+	return *new(textproto.MIMEHeader)
 }
 
 // From 不提供获取来源
 func (r *RequestMessage) From() string {
+	_ = "STUB: not implemented"
+
+	// GetParam 不提供获取参数
 	return ""
 }
 
-// GetParam 不提供获取参数
-func (r *RequestMessage) GetParam(key string) string {
-	return ""
-}
+func (r *RequestMessage) GetParam(key string) string { _ = "STUB: not implemented"; return "" }
 
-func (r *RequestMessage) SetMsg(msg *types.RuleMsg) {
-	r.msg = msg
-}
+func (r *RequestMessage) SetMsg(msg *types.RuleMsg) { _ = "STUB: not implemented"; return }
 
-func (r *RequestMessage) GetMsg() *types.RuleMsg {
-	if r.msg == nil {
-		dataType := types.JSON
-		if r.msgType != "" {
-			dataType = r.msgType
-		}
-		metadata := types.NewMetadata()
-		// 如果有传入的 metadata，设置到消息中
-		if r.metadata != nil {
-			for k, v := range r.metadata {
-				metadata.PutValue(k, v)
-			}
-		}
-		ruleMsg := types.NewMsg(0, r.From(), dataType, metadata, string(r.Body()))
-		r.msg = &ruleMsg
-	}
-	return r.msg
-}
+func (r *RequestMessage) GetMsg() *types.RuleMsg { _ = "STUB: not implemented"; return nil }
+
+// 如果有传入的 metadata，设置到消息中
 
 // SetStatusCode 不提供设置状态码
-func (r *RequestMessage) SetStatusCode(statusCode int) {
-}
+func (r *RequestMessage) SetStatusCode(statusCode int) { _ = "STUB: not implemented"; return }
 
-func (r *RequestMessage) SetBody(body []byte) {
-	r.body = body
-}
+func (r *RequestMessage) SetBody(body []byte) { _ = "STUB: not implemented"; return }
 
-func (r *RequestMessage) SetError(err error) {
-	r.err = err
-}
+func (r *RequestMessage) SetError(err error) { _ = "STUB: not implemented"; return }
 
 func (r *RequestMessage) GetError() error {
-	return r.err
+	_ = "STUB: not implemented"
+
+	// ResponseMessage 响应消息
+	return nil
 }
 
-// ResponseMessage 响应消息
 type ResponseMessage struct {
 	headers textproto.MIMEHeader
 	body    []byte
@@ -301,59 +269,35 @@ type ResponseMessage struct {
 	mu      sync.RWMutex
 }
 
-func (r *ResponseMessage) Body() []byte {
-	return r.body
-}
+func (r *ResponseMessage) Body() []byte { _ = "STUB: not implemented"; return nil }
 
 func (r *ResponseMessage) Headers() textproto.MIMEHeader {
-	if r.headers == nil {
-		r.headers = make(map[string][]string)
-	}
-	return r.headers
+	_ = "STUB: not implemented"
+	return *new(textproto.MIMEHeader)
 }
 
 // From 不提供获取来源
 func (r *ResponseMessage) From() string {
+	_ = "STUB: not implemented"
+
+	// GetParam 不提供获取参数
 	return ""
 }
 
-// GetParam 不提供获取参数
-func (r *ResponseMessage) GetParam(key string) string {
-	return ""
-}
+func (r *ResponseMessage) GetParam(key string) string { _ = "STUB: not implemented"; return "" }
 
-func (r *ResponseMessage) SetMsg(msg *types.RuleMsg) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-	r.msg = msg
-}
-func (r *ResponseMessage) GetMsg() *types.RuleMsg {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-	return r.msg
-}
+func (r *ResponseMessage) SetMsg(msg *types.RuleMsg) { _ = "STUB: not implemented"; return }
+
+func (r *ResponseMessage) GetMsg() *types.RuleMsg { _ = "STUB: not implemented"; return nil }
 
 // SetStatusCode 不提供设置状态码
-func (r *ResponseMessage) SetStatusCode(statusCode int) {
-}
+func (r *ResponseMessage) SetStatusCode(statusCode int) { _ = "STUB: not implemented"; return }
 
-func (r *ResponseMessage) SetBody(body []byte) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-	r.body = body
-}
+func (r *ResponseMessage) SetBody(body []byte) { _ = "STUB: not implemented"; return }
 
-func (r *ResponseMessage) SetError(err error) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-	r.err = err
-}
+func (r *ResponseMessage) SetError(err error) { _ = "STUB: not implemented"; return }
 
-func (r *ResponseMessage) GetError() error {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-	return r.err
-}
+func (r *ResponseMessage) GetError() error { _ = "STUB: not implemented"; return nil }
 
 // Schedule represents a scheduled task endpoint implementation for the RuleGo framework.
 // It provides time-based automation capabilities by executing rule chains or components
@@ -430,147 +374,57 @@ type Schedule struct {
 }
 
 // New 创建一个新的Schedule Endpoint 实例
-func New(ruleConfig types.Config) *Schedule {
-	uuId, _ := uuid.NewV4()
-	return &Schedule{RuleConfig: ruleConfig, cron: cron.New(cron.WithSeconds()), id: uuId.String()}
-}
+func New(ruleConfig types.Config) *Schedule { _ = "STUB: not implemented"; return nil }
 
 // Type 组件类型
-func (schedule *Schedule) Type() string {
-	return Type
-}
+func (schedule *Schedule) Type() string { _ = "STUB: not implemented"; return "" }
 
-func (schedule *Schedule) New() types.Node {
-	uuId, _ := uuid.NewV4()
-	return &Schedule{cron: cron.New(cron.WithSeconds()), id: uuId.String()}
-}
+func (schedule *Schedule) New() types.Node { _ = "STUB: not implemented"; return *new(types.Node) }
 
 // Init 初始化
 func (schedule *Schedule) Init(ruleConfig types.Config, configuration types.Configuration) error {
-	schedule.RuleConfig = ruleConfig
+	_ = "STUB: not implemented"
 	return nil
 }
 
 // Destroy 销毁
-func (schedule *Schedule) Destroy() {
-	_ = schedule.Close()
-}
+func (schedule *Schedule) Destroy() { _ = "STUB: not implemented"; return }
 
-func (schedule *Schedule) Close() error {
-	if schedule.cron != nil {
-		schedule.cron.Stop()
-		schedule.cron = nil
-	}
-	schedule.BaseEndpoint.Destroy()
-	return nil
-}
+func (schedule *Schedule) Close() error { _ = "STUB: not implemented"; return nil }
 
-func (schedule *Schedule) Id() string {
-	return schedule.id
-}
+func (schedule *Schedule) Id() string { _ = "STUB: not implemented"; return "" }
 
 func (schedule *Schedule) AddRouter(router endpoint.Router, params ...interface{}) (string, error) {
-	if router == nil {
-		return "", errors.New("router can not nil")
-	}
-	if router.GetFrom() == nil {
-		return "", errors.New("from can not nil")
-	}
-	if len(params) > 0 {
-		router.SetParams(params...)
-	}
-	if schedule.cron == nil {
-		schedule.cron = cron.New(cron.WithSeconds())
-	}
-	//获取cron表达式
-	from := router.GetFrom().ToString()
-	//添加任务
-	id, err := schedule.cron.AddFunc(from, func() {
-		schedule.handler(router)
-	})
-	idStr := strconv.Itoa(int(id))
-	router.SetId(idStr)
-	//返回任务ID，用于清除任务
-	return idStr, err
+	_ = "STUB: not implemented"
+	return "", nil
 }
+
+//获取cron表达式
+
+//添加任务
+
+//返回任务ID，用于清除任务
 
 func (schedule *Schedule) RemoveRouter(routeId string, params ...interface{}) error {
-	entryID, err := strconv.Atoi(routeId)
-	if err != nil {
-		return fmt.Errorf("%s it is an illegal routing id", routeId)
-	}
-	if schedule.cron != nil {
-		schedule.cron.Remove(cron.EntryID(entryID))
-	}
+	_ = "STUB: not implemented"
 	return nil
 }
 
-func (schedule *Schedule) Start() error {
-	if schedule.cron == nil {
-		return errors.New("cron has not been initialized yet")
-	}
-	schedule.cron.Start()
-	return nil
-}
+func (schedule *Schedule) Start() error { _ = "STUB: not implemented"; return nil }
 
 func (schedule *Schedule) Printf(format string, v ...interface{}) {
-	if schedule.RuleConfig.Logger != nil {
-		schedule.RuleConfig.Logger.Printf(format, v...)
-	}
+	_ = "STUB: not implemented"
+	return
 }
 
 // 处理定时任务
 func (schedule *Schedule) handler(router endpoint.Router) {
-	defer func() {
-		//捕捉异常
-		if e := recover(); e != nil {
-			schedule.Printf("schedule endpoint handler err :\n%v", runtime.Stack())
-		}
-	}()
-	var body []byte
-	var msgType = types.JSON
-	var metadata map[string]string
-	params := router.GetParams()
-	if len(params) > 0 {
-		if params[0] != nil {
-			body = []byte(str.ToString(params[0]))
-		}
-	}
-	if len(params) > 1 {
-		if params[1] != nil {
-			switch v := params[1].(type) {
-			case types.DataType:
-				msgType = v
-			case string:
-				msgType = types.DataType(v)
-			default:
-				msgType = types.DataType(str.ToString(params[1]))
-			}
-		}
-	}
-	// 处理第三个参数作为 metadata
-	if len(params) > 2 && params[2] != nil {
-		switch v := params[2].(type) {
-		case map[string]string:
-			metadata = v
-		case map[string]interface{}:
-			metadata = make(map[string]string)
-			for key, val := range v {
-				metadata[key] = str.ToString(val)
-			}
-		case string:
-			if v != "" {
-				// 尝试解析为 JSON
-				var m map[string]string
-				if err := json.Unmarshal([]byte(v), &m); err == nil {
-					metadata = m
-				}
-			}
-		}
-	}
-	exchange := &endpoint.Exchange{
-		In:  &RequestMessage{body: body, msgType: msgType, metadata: metadata},
-		Out: &ResponseMessage{}}
+	_ = "STUB: not implemented"
 
-	schedule.DoProcess(context.Background(), router, exchange)
+	// 捕捉异常
+	return
 }
+
+// 处理第三个参数作为 metadata
+
+// 尝试解析为 JSON

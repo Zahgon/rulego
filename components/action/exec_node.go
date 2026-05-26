@@ -19,14 +19,10 @@ package action
 import (
 	"bytes"
 	"errors"
-	"io"
 	"os/exec"
-	"strings"
 
 	"github.com/rulego/rulego/api/types"
-	"github.com/rulego/rulego/components/base"
 	"github.com/rulego/rulego/utils/el"
-	"github.com/rulego/rulego/utils/maps"
 )
 
 // ErrCmdNotAllowed 命令不在白名单中的错误
@@ -122,179 +118,92 @@ type ExecCommandNode struct {
 // Type 返回组件类型
 // Type returns the component type identifier.
 func (x *ExecCommandNode) Type() string {
-	return "exec"
+	_ = "STUB: not implemented"
+
+	// New 创建新实例
+	// New creates a new instance.
+	return ""
 }
 
-// New 创建新实例
-// New creates a new instance.
 func (x *ExecCommandNode) New() types.Node {
-	return &ExecCommandNode{}
+	_ = "STUB: not implemented"
+	return *
+
+	// Init 初始化组件
+	// Init initializes the component.
+	new(types.Node)
 }
 
-// Init 初始化组件
-// Init initializes the component.
 func (x *ExecCommandNode) Init(ruleConfig types.Config, configuration types.Configuration) error {
-	if err := maps.Map2Struct(configuration, &x.Config); err != nil {
-		return err
-	}
-	x.CommandWhitelist = strings.Split(ruleConfig.Properties.GetValue(KeyExecNodeWhitelist), ",")
-	
-	// 构建命令模板
-	if template, err := x.buildCommandTemplate(&x.Config); err != nil {
-		return err
-	} else {
-		x.template = template
-	}
+	_ = "STUB: not implemented"
 	return nil
 }
+
+// 构建命令模板
 
 // buildCommandTemplate 构建命令模板
 // buildCommandTemplate builds command templates for variable substitution.
 func (x *ExecCommandNode) buildCommandTemplate(config *ExecCommandNodeConfiguration) (*ExecCommandTemplate, error) {
-	template := &ExecCommandTemplate{}
-	
-	// 构建命令模板
-	cmdTemplate, err := el.NewTemplate(config.Cmd)
-	if err != nil {
-		return nil, err
-	}
-	template.CmdTemplate = cmdTemplate
-	template.HasVar = cmdTemplate.HasVar()
-	
-	// 构建参数模板 - 保持原有的分割逻辑
-	for _, arg := range config.Args {
-		// 如果参数不以引号开头，按空格分割
-		if !strings.HasPrefix(arg, "\"") {
-			v := strings.Split(arg, " ")
-			for _, item := range v {
-				argTemplate, err := el.NewTemplate(item)
-				if err != nil {
-					return nil, err
-				}
-				template.ArgsTemplate = append(template.ArgsTemplate, argTemplate)
-				if argTemplate.HasVar() {
-					template.HasVar = true
-				}
-			}
-		} else {
-			// 如果以引号开头，作为整体处理
-			argTemplate, err := el.NewTemplate(arg)
-			if err != nil {
-				return nil, err
-			}
-			template.ArgsTemplate = append(template.ArgsTemplate, argTemplate)
-			if argTemplate.HasVar() {
-				template.HasVar = true
-			}
-		}
-	}
-	
-	return template, nil
+	_ = "STUB: not implemented"
+	return nil, nil
 }
+
+// 构建命令模板
+
+// 构建参数模板 - 保持原有的分割逻辑
+
+// 如果参数不以引号开头，按空格分割
+
+// 如果以引号开头，作为整体处理
 
 // isCommandWhitelisted 检查命令是否在白名单中
 // isCommandWhitelisted checks if a command is allowed by the whitelist configuration.
 func (x *ExecCommandNode) isCommandWhitelisted(command string) bool {
-	for _, whitelistedCommand := range x.CommandWhitelist {
-		if command == whitelistedCommand {
-			return true
-		}
-	}
+	_ = "STUB: not implemented"
 	return false
 }
 
 // OnMsg 处理消息，执行配置的命令
 // OnMsg processes incoming messages by executing the configured command with security validation.
 func (x *ExecCommandNode) OnMsg(ctx types.RuleContext, msg types.RuleMsg) {
-	var evn map[string]interface{}
-	if x.template.HasVar {
-		evn = base.NodeUtils.GetEvnAndMetadata(ctx, msg)
-	}
-	
-	// 使用模板替换命令中的占位符
-	command := x.template.CmdTemplate.ExecuteAsString(evn)
-
-	// 检查命令是否在白名单中
-	if !x.isCommandWhitelisted(command) {
-		ctx.TellFailure(msg, ErrCmdNotAllowed)
-		return
-	}
-
-	// 使用模板替换参数中的占位符
-	var args []string
-	for _, argTemplate := range x.template.ArgsTemplate {
-		processedArg := argTemplate.ExecuteAsString(evn)
-		args = append(args, processedArg)
-	}
-
-	// 执行命令
-	cmd := exec.Command(command, args...)
-	// 设置命令的工作目录
-	cmd.Dir = msg.Metadata.GetValue(KeyWorkDir)
-	var stdoutBuf, stderrBuf bytes.Buffer
-	if x.Config.Log {
-		x.printLog(ctx, msg, cmd, &stdoutBuf, &stderrBuf)
-	} else if x.Config.ReplaceData {
-		cmd.Stdout = &stdoutBuf
-		cmd.Stderr = &stderrBuf
-	}
-
-	// 启动命令
-	if err := cmd.Start(); err != nil {
-		ctx.TellFailure(msg, err)
-		return
-	}
-	// 等待命令执行完成
-	if err := cmd.Wait(); err != nil {
-		ctx.TellFailure(msg, err)
-		return
-	}
-	if x.Config.ReplaceData {
-		stdoutStr := stdoutBuf.String()
-		if stdoutStr != "" {
-			msg.SetData(stdoutStr)
-		} else {
-			msg.SetData(stderrBuf.String())
-		}
-	}
-	ctx.TellSuccess(msg)
+	_ = "STUB: not implemented"
+	return
 }
+
+// 使用模板替换命令中的占位符
+
+// 检查命令是否在白名单中
+
+// 使用模板替换参数中的占位符
+
+// 执行命令
+
+// 设置命令的工作目录
+
+// 启动命令
+
+// 等待命令执行完成
 
 // Destroy 清理资源
 // Destroy cleans up resources.
 func (x *ExecCommandNode) Destroy() {
+	_ = "STUB: not implemented"
 	// 无资源需要清理
 	// No resources to clean up
+	return
 }
 
 // printLog 配置命令输出重定向到调试日志
 // printLog configures command output redirection for debug logging.
 func (x *ExecCommandNode) printLog(ctx types.RuleContext, msg types.RuleMsg, cmd *exec.Cmd, bufOut *bytes.Buffer, bufErr *bytes.Buffer) {
+	_ = "STUB: not implemented"
 	// 启用日志记录
-	var chainId = ""
-	if ctx.RuleChain() != nil {
-		chainId = ctx.RuleChain().GetNodeId().Id
-	}
-	msgCopy := msg.Copy()
-	// 创建 DebugWriter 实例
-	debugWriter := &OnDebugWriter{
-		ctx:          ctx,
-		msg:          msgCopy,
-		relationType: "info",
-		chainId:      chainId,
-	}
-	errWriter := &OnDebugWriter{
-		ctx:          ctx,
-		msg:          msgCopy,
-		relationType: "error",
-		chainId:      chainId,
-	}
-	// 将命令的输出重定向到 DebugWriter
-	cmd.Stdout = io.MultiWriter(bufOut, debugWriter)
-	cmd.Stderr = io.MultiWriter(bufErr, errWriter)
+	return
 }
 
+// 创建 DebugWriter 实例
 
+// 将命令的输出重定向到 DebugWriter
 
 // OnDebugWriter 将命令输出重定向到规则引擎调试系统的自定义写入器
 // OnDebugWriter is a custom writer that redirects command output to the rule engine's debug system.
@@ -319,10 +228,11 @@ type OnDebugWriter struct {
 // Write 实现io.Writer接口，捕获命令输出并发送到调试日志
 // Write implements the io.Writer interface to capture command output and send it to debug logging.
 func (w *OnDebugWriter) Write(p []byte) (n int, err error) {
+	_ = "STUB: not implemented"
 	// 将接收到的数据转换为字符串
-	w.msg.SetData(string(p))
-	// 调用 OnDebug 方法来记录日志
-	w.ctx.Config().OnDebug(w.chainId, types.Log, w.ctx.GetSelfId(), w.msg, w.relationType, nil)
-	// 返回写入的字节数和nil错误
-	return len(p), nil
+	return 0, nil
 }
+
+// 调用 OnDebug 方法来记录日志
+
+// 返回写入的字节数和nil错误

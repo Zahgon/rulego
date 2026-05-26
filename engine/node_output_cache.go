@@ -17,9 +17,9 @@
 package engine
 
 import (
-	"github.com/rulego/rulego/api/types"
 	"sync"
-	"sync/atomic"
+
+	"github.com/rulego/rulego/api/types"
 )
 
 // NodeOutputCache 节点输出缓存，支持并发安全访问
@@ -37,83 +37,55 @@ type NodeOutputCache struct {
 // 只有在节点被其他节点引用时才进行缓存
 // StoreNodeOutput stores the output of a node
 func (cache *NodeOutputCache) StoreNodeOutput(nodeId string, msg types.RuleMsg) {
-	if nodeId == "" {
-		return
-	}
-
-	// 检查节点是否需要缓存
-	isCacheable := cache.IsNodeCacheable(nodeId)
-	if isCacheable {
-		// 储存节点输出
-		cache.outputs.Store(nodeId, msg.Copy())
-		// 设置hasOutputs标志
-		atomic.StoreInt32(&cache.hasOutputs, 1)
-	}
+	_ = "STUB: not implemented"
+	return
 }
+
+// 检查节点是否需要缓存
+
+// 储存节点输出
+
+// 设置hasOutputs标志
 
 // SetCacheableNodes 设置需要缓存的节点ID集合
 // SetCacheableNodes sets the collection of node IDs that need to be cached
 func (cache *NodeOutputCache) SetCacheableNodes(nodeIds []string) {
-	for _, nodeId := range nodeIds {
-		cache.cacheableNodes.Store(nodeId, true)
-	}
+	_ = "STUB: not implemented"
+	return
 }
 
 // IsNodeCacheable 检查节点是否需要缓存
 // IsNodeCacheable checks if a node needs to be cached
 func (cache *NodeOutputCache) IsNodeCacheable(nodeId string) bool {
-	_, exists := cache.cacheableNodes.Load(nodeId)
-	return exists
+	_ = "STUB: not implemented"
+	return false
 }
 
 // AddCacheableNode 添加单个需要缓存的节点
 // AddCacheableNode adds a single node that needs to be cached
-func (cache *NodeOutputCache) AddCacheableNode(nodeId string) {
-	cache.cacheableNodes.Store(nodeId, true)
-}
+func (cache *NodeOutputCache) AddCacheableNode(nodeId string) { _ = "STUB: not implemented"; return }
 
 // RemoveCacheableNode 移除不需要缓存的节点
 // RemoveCacheableNode removes a node that no longer needs to be cached
-func (cache *NodeOutputCache) RemoveCacheableNode(nodeId string) {
-	cache.cacheableNodes.Delete(nodeId)
-}
+func (cache *NodeOutputCache) RemoveCacheableNode(nodeId string) { _ = "STUB: not implemented"; return }
 
 // GetNodeRuleMsg 获取节点的完整消息信息
 // GetNodeRuleMsg retrieves the complete RuleMsg of a node
 func (cache *NodeOutputCache) GetNodeRuleMsg(nodeId string) (types.RuleMsg, bool) {
-	if atomic.LoadInt32(&cache.hasOutputs) == 0 {
-		return types.RuleMsg{}, false
-	}
-
-	if value, ok := cache.outputs.Load(nodeId); ok {
-		return value.(types.RuleMsg), true
-	}
-	return types.RuleMsg{}, false
+	_ = "STUB: not implemented"
+	return *new(types.RuleMsg), false
 }
 
 // HasOutputs 检查是否有节点输出
 // HasOutputs checks if there are any node outputs
-func (cache *NodeOutputCache) HasOutputs() bool {
-	return atomic.LoadInt32(&cache.hasOutputs) != 0
-}
+func (cache *NodeOutputCache) HasOutputs() bool { _ = "STUB: not implemented"; return false }
 
 // Clear 清空所有节点输出
 // Clear removes all node outputs
-func (cache *NodeOutputCache) Clear() {
-	cache.outputs.Range(func(key, value interface{}) bool {
-		cache.outputs.Delete(key)
-		return true
-	})
-	atomic.StoreInt32(&cache.hasOutputs, 0)
-	// 清空可缓存节点集合
-	cache.cacheableNodes.Range(func(key, value interface{}) bool {
-		cache.cacheableNodes.Delete(key)
-		return true
-	})
-}
+func (cache *NodeOutputCache) Clear() { _ = "STUB: not implemented"; return }
+
+// 清空可缓存节点集合
 
 // EnableCrossNodeAccess 启用跨节点取值功能
 // EnableCrossNodeAccess enables cross-node value access for this cache
-func (cache *NodeOutputCache) EnableCrossNodeAccess() {
-	atomic.StoreInt32(&cache.hasOutputs, 1)
-}
+func (cache *NodeOutputCache) EnableCrossNodeAccess() { _ = "STUB: not implemented"; return }

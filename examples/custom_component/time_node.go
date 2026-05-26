@@ -18,39 +18,30 @@ package main
 
 import (
 	"github.com/rulego/rulego/api/types"
-	"time"
 )
 
 // TimeNode A plugin that adds a timestamp to the message metadata
 type TimeNode struct{}
 
-func (n *TimeNode) Type() string {
-	return "test/time"
-}
+func (n *TimeNode) Type() string { _ = "STUB: not implemented"; return "" }
 
-func (n *TimeNode) New() types.Node {
-	return &TimeNode{}
-}
+func (n *TimeNode) New() types.Node { _ = "STUB: not implemented"; return *new(types.Node) }
 
 func (n *TimeNode) Init(ruleConfig types.Config, configuration types.Configuration) error {
+	_ = "STUB: not implemented"
 	// Do some initialization work
 	return nil
 }
 
 func (n *TimeNode) OnMsg(ctx types.RuleContext, msg types.RuleMsg) {
-	msg.Metadata.PutValue("timestamp", time.Now().Format(time.RFC3339))
-	v1 := ctx.GetContext().Value(shareKey)
-	if v1 != nil {
-		msg.Metadata.PutValue(shareKey, v1.(string))
-	}
-	v2 := ctx.GetContext().Value(addShareKey)
-	if v2 != nil {
-		msg.Metadata.PutValue(addShareKey, v2.(string))
-	}
-	// Send the modified message to the next node
-	ctx.TellSuccess(msg)
+	_ = "STUB: not implemented"
+	return
 }
 
+// Send the modified message to the next node
+
 func (n *TimeNode) Destroy() {
+	_ = "STUB: not implemented"
 	// Do some cleanup work
+	return
 }

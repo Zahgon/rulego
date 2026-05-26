@@ -18,13 +18,9 @@ package test
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"sync"
-	"time"
 
 	"github.com/rulego/rulego/api/types"
-	"github.com/rulego/rulego/utils/cache"
 )
 
 var _ types.RuleContext = (*NodeTestRuleContext)(nil)
@@ -50,310 +46,203 @@ type NodeTestRuleContext struct {
 }
 
 func (ctx *NodeTestRuleContext) GlobalCache() types.Cache {
-	return ctx.globalCache
+	_ = "STUB: not implemented"
+	return *new(types.Cache)
 }
 
 func (ctx *NodeTestRuleContext) ChainCache() types.Cache {
-	return ctx.chainCache
+	_ = "STUB: not implemented"
+	return *new(types.Cache)
 }
 
 func NewRuleContext(config types.Config, callback func(msg types.RuleMsg, relationType string, err error)) types.RuleContext {
-	globalCache := cache.NewMemoryCache(time.Minute * 5)
-	return &NodeTestRuleContext{
-		context:     context.TODO(),
-		config:      config,
-		callback:    callback,
-		globalCache: globalCache,
-		chainCache:  cache.NewNamespaceCache(globalCache, "test"),
-	}
+	_ = "STUB: not implemented"
+	return *new(types.RuleContext)
 }
 
 func NewRuleContextFull(config types.Config, self types.Node, childrenNodes map[string]types.Node, callback func(msg types.RuleMsg, relationType string, err error)) types.RuleContext {
-	ctx := &NodeTestRuleContext{
-		config:      config,
-		self:        self,
-		callback:    callback,
-		context:     context.TODO(),
-		globalCache: config.Cache,
-		chainCache:  cache.NewNamespaceCache(config.Cache, "test"),
-	}
-	for k, v := range childrenNodes {
-		ctx.childrenNodes.Store(k, v)
-	}
-	return ctx
+	_ = "STUB: not implemented"
+	return *new(types.RuleContext)
 }
 
-func (ctx *NodeTestRuleContext) TellSuccess(msg types.RuleMsg) {
-	ctx.mutex.RLock()
-	callback := ctx.callback
-	onEndFunc := ctx.onEndFunc
-	ctx.mutex.RUnlock()
-
-	if callback != nil {
-		callback(msg, types.Success, nil)
-	}
-	if onEndFunc != nil {
-		onEndFunc(ctx, msg, nil, types.Success)
-	}
-}
+func (ctx *NodeTestRuleContext) TellSuccess(msg types.RuleMsg) { _ = "STUB: not implemented"; return }
 
 func (ctx *NodeTestRuleContext) TellFailure(msg types.RuleMsg, err error) {
-	ctx.mutex.RLock()
-	callback := ctx.callback
-	onEndFunc := ctx.onEndFunc
-	ctx.mutex.RUnlock()
-
-	if callback != nil {
-		callback(msg, types.Failure, err)
-	}
-	if onEndFunc != nil {
-		onEndFunc(ctx, msg, err, types.Failure)
-	}
+	_ = "STUB: not implemented"
+	return
 }
 
 func (ctx *NodeTestRuleContext) TellNext(msg types.RuleMsg, relationTypes ...string) {
-	ctx.mutex.RLock()
-	callback := ctx.callback
-	onEndFunc := ctx.onEndFunc
-	ctx.mutex.RUnlock()
-
-	for _, relationType := range relationTypes {
-		if callback != nil {
-			callback(msg, relationType, nil)
-		}
-		if onEndFunc != nil {
-			onEndFunc(ctx, msg, nil, relationType)
-		}
-	}
+	_ = "STUB: not implemented"
+	return
 }
 
 func (ctx *NodeTestRuleContext) TellSelf(msg types.RuleMsg, delayMs int64) {
-	time.AfterFunc(time.Millisecond*time.Duration(delayMs), func() {
-		if ctx.self != nil {
-			ctx.self.OnMsg(ctx, msg)
-		}
-	})
+	_ = "STUB: not implemented"
+	return
 }
+
 func (ctx *NodeTestRuleContext) TellNextOrElse(msg types.RuleMsg, defaultRelationType string, relationTypes ...string) {
-	ctx.TellNext(msg, relationTypes...)
+	_ = "STUB: not implemented"
+	return
 }
+
 func (ctx *NodeTestRuleContext) NewMsg(msgType string, metaData *types.Metadata, data string) types.RuleMsg {
-	return types.NewMsg(0, msgType, types.JSON, metaData, data)
+	_ = "STUB: not implemented"
+	return *new(types.RuleMsg)
 }
-func (ctx *NodeTestRuleContext) GetSelfId() string {
-	ctx.mutex.RLock()
-	defer ctx.mutex.RUnlock()
-	return ctx.selfId
-}
+
+func (ctx *NodeTestRuleContext) GetSelfId() string { _ = "STUB: not implemented"; return "" }
+
 func (ctx *NodeTestRuleContext) Self() types.NodeCtx {
-	return nil
+	_ = "STUB: not implemented"
+	return *new(types.NodeCtx)
 }
 
 func (ctx *NodeTestRuleContext) From() types.NodeCtx {
-	return nil
-}
-func (ctx *NodeTestRuleContext) RuleChain() types.NodeCtx {
-	return nil
-}
-func (ctx *NodeTestRuleContext) Config() types.Config {
-	return ctx.config
-}
-func (ctx *NodeTestRuleContext) SubmitTack(task func()) {
-	ctx.SubmitTask(task)
-}
-func (ctx *NodeTestRuleContext) SubmitTask(task func()) {
-	go task()
+	_ = "STUB: not implemented"
+	return *new(types.NodeCtx)
 }
 
+func (ctx *NodeTestRuleContext) RuleChain() types.NodeCtx {
+	_ = "STUB: not implemented"
+	return *new(types.NodeCtx)
+}
+
+func (ctx *NodeTestRuleContext) Config() types.Config {
+	_ = "STUB: not implemented"
+	return *new(types.Config)
+}
+
+func (ctx *NodeTestRuleContext) SubmitTack(task func()) { _ = "STUB: not implemented"; return }
+
+func (ctx *NodeTestRuleContext) SubmitTask(task func()) { _ = "STUB: not implemented"; return }
+
 func (ctx *NodeTestRuleContext) SetEndFunc(onEndFunc types.OnEndFunc) types.RuleContext {
-	ctx.mutex.Lock()
-	defer ctx.mutex.Unlock()
-	ctx.onEndFunc = onEndFunc
-	return ctx
+	_ = "STUB: not implemented"
+	return *new(types.RuleContext)
 }
 
 func (ctx *NodeTestRuleContext) GetEndFunc() types.OnEndFunc {
-	ctx.mutex.RLock()
-	defer ctx.mutex.RUnlock()
-	return ctx.onEndFunc
+	_ = "STUB: not implemented"
+	return *new(types.OnEndFunc)
 }
 
 func (ctx *NodeTestRuleContext) SetContext(c context.Context) types.RuleContext {
-	ctx.context = c
-	return ctx
+	_ = "STUB: not implemented"
+	return *new(types.RuleContext)
 }
 
 func (ctx *NodeTestRuleContext) GetContext() context.Context {
-	return ctx.context
+	_ = "STUB: not implemented"
+	return *new(context.Context)
 }
 
 func (ctx *NodeTestRuleContext) TellFlow(chainId string, msg types.RuleMsg, opts ...types.RuleContextOption) {
-	for _, opt := range opts {
-		opt(ctx)
-	}
-	if chainId == "" {
-		if ctx.onEndFunc != nil {
-			ctx.onEndFunc(ctx, msg, errors.New("chainId can not nil"), types.Failure)
-		}
-
-	} else if chainId == "notfound" {
-		if ctx.onEndFunc != nil {
-			ctx.onEndFunc(ctx, msg, fmt.Errorf("ruleChain id=%s not found", chainId), types.Failure)
-		}
-		if ctx.onAllNodeCompleted != nil {
-			ctx.onAllNodeCompleted()
-		}
-	} else if chainId == "toTrue" {
-		if ctx.onEndFunc != nil {
-			ctx.onEndFunc(ctx, msg, nil, types.True)
-		}
-		if ctx.onAllNodeCompleted != nil {
-			ctx.onAllNodeCompleted()
-		}
-	} else {
-		if ctx.onEndFunc != nil {
-			ctx.onEndFunc(ctx, msg, nil, types.Success)
-		}
-		if ctx.onAllNodeCompleted != nil {
-			ctx.onAllNodeCompleted()
-		}
-	}
+	_ = "STUB: not implemented"
+	return
 }
 
 // TellNode 独立执行某个节点，通过callback获取节点执行情况，用于节点分组类节点控制执行某个节点
 func (ctx *NodeTestRuleContext) TellNode(context context.Context, nodeId string, msg types.RuleMsg, skipTellNext bool, callback types.OnEndFunc, onAllNodeCompleted func()) {
-	if v, ok := ctx.childrenNodes.Load(nodeId); ok {
-		// 线程安全地设置 selfId
-		ctx.mutex.Lock()
-		ctx.selfId = nodeId
-		ctx.mutex.Unlock()
-
-		subCtx := NewRuleContext(ctx.config, func(msg types.RuleMsg, relationType string, err error) {
-			if callback != nil {
-				callback(ctx, msg, err, relationType)
-			}
-
-			if onAllNodeCompleted != nil {
-				onAllNodeCompleted()
-			}
-		})
-
-		v.(types.Node).OnMsg(subCtx, msg)
-	} else {
-		if callback != nil {
-			callback(ctx, msg, fmt.Errorf("node id=%s not found", nodeId), types.Failure)
-		}
-		if onAllNodeCompleted != nil {
-			onAllNodeCompleted()
-		}
-	}
+	_ = "STUB: not implemented"
+	return
 }
+
+// 线程安全地设置 selfId
 
 // TellChainNode 独立执行某个节点，通过callback获取节点执行情况，用于节点分组类节点控制执行某个节点
 func (ctx *NodeTestRuleContext) TellChainNode(context context.Context, chainId string, nodeId string, msg types.RuleMsg, skipTellNext bool, callback types.OnEndFunc, onAllNodeCompleted func()) {
-	ctx.TellNode(context, nodeId, msg, skipTellNext, callback, onAllNodeCompleted)
+	_ = "STUB: not implemented"
+	return
 }
 
 // SetOnAllNodeCompleted 设置所有节点执行完回调
 func (ctx *NodeTestRuleContext) SetOnAllNodeCompleted(onAllNodeCompleted func()) {
-	ctx.onAllNodeCompleted = onAllNodeCompleted
+	_ = "STUB: not implemented"
+	return
 }
 
 func (ctx *NodeTestRuleContext) DoOnEnd(msg types.RuleMsg, err error, relationType string) {
+	_ = "STUB: not implemented"
 
+	// SetCallbackFunc 设置回调函数
+	return
 }
 
-// SetCallbackFunc 设置回调函数
 func (ctx *NodeTestRuleContext) SetCallbackFunc(functionName string, f interface{}) {
+	_ = "STUB: not implemented"
 
+	// GetCallbackFunc 获取回调函数
+	return
 }
 
-// GetCallbackFunc 获取回调函数
 func (ctx *NodeTestRuleContext) GetCallbackFunc(functionName string) interface{} {
+	_ = "STUB: not implemented"
+
+	// OnDebug 调用配置的OnDebug回调函数
 	return nil
 }
 
-// OnDebug 调用配置的OnDebug回调函数
 func (ctx *NodeTestRuleContext) OnDebug(ruleChainId string, flowType string, nodeId string, msg types.RuleMsg, relationType string, err error) {
+	_ = "STUB: not implemented"
+	return
 }
 
 func (ctx *NodeTestRuleContext) SetExecuteNodes(nodes ...types.NodeRequest) {
-
+	_ = "STUB: not implemented"
+	return
 }
 
 func (ctx *NodeTestRuleContext) TellCollect(msg types.RuleMsg, callback func(msgList []types.WrapperMsg)) bool {
-	callback(nil)
-	return true
+	_ = "STUB: not implemented"
+	return false
 }
 
 func (ctx *NodeTestRuleContext) GetOut() types.RuleMsg {
-	ctx.mutex.RLock()
-	defer ctx.mutex.RUnlock()
-	return ctx.out
+	_ = "STUB: not implemented"
+	return *new(types.RuleMsg)
 }
 
 func (ctx *NodeTestRuleContext) GetRelationTypes() []string {
+	_ = "STUB: not implemented"
+
+	// setOut safely sets the out field
 	return nil
 }
 
-// setOut safely sets the out field
-func (ctx *NodeTestRuleContext) setOut(msg types.RuleMsg) {
-	ctx.mutex.Lock()
-	defer ctx.mutex.Unlock()
-	ctx.out = msg
-}
+func (ctx *NodeTestRuleContext) setOut(msg types.RuleMsg) { _ = "STUB: not implemented"; return }
 
-func (ctx *NodeTestRuleContext) GetErr() error {
-	return nil
-}
+func (ctx *NodeTestRuleContext) GetErr() error { _ = "STUB: not implemented"; return nil }
 
-func (ctx *NodeTestRuleContext) TellStream(msg types.RuleMsg) {
-	ctx.TellNext(msg, types.Stream)
-}
+func (ctx *NodeTestRuleContext) TellStream(msg types.RuleMsg) { _ = "STUB: not implemented"; return }
 
 // GetEnv 获取环境变量和元数据
 func (ctx *NodeTestRuleContext) GetEnv(msg types.RuleMsg, useMetadata bool) map[string]interface{} {
+	_ = "STUB: not implemented"
 	// 创建环境变量map
-	envVars := make(map[string]interface{})
-
-	// 设置基础环境变量
-	envVars["id"] = msg.GetId()
-	envVars["ts"] = msg.GetTs()
-	envVars["data"] = msg.GetData()
-	envVars["msgType"] = msg.GetType()
-	envVars["type"] = msg.GetType()
-	envVars["dataType"] = string(msg.GetDataType())
-	// 使用 GetJsonData() 避免重复JSON解析
-	if msg.DataType == types.JSON {
-		if jsonData, err := msg.GetJsonData(); err == nil {
-			envVars[types.MsgKey] = jsonData
-		} else {
-			// 解析失败，使用原始数据
-			envVars[types.MsgKey] = msg.GetData()
-		}
-	} else {
-		// 如果不是 JSON 类型，直接使用原始数据
-		envVars[types.MsgKey] = msg.GetData()
-	}
-	// 优化 metadata 处理
-	if msg.Metadata != nil {
-		if useMetadata {
-			// 遍历metadata，将键值对添加到环境变量中 - use zero-copy ForEach
-			msg.Metadata.ForEach(func(k, v string) bool {
-				envVars[k] = v
-				return true // continue iteration
-			})
-		}
-		envVars[types.MetadataKey] = msg.Metadata.Values()
-	}
-
-	return envVars
+	return nil
 }
+
+// 设置基础环境变量
+
+// 使用 GetJsonData() 避免重复JSON解析
+
+// 解析失败，使用原始数据
+
+// 如果不是 JSON 类型，直接使用原始数据
+
+// 优化 metadata 处理
+
+// 遍历metadata，将键值对添加到环境变量中 - use zero-copy ForEach
+
+// continue iteration
 
 // GetNodeRuleMsg 获取节点的完整消息信息（测试上下文中暂不支持跨节点取值）
 // GetNodeRuleMsg retrieves the complete RuleMsg of a node (not supported in test context)
 func (ctx *NodeTestRuleContext) GetNodeRuleMsg(nodeId string) (types.RuleMsg, bool) {
-	return types.RuleMsg{}, false
+	_ = "STUB: not implemented"
+	return *new(types.RuleMsg), false
 }
 
 // ExtendedTestRuleContext 扩展的测试上下文，支持结果收集和节点处理器设置
@@ -375,124 +264,75 @@ type TestResult struct {
 // NewExtendedTestRuleContext 创建扩展的测试上下文
 // 用于替代 SimpleTestContext 和 MockRuleContext
 func NewExtendedTestRuleContext(config types.Config, callback func(msg types.RuleMsg, relationType string, err error)) *ExtendedTestRuleContext {
-	baseCtx := NewRuleContext(config, callback).(*NodeTestRuleContext)
-	return &ExtendedTestRuleContext{
-		NodeTestRuleContext: baseCtx,
-		nodeHandlers:        make(map[string]func(msg types.RuleMsg) (string, error)),
-		results:             make([]string, 0),
-		resultsChan:         make(chan TestResult, 10),
-	}
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // NewExtendedTestRuleContextWithChannel 创建带结果通道的扩展测试上下文
 // 主要用于替代 SimpleTestContext
 func NewExtendedTestRuleContextWithChannel() *ExtendedTestRuleContext {
-	config := types.NewConfig()
-	baseCtx := NewRuleContext(config, nil).(*NodeTestRuleContext)
-	return &ExtendedTestRuleContext{
-		NodeTestRuleContext: baseCtx,
-		nodeHandlers:        make(map[string]func(msg types.RuleMsg) (string, error)),
-		results:             make([]string, 0),
-		resultsChan:         make(chan TestResult, 10),
-	}
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // SetNodeHandler 设置节点处理器，用于模拟节点行为
 // 替代 MockRuleContext 的 SetNodeHandler 方法
 func (ctx *ExtendedTestRuleContext) SetNodeHandler(nodeId string, handler func(msg types.RuleMsg) (string, error)) {
-	ctx.handlerMutex.Lock()
-	defer ctx.handlerMutex.Unlock()
-	ctx.nodeHandlers[nodeId] = handler
+	_ = "STUB: not implemented"
+	return
 }
 
 // GetResults 获取收集的结果
 // 替代 MockRuleContext 的 GetResults 方法
-func (ctx *ExtendedTestRuleContext) GetResults() []string {
-	ctx.mutex.RLock()
-	defer ctx.mutex.RUnlock()
-	results := make([]string, len(ctx.results))
-	copy(results, ctx.results)
-	return results
-}
+func (ctx *ExtendedTestRuleContext) GetResults() []string { _ = "STUB: not implemented"; return nil }
 
 // GetResultsChannel 获取结果通道
 // 用于替代 SimpleTestContext 的 results 通道
 func (ctx *ExtendedTestRuleContext) GetResultsChannel() <-chan TestResult {
-	return ctx.resultsChan
+	_ = "STUB: not implemented"
+	return nil
+
+	// TellNode 重写 TellNode 方法以支持节点处理器
 }
 
-// TellNode 重写 TellNode 方法以支持节点处理器
 func (ctx *ExtendedTestRuleContext) TellNode(context context.Context, nodeId string, msg types.RuleMsg, skipTellNext bool, callback types.OnEndFunc, onAllNodeCompleted func()) {
-	ctx.handlerMutex.RLock()
-	handler, hasHandler := ctx.nodeHandlers[nodeId]
-	ctx.handlerMutex.RUnlock()
-
-	if hasHandler {
-		// 使用自定义处理器（模拟节点行为）
-		go func() {
-			relationType, err := handler(msg)
-			if callback != nil {
-				callback(ctx, msg, err, relationType)
-			}
-			if onAllNodeCompleted != nil {
-				onAllNodeCompleted()
-			}
-		}()
-	} else {
-		// 使用原有的 TellNode 逻辑
-		ctx.NodeTestRuleContext.TellNode(context, nodeId, msg, skipTellNext, callback, onAllNodeCompleted)
-	}
+	_ = "STUB: not implemented"
+	return
 }
+
+// 使用自定义处理器（模拟节点行为）
+
+// 使用原有的 TellNode 逻辑
 
 // TellNext 重写以支持结果收集
 func (ctx *ExtendedTestRuleContext) TellNext(msg types.RuleMsg, relationTypes ...string) {
+	_ = "STUB: not implemented"
 	// 调用原有逻辑
-	ctx.NodeTestRuleContext.TellNext(msg, relationTypes...)
-
-	// 收集结果
-	if len(relationTypes) > 0 {
-		ctx.mutex.Lock()
-		ctx.results = append(ctx.results, relationTypes[0])
-		ctx.mutex.Unlock()
-
-		// 发送到结果通道
-		select {
-		case ctx.resultsChan <- TestResult{RelationType: relationTypes[0], Err: nil}:
-		default:
-		}
-	}
+	return
 }
+
+// 收集结果
+
+// 发送到结果通道
 
 // TellSuccess 重写以支持结果收集
 func (ctx *ExtendedTestRuleContext) TellSuccess(msg types.RuleMsg) {
+	_ = "STUB: not implemented"
 	// 调用原有逻辑
-	ctx.NodeTestRuleContext.TellSuccess(msg)
-
-	// 收集结果
-	ctx.mutex.Lock()
-	ctx.results = append(ctx.results, "Success")
-	ctx.mutex.Unlock()
-
-	// 发送到结果通道
-	select {
-	case ctx.resultsChan <- TestResult{RelationType: "Success", Err: nil}:
-	default:
-	}
+	return
 }
+
+// 收集结果
+
+// 发送到结果通道
 
 // TellFailure 重写以支持结果收集
 func (ctx *ExtendedTestRuleContext) TellFailure(msg types.RuleMsg, err error) {
+	_ = "STUB: not implemented"
 	// 调用原有逻辑
-	ctx.NodeTestRuleContext.TellFailure(msg, err)
-
-	// 收集结果
-	ctx.mutex.Lock()
-	ctx.results = append(ctx.results, "Failure")
-	ctx.mutex.Unlock()
-
-	// 发送到结果通道
-	select {
-	case ctx.resultsChan <- TestResult{RelationType: "Failure", Err: err}:
-	default:
-	}
+	return
 }
+
+// 收集结果
+
+// 发送到结果通道

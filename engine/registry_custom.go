@@ -33,30 +33,30 @@ type CustomComponentRegistry struct {
 // - customComponents: registry for user-defined components
 // Returns a ComponentRegistry that combines both sources
 func NewCustomComponentRegistry(defaultComponents, customComponents types.ComponentRegistry) types.ComponentRegistry {
-	registry := &CustomComponentRegistry{
-		defaultComponents: defaultComponents,
-		customComponents:  customComponents,
-	}
-	return registry
+	_ = "STUB: not implemented"
+	return *new(types.ComponentRegistry)
 }
 
 // Register adds a custom component to the registry
 // Returns error if component type already exists
 func (r *CustomComponentRegistry) Register(node types.Node) error {
-	return r.customComponents.Register(node)
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // RegisterPlugin loads a plugin containing components
 // name: plugin name for dependency tracking
 // file: plugin file path (dynamic library)
 func (r *CustomComponentRegistry) RegisterPlugin(name string, file string) error {
-	return r.customComponents.RegisterPlugin(name, file)
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // Unregister removes a component from the custom registry
 // Returns error if component not found
 func (r *CustomComponentRegistry) Unregister(componentType string) error {
-	return r.customComponents.Unregister(componentType)
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // NewNode creates a component instance with fallback logic:
@@ -66,47 +66,30 @@ func (r *CustomComponentRegistry) Unregister(componentType string) error {
 // - component instance if found in either registry
 // - error if not found in both registries
 func (r *CustomComponentRegistry) NewNode(componentType string) (types.Node, error) {
-	node, err := r.defaultComponents.NewNode(componentType)
-	if err == nil {
-		return node, err
-	}
-	return r.customComponents.NewNode(componentType)
+	_ = "STUB: not implemented"
+	return *new(types.Node), nil
 }
 
 // GetComponents returns merged view of all components:
 // Default components are overridden by custom components with same type
 func (r *CustomComponentRegistry) GetComponents() map[string]types.Node {
-	components := make(map[string]types.Node)
-	defaultComponentList := r.defaultComponents.GetComponents()
-	for k, v := range defaultComponentList {
-		components[k] = v
-	}
-	customComponentList := r.customComponents.GetComponents()
-	for k, v := range customComponentList {
-		components[k] = v
-	}
-	return components
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // GetComponentForms returns combined component metadata
 // Includes forms from both default and custom components
 func (r *CustomComponentRegistry) GetComponentForms() types.ComponentFormList {
-	components := make(map[string]types.ComponentForm)
-	defaultComponentList := r.defaultComponents.GetComponentForms()
-	for k, v := range defaultComponentList {
-		components[k] = v
-	}
-	customComponentList := r.customComponents.GetComponentForms()
-	for k, v := range customComponentList {
-		components[k] = v
-	}
-	return components
+	_ = "STUB: not implemented"
+	return *new(types.ComponentFormList)
 }
 
 func (r *CustomComponentRegistry) DefaultComponents() types.ComponentRegistry {
-	return r.defaultComponents
+	_ = "STUB: not implemented"
+	return *new(types.ComponentRegistry)
 }
 
 func (r *CustomComponentRegistry) CustomComponents() types.ComponentRegistry {
-	return r.customComponents
+	_ = "STUB: not implemented"
+	return *new(types.ComponentRegistry)
 }

@@ -3,11 +3,12 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
+	"time"
+
 	"github.com/rulego/rulego"
 	"github.com/rulego/rulego/api/types"
 	string2 "github.com/rulego/rulego/utils/str"
-	"log"
-	"time"
 )
 
 var (

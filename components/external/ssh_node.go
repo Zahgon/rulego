@@ -29,13 +29,10 @@ package external
 
 import (
 	"errors"
-	"fmt"
 	"sync"
 
 	"github.com/rulego/rulego/api/types"
-	"github.com/rulego/rulego/components/base"
 	"github.com/rulego/rulego/utils/el"
-	"github.com/rulego/rulego/utils/maps"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -138,98 +135,37 @@ type SshNode struct {
 
 // Type 方法用来返回组件的类型
 func (x *SshNode) Type() string {
-	return "ssh"
+	_ = "STUB: not implemented"
+
+	// New 方法用来创建一个 SshNode 的新实例
+	return ""
 }
 
-// New 方法用来创建一个 SshNode 的新实例
-func (x *SshNode) New() types.Node {
-	return &SshNode{Config: SshConfiguration{
-		Host:     "127.0.0.1",
-		Port:     22,
-		Username: "root",
-		Password: "password",
-	}}
-}
+func (x *SshNode) New() types.Node { _ = "STUB: not implemented"; return *new(types.Node) }
 
 // Init 方法用来初始化组件，一般做一些组件参数配置或者客户端初始化操作
 func (x *SshNode) Init(ruleConfig types.Config, configuration types.Configuration) error {
-	err := maps.Map2Struct(configuration, &x.Config)
-	if err == nil {
-		// 从配置中获取 ssh 连接的参数
-		sshConfig := x.Config
-		// 如果参数不为空，则创建一个 ssh 客户端对象
-		if sshConfig.Host != "" && sshConfig.Port != 0 && sshConfig.Username != "" && sshConfig.Password != "" {
-			config := &ssh.ClientConfig{
-				User: sshConfig.Username,
-				Auth: []ssh.AuthMethod{
-					ssh.Password(sshConfig.Password),
-				},
-				HostKeyCallback: ssh.InsecureIgnoreHostKey(),
-			}
-			x.client, err = ssh.Dial("tcp", fmt.Sprintf("%s:%d", sshConfig.Host, sshConfig.Port), config)
-		} else {
-			return SshConfigEmptyErr
-		}
-		if x.Config.Cmd == "" {
-			return SshCmdEmptyErr
-		}
-		x.cmdTemplate, err = el.NewTemplate(x.Config.Cmd)
-		if err != nil {
-			return err
-		}
-		x.hasVar = x.cmdTemplate.HasVar()
-	}
-	return err
+	_ = "STUB: not implemented"
+	return nil
 }
+
+// 从配置中获取 ssh 连接的参数
+
+// 如果参数不为空，则创建一个 ssh 客户端对象
 
 // OnMsg 方法用来处理消息，每条流入组件的数据会经过该函数处理
 func (x *SshNode) OnMsg(ctx types.RuleContext, msg types.RuleMsg) {
-	var err error
+	_ = "STUB: not implemented"
 
 	// 安全获取client引用
-	x.clientMutex.RLock()
-	client := x.client
-	x.clientMutex.RUnlock()
-
-	if client == nil {
-		ctx.TellFailure(msg, SshClientNotInitErr)
-		return
-	}
-
-	// 获取shell 命令
-	var evn map[string]interface{}
-	if x.hasVar {
-		evn = base.NodeUtils.GetEvnAndMetadata(ctx, msg)
-	}
-	cmd := x.cmdTemplate.ExecuteAsString(evn)
-	var output []byte
-	var session *ssh.Session
-	// 如果有 ssh 客户端对象，则创建一个 ssh 会话，并执行远程 shell 命令，并获取其输出或错误信息
-	if session, err = client.NewSession(); err == nil {
-		defer session.Close()
-		output, err = session.CombinedOutput(cmd)
-
-		msg.SetData(string(output))
-		msg.DataType = types.TEXT
-
-		if err != nil {
-			ctx.TellFailure(msg, err)
-		} else {
-			// 将输出结果作为新的消息发送到下一个组件
-			ctx.TellSuccess(msg)
-		}
-	} else {
-		ctx.TellFailure(msg, err)
-	}
+	return
 }
+
+// 获取shell 命令
+
+// 如果有 ssh 客户端对象，则创建一个 ssh 会话，并执行远程 shell 命令，并获取其输出或错误信息
+
+// 将输出结果作为新的消息发送到下一个组件
 
 // Destroy 方法用来销毁组件，做一些资源释放操作
-func (x *SshNode) Destroy() {
-	x.clientMutex.Lock()
-	defer x.clientMutex.Unlock()
-
-	if x.client != nil {
-		_ = x.client.Close()
-		x.client = nil
-	}
-}
+func (x *SshNode) Destroy() { _ = "STUB: not implemented"; return }

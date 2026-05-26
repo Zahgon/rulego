@@ -30,18 +30,10 @@ package common
 //}
 import (
 	"context"
-	"errors"
-	"fmt"
+
 	"github.com/rulego/rulego/utils/el"
-	"strconv"
-	"strings"
-	"sync"
 
 	"github.com/rulego/rulego/api/types"
-	"github.com/rulego/rulego/components/base"
-	"github.com/rulego/rulego/utils/json"
-	"github.com/rulego/rulego/utils/maps"
-	"github.com/rulego/rulego/utils/str"
 )
 
 const (
@@ -213,307 +205,83 @@ type ForNode struct {
 }
 
 // Type 组件类型
-func (x *ForNode) Type() string {
-	return "for"
-}
+func (x *ForNode) Type() string { _ = "STUB: not implemented"; return "" }
 
-func (x *ForNode) New() types.Node {
-	return &ForNode{Config: ForNodeConfiguration{
-		Range: "1..3",
-		Do:    "s3",
-	}}
-}
+func (x *ForNode) New() types.Node { _ = "STUB: not implemented"; return *new(types.Node) }
 
 // Init 初始化
 func (x *ForNode) Init(_ types.Config, configuration types.Configuration) error {
+	_ = "STUB: not implemented"
 	// Map the configuration to the ForNodeConfiguration struct.
-	if err := maps.Map2Struct(configuration, &x.Config); err != nil {
-		return err
-	}
-	// Trim whitespace from the Range configuration.
-	x.Config.Range = strings.TrimSpace(x.Config.Range)
-	// Compile the Range expression if it's not empty.
-	if x.Config.Range != "" {
-
-		if template, err := el.NewExprTemplate(x.Config.Range); err != nil {
-			return fmt.Errorf("failed to create range template: %w", err)
-		} else {
-			x.rangeTemplate = template
-		}
-	}
-	// Trim whitespace from the Do configuration and validate it's not empty.
-	x.Config.Do = strings.TrimSpace(x.Config.Do)
-	if x.Config.Do == "" {
-		return errors.New("do is empty")
-	}
-	return x.formDoVar()
+	return nil
 }
 
-func (x *ForNode) toMap(data string) interface{} {
-	var dataMap interface{}
-	if err := json.Unmarshal([]byte(data), &dataMap); err == nil {
-		return dataMap
-	} else {
-		return data
-	}
-}
+// Trim whitespace from the Range configuration.
+
+// Compile the Range expression if it's not empty.
+
+// Trim whitespace from the Do configuration and validate it's not empty.
+
+func (x *ForNode) toMap(data string) interface{} { _ = "STUB: not implemented"; return nil }
 
 func (x *ForNode) toList(dataType types.DataType, itemDataList []string) []interface{} {
-	var resultData []interface{}
-	for _, itemData := range itemDataList {
-		if dataType == types.JSON {
-			resultData = append(resultData, x.toMap(itemData))
-		} else {
-			resultData = append(resultData, itemData)
-		}
-	}
-	return resultData
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // OnMsg processes the message.
 func (x *ForNode) OnMsg(ctx types.RuleContext, msg types.RuleMsg) {
-	var err error
-
-	var inData = msg.GetData()
-	var data interface{}
-	if x.rangeTemplate != nil {
-		evn := base.NodeUtils.GetEvn(ctx, msg)
-		if out, err := x.rangeTemplate.Execute(evn); err != nil {
-			ctx.TellFailure(msg, err)
-			return
-		} else {
-			data = out
-		}
-	} else {
-		data = x.toMap(inData)
-	}
-	ctxWithCancel, cancelFunc := context.WithCancel(ctx.GetContext())
-	defer cancelFunc()
-
-	var resultData []interface{}
-	var itemDataList []string
-	var lastMsg types.RuleMsg
-	switch v := data.(type) {
-	case []interface{}:
-		for index, item := range v {
-			msg.Metadata.PutValue(KeyLoopIndex, strconv.Itoa(index))
-			if x.Config.Mode != ReplaceValues || index == 0 {
-				msg.SetData(str.ToString(item))
-				msg.Metadata.PutValue(KeyLoopItem, msg.GetData())
-			} else {
-				msg.Metadata.PutValue(KeyLoopItem, str.ToString(item))
-			}
-
-			// 执行并检查是否有取消请求
-			if lastMsg, itemDataList, err = x.executeItem(ctxWithCancel, ctx, msg, x.Config.Mode); err != nil {
-				break
-			} else if x.Config.Mode == MergeValues {
-				resultData = append(resultData, x.toList(msg.DataType, itemDataList)...)
-			} else if x.Config.Mode == ReplaceValues {
-				msg = lastMsg
-			}
-
-			// 检测是否触发中断
-			if msg.Metadata.GetValue(MdKeyBreak) == MdValueBreak {
-				msg.Metadata.Delete(MdKeyBreak)
-				break
-			}
-		}
-	case []int:
-		for index, item := range v {
-			msg.Metadata.PutValue(KeyLoopIndex, strconv.Itoa(index))
-			msg.Metadata.PutValue(KeyLoopItem, str.ToString(item))
-			// 执行并检查是否有取消请求
-			if lastMsg, itemDataList, err = x.executeItem(ctxWithCancel, ctx, msg, x.Config.Mode); err != nil {
-				break
-			} else if x.Config.Mode == MergeValues {
-				resultData = append(resultData, x.toList(msg.DataType, itemDataList)...)
-			} else if x.Config.Mode == ReplaceValues {
-				msg = lastMsg
-			}
-
-			// 检测是否触发中断
-			if msg.Metadata.GetValue(MdKeyBreak) == MdValueBreak {
-				msg.Metadata.Delete(MdKeyBreak)
-				break
-			}
-		}
-	case []int64:
-		for index, item := range v {
-			msg.Metadata.PutValue(KeyLoopIndex, strconv.Itoa(index))
-			msg.Metadata.PutValue(KeyLoopItem, str.ToString(item))
-			// 执行并检查是否有取消请求
-			if lastMsg, itemDataList, err = x.executeItem(ctxWithCancel, ctx, msg, x.Config.Mode); err != nil {
-				break
-			} else if x.Config.Mode == MergeValues {
-				resultData = append(resultData, x.toList(msg.DataType, itemDataList)...)
-			} else if x.Config.Mode == ReplaceValues {
-				msg = lastMsg
-			}
-
-			// 检测是否触发中断
-			if msg.Metadata.GetValue(MdKeyBreak) == MdValueBreak {
-				msg.Metadata.Delete(MdKeyBreak)
-				break
-			}
-		}
-	case []float64:
-		for index, item := range v {
-			msg.Metadata.PutValue(KeyLoopIndex, strconv.Itoa(index))
-			msg.Metadata.PutValue(KeyLoopItem, str.ToString(item))
-			// 执行并检查是否有取消请求
-			if lastMsg, itemDataList, err = x.executeItem(ctxWithCancel, ctx, msg, x.Config.Mode); err != nil {
-				break
-			} else if x.Config.Mode == MergeValues {
-				resultData = append(resultData, x.toList(msg.DataType, itemDataList)...)
-			} else if x.Config.Mode == ReplaceValues {
-				msg = lastMsg
-			}
-
-			// 检测是否触发中断
-			if msg.Metadata.GetValue(MdKeyBreak) == MdValueBreak {
-				msg.Metadata.Delete(MdKeyBreak)
-				break
-			}
-		}
-	case map[string]interface{}:
-		index := 0
-		for k, item := range v {
-			msg.Metadata.PutValue(KeyLoopIndex, strconv.Itoa(index))
-			msg.Metadata.PutValue(KeyLoopKey, k)
-			if x.Config.Mode != ReplaceValues || index == 0 {
-				msg.SetData(str.ToString(item))
-				msg.Metadata.PutValue(KeyLoopItem, msg.GetData())
-			} else {
-				msg.Metadata.PutValue(KeyLoopItem, str.ToString(item))
-			}
-			// 执行并检查是否有取消请求
-			if lastMsg, itemDataList, err = x.executeItem(ctxWithCancel, ctx, msg, x.Config.Mode); err != nil {
-				break
-			} else if x.Config.Mode == MergeValues {
-				resultData = append(resultData, x.toList(msg.DataType, itemDataList)...)
-			} else if x.Config.Mode == ReplaceValues {
-				msg = lastMsg
-			}
-
-			// 检测是否触发中断
-			if msg.Metadata.GetValue(MdKeyBreak) == MdValueBreak {
-				msg.Metadata.Delete(MdKeyBreak)
-				break
-			}
-			index++
-		}
-	default:
-		err = errors.New("must array slice or struct type")
-	}
-
-	if err != nil {
-		ctx.TellFailure(msg, err)
-	} else {
-		if x.Config.Mode == DoNotProcess || x.Config.Mode == AsyncProcess {
-			//不修改in data
-			msg.SetData(inData)
-		} else if x.Config.Mode == MergeValues {
-			msg.SetData(str.ToString(resultData))
-		}
-		ctx.TellSuccess(msg)
-	}
+	_ = "STUB: not implemented"
+	return
 }
+
+// 执行并检查是否有取消请求
+
+// 检测是否触发中断
+
+// 执行并检查是否有取消请求
+
+// 检测是否触发中断
+
+// 执行并检查是否有取消请求
+
+// 检测是否触发中断
+
+// 执行并检查是否有取消请求
+
+// 检测是否触发中断
+
+// 执行并检查是否有取消请求
+
+// 检测是否触发中断
+
+//不修改in data
 
 // Destroy cleans up resources used by the ForNode.
 func (x *ForNode) Destroy() {
+	_ = "STUB: not implemented"
+
+	// executeItem processes each item during iteration.
+	return
 }
 
-// executeItem processes each item during iteration.
 func (x *ForNode) executeItem(ctxWithCancel context.Context, ctx types.RuleContext, fromMsg types.RuleMsg, mode int) (types.RuleMsg, []string, error) {
-	if mode == AsyncProcess {
-		//异步
-		return fromMsg, nil, x.asyncExecuteItem(ctxWithCancel, ctx, fromMsg)
-	}
-	var wg sync.WaitGroup
-	wg.Add(1)
-	var returnErr error
-	var lock sync.Mutex
-	var msgData []string
-	var lastMsg types.RuleMsg
-	if x.ruleNodeId.Type == types.CHAIN {
-		ctx.TellFlow(x.ruleNodeId.Id, fromMsg, types.WithContext(ctx.GetContext()), types.WithOnEnd(func(ctx types.RuleContext, msg types.RuleMsg, err error, relationType string) {
-			if err != nil {
-				returnErr = err
-			} else {
-				lock.Lock()
-				defer lock.Unlock()
-				lastMsg = msg
-				// copy metadata
-				for k, v := range msg.Metadata.Values() {
-					fromMsg.Metadata.PutValue(k, v)
-				}
-				msgData = append(msgData, msg.GetData())
-			}
-		}), types.WithOnAllNodeCompleted(func() {
-			wg.Done()
-		}))
-	} else {
-		ctx.TellNode(ctx.GetContext(), x.ruleNodeId.Id, fromMsg, false, func(ctx types.RuleContext, msg types.RuleMsg, err error, relationType string) {
-			if err != nil {
-				returnErr = err
-			} else {
-				lock.Lock()
-				defer lock.Unlock()
-				lastMsg = msg
-				// copy metadata
-				for k, v := range msg.Metadata.Values() {
-					fromMsg.Metadata.PutValue(k, v)
-				}
-				msgData = append(msgData, msg.GetData())
-			}
-		}, func() {
-			wg.Done()
-		})
-	}
-	wg.Wait()
+	_ = "STUB: not implemented"
+	return *
 
-	if returnErr != nil {
-		return lastMsg, msgData, returnErr
-	} else {
-		return lastMsg, msgData, ctxWithCancel.Err()
-	}
+	//异步
+	new(types.RuleMsg), nil, nil
 }
+
+// copy metadata
+
+// copy metadata
 
 // 异步执行每一项
 func (x *ForNode) asyncExecuteItem(ctxWithCancel context.Context, ctx types.RuleContext, fromMsg types.RuleMsg) error {
-	fromMsg = fromMsg.Copy()
-	if x.ruleNodeId.Type == types.CHAIN {
-		ctx.TellFlow(x.ruleNodeId.Id, fromMsg, types.WithContext(ctx.GetContext()))
-	} else {
-		ctx.TellNode(ctx.GetContext(), x.ruleNodeId.Id, fromMsg, false, nil, nil)
-	}
-	return ctxWithCancel.Err()
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // formDoVar forms the Do variable from the configuration.
-func (x *ForNode) formDoVar() error {
-	values := strings.Split(x.Config.Do, ":")
-	length := len(values)
-	if length == 1 {
-		x.ruleNodeId = types.RuleNodeId{
-			Id:   strings.TrimSpace(values[0]),
-			Type: types.NODE,
-		}
-	} else if length == 2 {
-		if strings.TrimSpace(values[0]) == "chain" {
-			x.ruleNodeId = types.RuleNodeId{
-				Id:   strings.TrimSpace(values[1]),
-				Type: types.CHAIN,
-			}
-		} else {
-			x.ruleNodeId = types.RuleNodeId{
-				Id:   strings.TrimSpace(values[1]),
-				Type: types.NODE,
-			}
-		}
-	} else {
-		return fmt.Errorf("do variable should be nodeId or chain:chainId style")
-	}
-	return nil
-}
+func (x *ForNode) formDoVar() error { _ = "STUB: not implemented"; return nil }

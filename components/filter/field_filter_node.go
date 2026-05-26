@@ -17,11 +17,7 @@
 package filter
 
 import (
-	"strings"
-
 	"github.com/rulego/rulego/api/types"
-	"github.com/rulego/rulego/utils/json"
-	"github.com/rulego/rulego/utils/maps"
 )
 
 // init 注册FieldFilterNode组件
@@ -89,114 +85,67 @@ type FieldFilterNode struct {
 
 // Type 返回组件类型
 // Type returns the component type identifier.
-func (x *FieldFilterNode) Type() string {
-	return "fieldFilter"
-}
+func (x *FieldFilterNode) Type() string { _ = "STUB: not implemented"; return "" }
 
 // New 创建新实例
 // New creates a new instance.
 func (x *FieldFilterNode) New() types.Node {
-	return &FieldFilterNode{}
+	_ = "STUB: not implemented"
+	return *
+
+	// Init 初始化组件，解析逗号分隔的字段名称
+	// Init initializes the component.
+	new(types.Node)
 }
 
-// Init 初始化组件，解析逗号分隔的字段名称
-// Init initializes the component.
 func (x *FieldFilterNode) Init(ruleConfig types.Config, configuration types.Configuration) error {
-	err := maps.Map2Struct(configuration, &x.Config)
-	x.DataNamesList = filterEmptyStrings(strings.Split(x.Config.DataNames, ","))
-	x.MetadataNamesList = filterEmptyStrings(strings.Split(x.Config.MetadataNames, ","))
-	return err
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // OnMsg 处理消息，通过检查数据和元数据中的字段存在来验证消息
 // OnMsg processes incoming messages by checking field existence in data and metadata.
 func (x *FieldFilterNode) OnMsg(ctx types.RuleContext, msg types.RuleMsg) {
-	var dataMap = make(map[string]interface{})
-	if msg.DataType == types.JSON {
-		if err := json.Unmarshal([]byte(msg.GetData()), &dataMap); err != nil {
-			ctx.TellFailure(msg, err)
-			return
-		}
-	}
-
-	if x.Config.CheckAllKeys {
-		if x.checkAllKeysMetadata(msg.Metadata) && x.checkAllKeysData(dataMap) {
-			ctx.TellNext(msg, types.True)
-		} else {
-			ctx.TellNext(msg, types.False)
-		}
-	} else {
-		if x.checkAtLeastOneMetadata(msg.Metadata) || x.checkAtLeastOneData(dataMap) {
-			ctx.TellNext(msg, types.True)
-		} else {
-			ctx.TellNext(msg, types.False)
-		}
-	}
+	_ = "STUB: not implemented"
+	return
 }
 
 // Destroy 清理资源
 // Destroy cleans up resources.
 func (x *FieldFilterNode) Destroy() {
+	_ = "STUB: not implemented"
+
+	// checkAllKeysMetadata 验证所有指定的元数据字段都存在
+	// checkAllKeysMetadata validates that all specified metadata fields exist.
+	return
 }
 
-// checkAllKeysMetadata 验证所有指定的元数据字段都存在
-// checkAllKeysMetadata validates that all specified metadata fields exist.
 func (x *FieldFilterNode) checkAllKeysMetadata(metadata *types.Metadata) bool {
-	for _, item := range x.MetadataNamesList {
-		if !metadata.Has(item) {
-			return false
-		}
-	}
-	return true
+	_ = "STUB: not implemented"
+	return false
 }
 
 // checkAllKeysData 验证所有指定的数据字段都存在
 // checkAllKeysData validates that all specified data fields exist.
 func (x *FieldFilterNode) checkAllKeysData(data map[string]interface{}) bool {
-	for _, item := range x.DataNamesList {
-		if data == nil {
-			return false
-		}
-		if _, ok := data[item]; !ok {
-			return false
-		}
-	}
-	return true
+	_ = "STUB: not implemented"
+	return false
 }
 
 // checkAtLeastOneMetadata 验证至少一个指定的元数据字段存在
 // checkAtLeastOneMetadata validates that at least one specified metadata field exists.
 func (x *FieldFilterNode) checkAtLeastOneMetadata(metadata *types.Metadata) bool {
-	for _, item := range x.MetadataNamesList {
-		if metadata.Has(item) {
-			return true
-		}
-	}
+	_ = "STUB: not implemented"
 	return false
 }
 
 // filterEmptyStrings 过滤掉字符串切片中的空字符串
 // filterEmptyStrings filters out empty strings from a string slice.
-func filterEmptyStrings(strs []string) []string {
-	var result []string
-	for _, str := range strs {
-		if strings.TrimSpace(str) != "" {
-			result = append(result, strings.TrimSpace(str))
-		}
-	}
-	return result
-}
+func filterEmptyStrings(strs []string) []string { _ = "STUB: not implemented"; return nil }
 
 // checkAtLeastOneData 验证至少一个指定的数据字段存在
 // checkAtLeastOneData validates that at least one specified data field exists.
 func (x *FieldFilterNode) checkAtLeastOneData(data map[string]interface{}) bool {
-	for _, item := range x.DataNamesList {
-		if data == nil {
-			return false
-		}
-		if _, ok := data[item]; ok {
-			return true
-		}
-	}
+	_ = "STUB: not implemented"
 	return false
 }

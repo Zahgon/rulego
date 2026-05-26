@@ -38,9 +38,6 @@
 package js
 
 import (
-	"errors"
-	"fmt"
-	"strings"
 	"sync"
 	"time"
 
@@ -64,188 +61,72 @@ type GojaJsEngine struct {
 
 // NewGojaJsEngine Create a new instance of the JavaScript engine
 func NewGojaJsEngine(config types.Config, jsScript string, fromVars map[string]interface{}) (*GojaJsEngine, error) {
-	program, err := goja.Compile("", jsScript, true)
-	if err != nil {
-		return nil, err
-	}
-	jsEngine := &GojaJsEngine{
-		config:   config,
-		jsScript: program,
-	}
-	if err = jsEngine.PreCompileJs(config); err != nil {
-		return nil, err
-	}
-	jsEngine.vmPool = sync.Pool{
-		New: func() interface{} {
-			return jsEngine.NewVm(config, fromVars)
-		},
-	}
-	return jsEngine, nil
+	_ = "STUB: not implemented"
+	return nil, nil
 }
 
 // PreCompileJs Precompiled UDF JavaScript file
 func (g *GojaJsEngine) PreCompileJs(config types.Config) error {
-	var jsUdfProgramCache = make(map[string]*goja.Program)
-	for k, v := range config.Udf {
-		if jsFuncStr, ok := v.(string); ok {
-			if p, err := goja.Compile(k, jsFuncStr, true); err != nil {
-				return err
-			} else {
-				jsUdfProgramCache[k] = p
-			}
-		} else if script, scriptOk := v.(types.Script); scriptOk {
-			if script.Type == types.Js || script.Type == "" {
-				if c, ok := script.Content.(string); ok {
-					if p, err := goja.Compile(k, c, true); err != nil {
-						return err
-					} else {
-						jsUdfProgramCache[k] = p
-					}
-				} else if p, ok := script.Content.(*goja.Program); ok {
-					jsUdfProgramCache[k] = p
-				}
-			}
-		}
-	}
-	g.jsUdfProgramCache = jsUdfProgramCache
-
+	_ = "STUB: not implemented"
 	return nil
 }
 
 // NewVm new a js VM
 func (g *GojaJsEngine) NewVm(config types.Config, fromVars map[string]interface{}) *goja.Runtime {
-	vm := goja.New()
+	_ = "STUB: not implemented"
 
 	// Set fromVars directly
-	if fromVars != nil {
-		for k, v := range fromVars {
-			if err := vm.Set(k, v); err != nil {
-				config.Logger.Printf("set fromVar %s error: %s", k, err.Error())
-			}
-		}
-	}
-
-	// Set global properties directly
-	if len(config.Properties.Values()) != 0 {
-		if err := vm.Set(GlobalKey, config.Properties.Values()); err != nil {
-			config.Logger.Printf("set global properties error: %s", err.Error())
-		}
-	}
-
-	// Process UDF functions
-	for k, v := range config.Udf {
-		var err error
-		if _, ok := v.(string); ok {
-			// JS string - run precompiled program
-			if p, exists := g.jsUdfProgramCache[k]; exists {
-				_, err = vm.RunProgram(p)
-			}
-		} else if script, scriptOk := v.(types.Script); scriptOk {
-			if script.Type == types.Js || script.Type == types.AllScript {
-				if _, ok := script.Content.(string); ok {
-					// JS string content - run precompiled program
-					if p, exists := g.jsUdfProgramCache[k]; exists {
-						_, err = vm.RunProgram(p)
-					}
-				} else if _, ok := script.Content.(*goja.Program); ok {
-					// Precompiled program - run it
-					if p, exists := g.jsUdfProgramCache[k]; exists {
-						_, err = vm.RunProgram(p)
-					}
-				} else if script.Content != nil {
-					// Go function in script wrapper
-					funcName := strings.Replace(k, types.Js+types.ScriptFuncSeparator, "", 1)
-					err = vm.Set(funcName, script.Content)
-				}
-			}
-		} else {
-			// Direct Go function
-			err = vm.Set(k, v)
-		}
-
-		if err != nil {
-			config.Logger.Printf("parse js script=%s error: %s", k, err.Error())
-		}
-	}
-
-	// Run main script with timeout
-	timer := g.startTimeout(vm)
-	_, err := vm.RunProgram(g.jsScript)
-	g.stopTimeout(timer)
-
-	if err != nil {
-		config.Logger.Printf("js vm error: %s", err.Error())
-	}
-	return vm
+	return nil
 }
+
+// Set global properties directly
+
+// Process UDF functions
+
+// JS string - run precompiled program
+
+// JS string content - run precompiled program
+
+// Precompiled program - run it
+
+// Go function in script wrapper
+
+// Direct Go function
+
+// Run main script with timeout
 
 // Execute Execute JavaScript script
 func (g *GojaJsEngine) Execute(ctx types.RuleContext, functionName string, argumentList ...interface{}) (out interface{}, err error) {
-	defer func() {
-		if caught := recover(); caught != nil {
-			err = fmt.Errorf("%s", caught)
-		}
-	}()
-
-	vm := g.vmPool.Get().(*goja.Runtime)
-	defer g.vmPool.Put(vm)
-
-	// Only set context if provided to avoid nil overhead
-	if ctx != nil {
-		vm.Set(CtxKey, ctx)
-	}
-
-	// Use timeout only if configured
-	var timer *time.Timer
-	if g.config.ScriptMaxExecutionTime > 0 {
-		timer = g.startTimeout(vm)
-		defer g.stopTimeout(timer)
-	}
-
-	// Get function
-	f, ok := goja.AssertFunction(vm.Get(functionName))
-	if !ok {
-		return nil, errors.New(functionName + " is not a function")
-	}
-
-	// Optimized parameter conversion - pre-allocate slice
-	var params []goja.Value
-	if len(argumentList) > 0 {
-		params = make([]goja.Value, len(argumentList))
-		for i, v := range argumentList {
-			params[i] = vm.ToValue(v)
-		}
-	}
-
-	// Execute function
-	res, err := f(goja.Undefined(), params...)
-	if err != nil {
-		return nil, err
-	}
-	return res.Export(), nil
+	_ = "STUB: not implemented"
+	return nil, nil
 }
+
+// Only set context if provided to avoid nil overhead
+
+// Use timeout only if configured
+
+// Get function
+
+// Optimized parameter conversion - pre-allocate slice
+
+// Execute function
 
 func (g *GojaJsEngine) Stop() {
+	_ = "STUB: not implemented"
+
+	// startTimeout starts a timeout for JS script execution using time.AfterFunc
+	// Returns nil if timeout is not configured
+	return
 }
 
-// startTimeout starts a timeout for JS script execution using time.AfterFunc
-// Returns nil if timeout is not configured
 func (g *GojaJsEngine) startTimeout(vm *goja.Runtime) *time.Timer {
+	_ = "STUB: not implemented"
 	// Skip timeout if not configured
-	if g.config.ScriptMaxExecutionTime <= 0 {
-		return nil
-	}
-
-	// Use time.AfterFunc to avoid creating goroutines
-	// This is more efficient and prevents goroutine leaks
-	return time.AfterFunc(g.config.ScriptMaxExecutionTime, func() {
-		vm.Interrupt("execution timeout")
-	})
+	return nil
 }
+
+// Use time.AfterFunc to avoid creating goroutines
+// This is more efficient and prevents goroutine leaks
 
 // stopTimeout stops the timeout timer
-func (g *GojaJsEngine) stopTimeout(timer *time.Timer) {
-	if timer != nil {
-		timer.Stop()
-	}
-}
+func (g *GojaJsEngine) stopTimeout(timer *time.Timer) { _ = "STUB: not implemented"; return }

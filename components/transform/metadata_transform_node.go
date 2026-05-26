@@ -33,10 +33,7 @@ package transform
 //}
 import (
 	"github.com/rulego/rulego/api/types"
-	"github.com/rulego/rulego/components/base"
 	"github.com/rulego/rulego/utils/el"
-	"github.com/rulego/rulego/utils/maps"
-	"github.com/rulego/rulego/utils/str"
 )
 
 func init() {
@@ -80,63 +77,30 @@ type MetadataTransformNodeConfiguration struct {
 // 通过`dataType`变量访问数据类型
 type MetadataTransformNode struct {
 	//节点配置
-	Config         MetadataTransformNodeConfiguration
+	Config          MetadataTransformNodeConfiguration
 	templateMapping map[string]el.Template
 }
 
 // Type 组件类型
-func (x *MetadataTransformNode) Type() string {
-	return "metadataTransform"
-}
+func (x *MetadataTransformNode) Type() string { _ = "STUB: not implemented"; return "" }
 
 func (x *MetadataTransformNode) New() types.Node {
-	return &MetadataTransformNode{Config: MetadataTransformNodeConfiguration{
-		Mapping: map[string]string{
-			"temperature": "msg.temperature",
-		},
-	}}
+	_ = "STUB: not implemented"
+	return *new(types.Node)
 }
 
 // Init 初始化
 func (x *MetadataTransformNode) Init(_ types.Config, configuration types.Configuration) error {
+	_ = "STUB: not implemented"
 	//删除默认配置
-	x.Config.Mapping = map[string]string{}
-	err := maps.Map2Struct(configuration, &x.Config)
-	if err == nil {
-		x.templateMapping = make(map[string]el.Template)
-		for k, v := range x.Config.Mapping {
-			if template, err := el.NewExprTemplate(v); err != nil {
-				return err
-			} else {
-				x.templateMapping[k] = template
-			}
-		}
-	}
-	return err
+	return nil
 }
 
 // OnMsg 处理消息
 func (x *MetadataTransformNode) OnMsg(ctx types.RuleContext, msg types.RuleMsg) {
-	evn := base.NodeUtils.GetEvn(ctx, msg)
-	mapResult := make(map[string]string)
-	for fieldName, template := range x.templateMapping {
-		if out, err := template.Execute(evn); err != nil {
-			ctx.TellFailure(msg, err)
-			return
-		} else {
-			mapResult[fieldName] = str.ToString(out)
-		}
-	}
-	if x.Config.IsNew {
-		msg.Metadata.ReplaceAll(mapResult)
-	} else {
-		for k, v := range mapResult {
-			msg.Metadata.PutValue(k, v)
-		}
-	}
-	ctx.TellSuccess(msg)
+	_ = "STUB: not implemented"
+	return
 }
 
 // Destroy 销毁
-func (x *MetadataTransformNode) Destroy() {
-}
+func (x *MetadataTransformNode) Destroy() { _ = "STUB: not implemented"; return }

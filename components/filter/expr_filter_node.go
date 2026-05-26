@@ -27,13 +27,8 @@ package filter
 //        }
 //      }
 import (
-	"fmt"
-	"strings"
-
 	"github.com/rulego/rulego/api/types"
-	"github.com/rulego/rulego/components/base"
 	"github.com/rulego/rulego/utils/el"
-	"github.com/rulego/rulego/utils/maps"
 )
 
 // init 注册ExprFilterNode组件
@@ -97,52 +92,26 @@ type ExprFilterNode struct {
 
 // Type 返回组件类型
 // Type returns the component type identifier.
-func (x *ExprFilterNode) Type() string {
-	return "exprFilter"
-}
+func (x *ExprFilterNode) Type() string { _ = "STUB: not implemented"; return "" }
 
 // New 创建新实例
 // New creates a new instance.
-func (x *ExprFilterNode) New() types.Node {
-	return &ExprFilterNode{Config: ExprFilterNodeConfiguration{
-		Expr: "",
-	}}
-}
+func (x *ExprFilterNode) New() types.Node { _ = "STUB: not implemented"; return *new(types.Node) }
 
 // Init 初始化组件，验证并编译表达式
 // Init initializes the component.
 func (x *ExprFilterNode) Init(ruleConfig types.Config, configuration types.Configuration) error {
-	err := maps.Map2Struct(configuration, &x.Config)
-	if strings.TrimSpace(x.Config.Expr) == "" {
-		return fmt.Errorf("expr can not be empty")
-	}
-	if err == nil {
-		if template, err := el.NewExprTemplate(x.Config.Expr); err != nil {
-			return fmt.Errorf("failed to create expression template: %w", err)
-		} else {
-			x.exprTemplate = template
-		}
-	}
-	return err
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // OnMsg 处理消息，通过评估编译的表达式来过滤消息
 // OnMsg processes incoming messages by evaluating the compiled expression.
 func (x *ExprFilterNode) OnMsg(ctx types.RuleContext, msg types.RuleMsg) {
-	evn := base.NodeUtils.GetEvn(ctx, msg)
-
-	if out, err := x.exprTemplate.Execute(evn); err != nil {
-		ctx.TellFailure(msg, err)
-	} else {
-		if result, ok := out.(bool); ok && result {
-			ctx.TellNext(msg, types.True)
-		} else {
-			ctx.TellNext(msg, types.False)
-		}
-	}
+	_ = "STUB: not implemented"
+	return
 }
 
 // Destroy 清理资源
 // Destroy cleans up resources.
-func (x *ExprFilterNode) Destroy() {
-}
+func (x *ExprFilterNode) Destroy() { _ = "STUB: not implemented"; return }

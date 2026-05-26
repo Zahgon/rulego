@@ -3,6 +3,7 @@ package service
 import (
 	"examples/server/config"
 	"examples/server/internal/dao"
+
 	"github.com/rulego/rulego/api/types"
 )
 
@@ -14,32 +15,32 @@ type EventService struct {
 }
 
 func NewEventService(config config.Config) (*EventService, error) {
-	if eventDao, err := dao.NewEventDao(config); err != nil {
-		return nil, err
-	} else {
-		return &EventService{
-			EventDao: eventDao,
-			config:   config,
-		}, nil
-	}
+	_ = "STUB: not implemented"
+	return nil, nil
 }
 
 // SaveRunLog 保存工作流运行日志快照
 func (s *EventService) SaveRunLog(username string, ctx types.RuleContext, snapshot types.RuleChainRunSnapshot) error {
-	return s.EventDao.SaveRunLog(username, ctx, snapshot)
+	_ = "STUB: not implemented"
+	return nil
 }
 
 func (s *EventService) Delete(username, chainId, id string) error {
-	return s.EventDao.Delete(username, chainId, id)
+	_ = "STUB: not implemented"
+	return nil
 }
+
 func (s *EventService) DeleteByChainId(username, chainId string) error {
-	return s.EventDao.DeleteByChainId(username, chainId)
+	_ = "STUB: not implemented"
+	return nil
 }
 
 func (s *EventService) List(username, chainId string, current, size int) ([]types.RuleChainRunSnapshot, int, error) {
-	return s.EventDao.List(username, chainId, current, size)
+	_ = "STUB: not implemented"
+	return nil, 0, nil
 }
 
 func (s *EventService) Get(username, chainId, snapshotId string) (types.RuleChainRunSnapshot, error) {
-	return s.EventDao.Get(username, chainId, snapshotId)
+	_ = "STUB: not implemented"
+	return *new(types.RuleChainRunSnapshot), nil
 }

@@ -351,12 +351,8 @@ type builtins struct {
 //		return true
 //	})
 func (b *builtins) Register(name string, processor endpoint.Process) {
-	b.lock.Lock()
-	defer b.lock.Unlock()
-	if b.processors == nil {
-		b.processors = make(map[string]endpoint.Process)
-	}
-	b.processors[name] = processor
+	_ = "STUB: not implemented"
+	return
 }
 
 // RegisterAll adds multiple processor functions to the registry at once.
@@ -371,14 +367,8 @@ func (b *builtins) Register(name string, processor endpoint.Process) {
 //   - processors: Map of processor names to their implementations
 //     processors：处理器名称到其实现的映射
 func (b *builtins) RegisterAll(processors map[string]endpoint.Process) {
-	b.lock.Lock()
-	defer b.lock.Unlock()
-	if b.processors == nil {
-		b.processors = make(map[string]endpoint.Process)
-	}
-	for k, v := range processors {
-		b.processors[k] = v
-	}
+	_ = "STUB: not implemented"
+	return
 }
 
 // Unregister removes one or more processor functions from the registry by their names.
@@ -401,13 +391,7 @@ func (b *builtins) RegisterAll(processors map[string]endpoint.Process) {
 // 使用：
 //
 //	InBuiltins.Unregister("processor1", "processor2")
-func (b *builtins) Unregister(names ...string) {
-	b.lock.Lock()
-	defer b.lock.Unlock()
-	for _, name := range names {
-		delete(b.processors, name)
-	}
-}
+func (b *builtins) Unregister(names ...string) { _ = "STUB: not implemented"; return }
 
 // Get retrieves a processor function by its name from the registry.
 // Returns the processor function and a boolean indicating whether it was found.
@@ -432,10 +416,8 @@ func (b *builtins) Unregister(names ...string) {
 //		// Use the processor
 //	}
 func (b *builtins) Get(name string) (endpoint.Process, bool) {
-	b.lock.RLock()
-	defer b.lock.RUnlock()
-	p, ok := b.processors[name]
-	return p, ok
+	_ = "STUB: not implemented"
+	return *new(endpoint.Process), false
 }
 
 // Names returns a list of all registered processor names.
@@ -453,12 +435,4 @@ func (b *builtins) Get(name string) (endpoint.Process, bool) {
 //
 //	names := InBuiltins.Names()
 //	fmt.Printf("Available processors: %v", names)
-func (b *builtins) Names() []string {
-	b.lock.RLock()
-	defer b.lock.RUnlock()
-	var keys = make([]string, 0, len(b.processors))
-	for k := range b.processors {
-		keys = append(keys, k)
-	}
-	return keys
-}
+func (b *builtins) Names() []string { _ = "STUB: not implemented"; return nil }

@@ -17,38 +17,33 @@
 package main
 
 import (
-	"context"
 	"github.com/rulego/rulego/api/types"
-	"strings"
 )
 
 // UpperNode A plugin that converts the message data to uppercase
 type UpperNode struct{}
 
-func (n *UpperNode) Type() string {
-	return "test/upper"
-}
-func (n *UpperNode) New() types.Node {
-	return &UpperNode{}
-}
+func (n *UpperNode) Type() string { _ = "STUB: not implemented"; return "" }
+
+func (n *UpperNode) New() types.Node { _ = "STUB: not implemented"; return *new(types.Node) }
+
 func (n *UpperNode) Init(ruleConfig types.Config, configuration types.Configuration) error {
+	_ = "STUB: not implemented"
 	// Do some initialization work
 	return nil
 }
 
 func (n *UpperNode) OnMsg(ctx types.RuleContext, msg types.RuleMsg) {
-	msg.SetData(strings.ToUpper(msg.GetData()))
-	v := ctx.GetContext().Value(shareKey)
-	if v != nil {
-		msg.Metadata.PutValue(shareKey, v.(string))
-	}
-	//增加新的共享数据
-	modifyCtx := context.WithValue(ctx.GetContext(), addShareKey, addShareValue)
-	ctx.SetContext(modifyCtx)
-	// Send the modified message to the next node
-	ctx.TellSuccess(msg)
+	_ = "STUB: not implemented"
+	return
 }
 
+//增加新的共享数据
+
+// Send the modified message to the next node
+
 func (n *UpperNode) Destroy() {
+	_ = "STUB: not implemented"
 	// Do some cleanup work
+	return
 }

@@ -17,11 +17,7 @@
 package types
 
 import (
-	"math"
-	"strings"
 	"time"
-
-	"github.com/rulego/rulego/utils/pool"
 )
 
 // OnDebug is a global debug callback function for nodes.
@@ -287,19 +283,10 @@ type Config struct {
 //	    Type: "Lua",
 //	    Content: "function luaHelper(data) return string.upper(data) end"
 //	})
-func (c *Config) RegisterUdf(name string, value interface{}) {
-	if c.Udf == nil {
-		c.Udf = make(map[string]interface{})
-	}
-	if script, ok := value.(Script); ok {
-		if script.Type != AllScript {
-			// Resolve function name conflicts for different script types.
-			// 解决不同脚本类型的函数名冲突。
-			name = script.Type + ScriptFuncSeparator + name
-		}
-	}
-	c.Udf[name] = value
-}
+func (c *Config) RegisterUdf(name string, value interface{}) { _ = "STUB: not implemented"; return }
+
+// Resolve function name conflicts for different script types.
+// 解决不同脚本类型的函数名冲突。
 
 // GetUdf returns the UDF by name and script type.
 // GetUdf 通过名称和脚本类型返回 UDF。
@@ -309,30 +296,14 @@ func (c *Config) RegisterUdf(name string, value interface{}) {
 // 如果 scriptType 为空，则直接返回名称为 name 的 UDF。
 // 如果 scriptType 不为空，则返回名称为 scriptType 前缀的 UDF。
 func (c *Config) GetUdf(name string, scriptType string) interface{} {
-	if c.Udf == nil {
-		return nil
-	}
-	var udf interface{}
-	var ok bool
-	if scriptType == "" {
-		udf, ok = c.Udf[name]
-	} else {
-		key := scriptType + ScriptFuncSeparator + name
-		udf, ok = c.Udf[key]
-		// Try without prefix if not found with prefix (fallback mechanism if needed, though RegisterUdf ensures consistency)
-		// Or if the user registered it without prefix but specified type?
-		// RegisterUdf logic: if type != AllScript, it adds prefix.
-		// So strict matching is preferred.
-	}
-
-	if ok {
-		if script, ok := udf.(Script); ok {
-			return script.Content
-		}
-		return udf
-	}
+	_ = "STUB: not implemented"
 	return nil
 }
+
+// Try without prefix if not found with prefix (fallback mechanism if needed, though RegisterUdf ensures consistency)
+// Or if the user registered it without prefix but specified type?
+// RegisterUdf logic: if type != AllScript, it adds prefix.
+// So strict matching is preferred.
 
 // GetUdfs returns a map of UDFs that satisfy the provided script type.
 // GetUdfs 返回满足提供的脚本类型的 UDF 映射。
@@ -340,23 +311,12 @@ func (c *Config) GetUdf(name string, scriptType string) interface{} {
 // If scriptType is empty, it returns all UDFs.
 // 如果 scriptType 为空，则返回所有 UDF。
 func (c *Config) GetUdfs(scriptType string) map[string]interface{} {
-	udfs := make(map[string]interface{})
-	for k, v := range c.Udf {
-		if scriptType == "" {
-			udfs[k] = v
-			continue
-		}
-		if script, ok := v.(Script); ok {
-			if script.Type == scriptType {
-				// Remove the prefix from the function name.
-				// 从函数名中删除前缀。
-				name := strings.TrimPrefix(k, script.Type+ScriptFuncSeparator)
-				udfs[name] = script.Content
-			}
-		}
-	}
-	return udfs
+	_ = "STUB: not implemented"
+	return nil
 }
+
+// Remove the prefix from the function name.
+// 从函数名中删除前缀。
 
 // NewConfig creates a new Config with default values and applies the provided options.
 // NewConfig 创建具有默认值的新 Config 并应用提供的选项。
@@ -380,20 +340,7 @@ func (c *Config) GetUdfs(scriptType string) map[string]interface{} {
 //	    WithScriptMaxExecutionTime(5 * time.Second),
 //	    WithEndpointEnabled(false),
 //	)
-func NewConfig(opts ...Option) Config {
-	c := &Config{
-		ScriptMaxExecutionTime: time.Millisecond * 2000,
-		Logger:                 DefaultLogger(),
-		Properties:             NewProperties(),
-		EndpointEnabled:        true,
-		OnEndWithFailure:       true,
-	}
-
-	for _, opt := range opts {
-		_ = opt(c)
-	}
-	return *c
-}
+func NewConfig(opts ...Option) Config { _ = "STUB: not implemented"; return *new(Config) }
 
 // DefaultPool provides a default coroutine pool.
 // DefaultPool 提供默认协程池。
@@ -401,8 +348,4 @@ func NewConfig(opts ...Option) Config {
 // This function creates and returns a default WorkerPool implementation with
 // virtually unlimited capacity (math.MaxInt32 workers). The pool is immediately
 // 此函数创建并返回具有几乎无限容量（math.MaxInt32 个工作器）的默认 WorkerPool 实现。
-func DefaultPool() Pool {
-	wp := &pool.WorkerPool{MaxWorkersCount: math.MaxInt32}
-	wp.Start()
-	return wp
-}
+func DefaultPool() Pool { _ = "STUB: not implemented"; return *new(Pool) }

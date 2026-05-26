@@ -18,12 +18,10 @@ package external
 
 import (
 	"net"
-	"sync/atomic"
 	"time"
 
 	"github.com/rulego/rulego/api/types"
 	"github.com/rulego/rulego/components/base"
-	"github.com/rulego/rulego/utils/maps"
 )
 
 // EndSign 结束符
@@ -190,168 +188,85 @@ type NetNode struct {
 }
 
 // Type 组件类型
-func (x *NetNode) Type() string {
-	return "net"
-}
+func (x *NetNode) Type() string { _ = "STUB: not implemented"; return "" }
 
-func (x *NetNode) New() types.Node {
-	return &NetNode{Config: NetNodeConfiguration{
-		Protocol:          "tcp",
-		ConnectTimeout:    60,
-		HeartbeatInterval: 60,
-	}}
-}
+func (x *NetNode) New() types.Node { _ = "STUB: not implemented"; return *new(types.Node) }
 
 // Init 初始化
 func (x *NetNode) Init(ruleConfig types.Config, configuration types.Configuration) error {
-	x.ruleConfig = ruleConfig
-	if err := maps.Map2Struct(configuration, &x.Config); err != nil {
-		return err
-	}
-	// 设置默认值
-	x.setDefaultConfig()
-	x.heartbeatDuration = time.Duration(x.Config.HeartbeatInterval) * time.Second
-	return x.SharedNode.InitWithClose(ruleConfig, x.Type(), x.Config.Server, ruleConfig.NodeClientInitNow, x.initConnect, func(conn net.Conn) error {
-		// 清理回调函数：关闭连接并清理相关状态
-		x.onDisconnect()
-		return conn.Close()
-	})
+	_ = "STUB: not implemented"
+	return nil
 }
+
+// 设置默认值
+
+// 清理回调函数：关闭连接并清理相关状态
 
 // OnMsg 处理消息
 func (x *NetNode) OnMsg(ctx types.RuleContext, msg types.RuleMsg) {
-	var data []byte
+	_ = "STUB: not implemented"
 
 	// 根据数据类型智能处理
-	if msg.GetDataType() == types.BINARY {
-		// 二进制数据：直接获取字节数组，不添加结束符
-		data = msg.GetBytes()
-	} else {
-		// 文本或JSON数据：获取字符串并添加换行符结束符
-		strData := msg.GetData()
-		data = []byte(strData)
-		data = append(data, EndSign)
-	}
-
-	x.onWrite(ctx, msg, data)
+	return
 }
+
+// 二进制数据：直接获取字节数组，不添加结束符
+
+// 文本或JSON数据：获取字符串并添加换行符结束符
 
 // Destroy 销毁
-func (x *NetNode) Destroy() {
-	_ = x.SharedNode.Close()
-}
+func (x *NetNode) Destroy() { _ = "STUB: not implemented"; return }
 
-func (x *NetNode) Printf(format string, v ...interface{}) {
-	x.ruleConfig.Logger.Printf(format, v...)
-}
+func (x *NetNode) Printf(format string, v ...interface{}) { _ = "STUB: not implemented"; return }
 
 // initConnect 方法简化
 func (x *NetNode) initConnect() (net.Conn, error) {
-	conn, err := net.DialTimeout(x.Config.Protocol, x.Config.Server, time.Duration(x.Config.ConnectTimeout)*time.Second)
-	if err != nil {
-		return nil, err
-	}
-
-	x.setDisconnected(false)
-	if x.heartbeatDuration != 0 {
-		// 初始化心跳定时器
-		if x.heartbeatTimer == nil {
-			x.heartbeatTimer = time.AfterFunc(x.heartbeatDuration, func() {
-				x.onPing()
-			})
-		} else {
-			x.heartbeatTimer.Reset(x.heartbeatDuration)
-		}
-	}
-	return conn, nil
+	_ = "STUB: not implemented"
+	return *new(net.Conn), nil
 }
+
+// 初始化心跳定时器
 
 // 重连
 func (x *NetNode) tryReconnect() {
+	_ = "STUB: not implemented"
 	// 尝试通过SharedNode获取新连接（会触发重新初始化）
-	if conn, err := x.SharedNode.GetSafely(); err != nil {
-		// 5秒后重试
-		x.heartbeatTimer.Reset(5 * time.Second)
-	} else {
-		x.setDisconnected(false)
-		x.Printf("Reconnected to: %s", conn.RemoteAddr().String())
-		// 重连成功后，重置为正常的心跳间隔
-		x.heartbeatTimer.Reset(x.heartbeatDuration)
-	}
+	return
 }
+
+// 5秒后重试
+
+// 重连成功后，重置为正常的心跳间隔
 
 func (x *NetNode) onPing() {
+	_ = "STUB: not implemented"
 	// 如果连接已经断开，尝试重连
-	if x.isDisconnected() {
-		x.tryReconnect()
-		return
-	}
-	// 发送心跳
-	if conn, err := x.SharedNode.GetSafely(); err == nil {
-		if _, err := conn.Write(PingData); err != nil {
-			x.Printf("Ping failed: %v", err)
-			x.setDisconnected(true)
-			x.tryReconnect()
-		} else {
-			x.heartbeatTimer.Reset(x.heartbeatDuration)
-		}
-	}
+	return
 }
+
+// 发送心跳
 
 func (x *NetNode) onWrite(ctx types.RuleContext, msg types.RuleMsg, data []byte) {
+	_ = "STUB: not implemented"
 	// 向服务器发送数据
-	if conn, err := x.SharedNode.GetSafely(); err != nil {
-		ctx.TellFailure(msg, err)
-	} else if _, err := conn.Write(data); err != nil {
-		if atomic.LoadInt32(&x.disconnectedCount) == 0 {
-			x.setDisconnected(true)
-			//重试一次
-			x.onWrite(ctx, msg, data)
-		} else {
-			x.setDisconnected(true)
-			ctx.TellFailure(msg, err)
-		}
-	} else {
-		//重置心跳发送间隔
-		if x.heartbeatTimer != nil {
-			x.heartbeatTimer.Reset(x.heartbeatDuration)
-		}
-		//发送到下一个节点
-		ctx.TellSuccess(msg)
-	}
+	return
 }
+
+//重试一次
+
+//重置心跳发送间隔
+
+//发送到下一个节点
 
 func (x *NetNode) onDisconnect() {
+	_ = "STUB: not implemented"
 	// 停止心跳定时器
-	if x.heartbeatTimer != nil {
-		x.heartbeatTimer.Stop()
-	}
-	x.setDisconnected(true)
+	return
 }
 
-func (x *NetNode) isDisconnected() bool {
-	return atomic.LoadInt32(&x.disconnected) == 1
-}
+func (x *NetNode) isDisconnected() bool { _ = "STUB: not implemented"; return false }
 
-func (x *NetNode) setDisconnected(disconnected bool) {
-	if disconnected {
-		atomic.AddInt32(&x.disconnectedCount, 1)
-		atomic.StoreInt32(&x.disconnected, 1)
-	} else {
-		atomic.StoreInt32(&x.disconnectedCount, 0)
-		atomic.StoreInt32(&x.disconnected, 0)
-	}
-}
+func (x *NetNode) setDisconnected(disconnected bool) { _ = "STUB: not implemented"; return }
 
 // 默认值设置
-func (x *NetNode) setDefaultConfig() {
-	if x.Config.Protocol == "" {
-		x.Config.Protocol = "tcp"
-	}
-	if x.Config.ConnectTimeout <= 0 {
-		x.Config.ConnectTimeout = 60
-	}
-	if x.Config.HeartbeatInterval < 0 {
-		x.Config.HeartbeatInterval = 60
-	}
-}
+func (x *NetNode) setDefaultConfig() { _ = "STUB: not implemented"; return }

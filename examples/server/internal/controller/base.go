@@ -5,23 +5,13 @@ import (
 	"examples/server/config"
 	"examples/server/internal/constants"
 	"examples/server/internal/model"
-	"examples/server/internal/service"
-	"fmt"
-	"io"
 	"net/http"
-	"net/url"
-	"strconv"
-	"strings"
-	"time"
 
 	"github.com/rulego/rulego/endpoint/rest"
 
 	"github.com/golang-jwt/jwt"
 	"github.com/rulego/rulego/api/types"
 	endpointApi "github.com/rulego/rulego/api/types/endpoint"
-	"github.com/rulego/rulego/endpoint"
-	"github.com/rulego/rulego/engine"
-	"github.com/rulego/rulego/utils/json"
 )
 
 var ErrIllegalToken = errors.New("illegal token")
@@ -39,28 +29,20 @@ type RuleGoClaim struct {
 
 // userNotFound 用户不存在
 func userNotFound(username string, exchange *endpointApi.Exchange) bool {
-	exchange.Out.SetStatusCode(http.StatusBadRequest)
-	exchange.Out.SetBody([]byte("no found username for:" + username))
+	_ = "STUB: not implemented"
 	return false
 }
 
 // unauthorized 用户未授权
 func unauthorized(username string, exchange *endpointApi.Exchange) bool {
-	exchange.Out.SetStatusCode(http.StatusUnauthorized)
-	exchange.Out.SetBody([]byte("unauthorized for:" + username))
+	_ = "STUB: not implemented"
 	return false
 }
 
 // GetRuleGoFunc 动态获取指定用户规则链池
 func GetRuleGoFunc(exchange *endpointApi.Exchange) types.RuleEnginePool {
-	msg := exchange.In.GetMsg()
-	username := msg.Metadata.GetValue(constants.KeyUsername)
-	if s, ok := service.UserRuleEngineServiceImpl.Get(username); !ok {
-		exchange.In.SetError(fmt.Errorf("not found username=%s", username))
-		return engine.DefaultPool
-	} else {
-		return s.Pool
-	}
+	_ = "STUB: not implemented"
+	return *new(types.RuleEnginePool)
 }
 
 var AuthProcess = func(router endpointApi.Router, exchange *endpointApi.Exchange) bool {
@@ -103,121 +85,31 @@ var AuthProcess = func(router endpointApi.Router, exchange *endpointApi.Exchange
 }
 
 func GetComponentsFromMarketplace(baseUrl, keywords string, root *bool, currentPage, size int) (ComponentList, error) {
+	_ = "STUB: not implemented"
 	// 构造查询参数
-	params := url.Values{}
-	params.Add(constants.KeyKeywords, keywords)
-	params.Add(constants.KeyPage, strconv.Itoa(currentPage))
-	params.Add(constants.KeySize, strconv.Itoa(size))
-	if root != nil {
-		params.Add(constants.KeyRoot, strconv.FormatBool(*root))
-	}
-
-	// 拼接完整的 URL
-	fullURL := baseUrl + "?" + params.Encode()
-
-	// 发送 GET 请求
-	resp, err := http.Get(fullURL)
-	if err != nil {
-		return ComponentList{}, err
-	}
-	defer resp.Body.Close()
-
-	var componentList ComponentList
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return ComponentList{}, err
-	}
-	if resp.StatusCode != http.StatusOK {
-		return ComponentList{}, errors.New(string(body))
-	}
-	err = json.Unmarshal(body, &componentList)
-	if err != nil {
-		return ComponentList{}, err
-	}
-	return componentList, nil
+	return *new(ComponentList), nil
 }
 
-func parseToken(token string) (*RuleGoClaim, error) {
-	length := len(token)
-	if length == 0 || length <= 7 {
-		return nil, ErrIllegalToken
-	}
-	token = token[len(constants.KeyBearer):]
-	claims := &RuleGoClaim{}
-	tk, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
-		return []byte(config.C.JwtSecretKey), nil
-	})
-	if err != nil {
-		return nil, err
-	}
-	if claims, ok := tk.Claims.(*RuleGoClaim); ok && tk.Valid {
-		return claims, nil
-	} else {
-		return nil, fmt.Errorf("token is invalid")
-	}
-}
+// 拼接完整的 URL
+
+// 发送 GET 请求
+
+func parseToken(token string) (*RuleGoClaim, error) { _ = "STUB: not implemented"; return nil, nil }
 
 func (c *base) Login(url string) endpointApi.Router {
-	return endpoint.NewRouter().From(url).Process(func(router endpointApi.Router, exchange *endpointApi.Exchange) bool {
-		msg := exchange.In.GetMsg()
-		var user model.User
-		if err := json.Unmarshal([]byte(msg.GetData()), &user); err != nil {
-			exchange.Out.SetStatusCode(http.StatusBadRequest)
-			exchange.Out.SetBody([]byte(err.Error()))
-		} else {
-			user.Username = strings.TrimSpace(user.Username)
-			user.Password = strings.TrimSpace(user.Password)
-			if b := validatePassword(user); b {
-				claim := RuleGoClaim{
-					Username: user.Username,
-					StandardClaims: jwt.StandardClaims{
-						ExpiresAt: time.Now().Add(time.Duration(config.C.JwtExpireTime) * time.Millisecond).Unix(), // 设置 Token 过期时间
-						Issuer:    config.C.JwtIssuer,                                                              // 设置 Token 的签发者
-					},
-				}
-				token, err := createToken(claim)
-				if err != nil {
-					exchange.Out.SetStatusCode(http.StatusInternalServerError)
-					exchange.Out.SetBody([]byte(err.Error()))
-				}
-				result, err := json.Marshal(map[string]interface{}{
-					"token":     *token,
-					"expiresAt": claim.ExpiresAt,
-				})
-				if err != nil {
-					exchange.Out.SetStatusCode(http.StatusInternalServerError)
-					exchange.Out.SetBody([]byte(err.Error()))
-				} else {
-					exchange.Out.SetBody(result)
-				}
-				return true
-
-			} else {
-				return unauthorized(user.Username, exchange)
-			}
-		}
-		return true
-	}).End()
+	_ = "STUB: not implemented"
+	return *new(endpointApi.Router)
 }
+
+// 设置 Token 过期时间
+// 设置 Token 的签发者
 
 func createToken(claim jwt.Claims) (*string, error) {
+	_ = "STUB: not implemented"
 	// 创建 JWT Token
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
-	tokenString, err := token.SignedString([]byte(config.Get().JwtSecretKey))
-	if err != nil {
-		fmt.Printf("Error generating token: %v\n", err)
-		return nil, err
-	}
-	return &tokenString, nil
+	return nil, nil
 }
 
-func validatePassword(user model.User) bool {
-	return service.UserServiceImpl.CheckPassword(user.Username, user.Password)
-}
-func getUsernameApiKey(token string) string {
-	length := len(token)
-	if length == 0 || length <= 7 {
-		return ""
-	}
-	return service.UserServiceImpl.GetUsernameByApiKey(token[len(constants.KeyBearer):])
-}
+func validatePassword(user model.User) bool { _ = "STUB: not implemented"; return false }
+
+func getUsernameApiKey(token string) string { _ = "STUB: not implemented"; return "" }

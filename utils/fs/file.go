@@ -17,9 +17,7 @@
 package fs
 
 import (
-	"io/fs"
 	"os"
-	"path/filepath"
 )
 
 // File defines the interface for file storage
@@ -82,111 +80,50 @@ type LocalFileStorage struct {
 	name string
 }
 
-func NewLocalFileStorage() *LocalFileStorage {
-	return &LocalFileStorage{name: "default"}
-}
+func NewLocalFileStorage() *LocalFileStorage { _ = "STUB: not implemented"; return nil }
 
-func (f *LocalFileStorage) Name() string {
-	return f.name
-}
+func (f *LocalFileStorage) Name() string { _ = "STUB: not implemented"; return "" }
 
 func (f *LocalFileStorage) Get(path string) ([]byte, error) {
-	return os.ReadFile(path)
+	_ = "STUB: not implemented"
+	return nil, nil
 }
 
 func (f *LocalFileStorage) Save(path string, data []byte) error {
+	_ = "STUB: not implemented"
 	// Create dirs if not exist
-	dir := filepath.Dir(path)
-	if err := os.MkdirAll(dir, 0755); err != nil {
-		return err
-	}
-	return os.WriteFile(path, data, 0644)
-}
-
-func (f *LocalFileStorage) SaveAppend(path string, data []byte) error {
-	// Create dirs if not exist
-	dir := filepath.Dir(path)
-	if err := os.MkdirAll(dir, 0755); err != nil {
-		return err
-	}
-	// Open file in append mode, create if not exists
-	file, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-	_, err = file.Write(data)
-	return err
-}
-
-func (f *LocalFileStorage) Delete(path string) error {
-	return os.Remove(path)
-}
-
-// GetFilePaths returns file paths matching the pattern
-func (f *LocalFileStorage) GetFilePaths(loadFilePattern string, excludedPatterns ...string) ([]string, error) {
-	// 分割输入参数为目录和文件名
-	dir, file := filepath.Split(loadFilePattern)
-	var paths []string
-	// 遍历目录
-	err := filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
-
-		// 如果是文件，且文件名匹配输入参数
-		if !d.IsDir() {
-			matched, _ := filepath.Match(file, d.Name())
-			if matched && !isMatch(d, excludedPatterns...) {
-				paths = append(paths, path)
-			}
-		} else {
-			for _, item := range excludedPatterns {
-				if matched, _ := filepath.Match(item, d.Name()); matched {
-					return filepath.SkipDir // 跳过该子目录
-				}
-			}
-
-		}
-
-		return nil
-	})
-	return paths, err
-}
-
-// IsExist checks if a path exists
-func (f *LocalFileStorage) IsExist(path string) bool {
-	_, err := os.Stat(path)
-	if err != nil {
-		if os.IsExist(err) {
-			return true
-		} else if os.IsNotExist(err) {
-			return false
-		} else {
-			return false
-		}
-	}
-	return true
-}
-
-// CreateDirs creates directories recursively
-func (f *LocalFileStorage) CreateDirs(path string) error {
-	if !f.IsExist(path) {
-		err := os.MkdirAll(path, os.ModePerm)
-		if err != nil {
-			return err
-		}
-	}
 	return nil
 }
 
-func isMatch(d os.DirEntry, patterns ...string) bool {
-	for _, item := range patterns {
-		if matched, _ := filepath.Match(item, d.Name()); matched {
-			return true
-		}
-	}
-	return false
+func (f *LocalFileStorage) SaveAppend(path string, data []byte) error {
+	_ = "STUB: not implemented"
+	// Create dirs if not exist
+	return nil
 }
+
+// Open file in append mode, create if not exists
+
+func (f *LocalFileStorage) Delete(path string) error { _ = "STUB: not implemented"; return nil }
+
+// GetFilePaths returns file paths matching the pattern
+func (f *LocalFileStorage) GetFilePaths(loadFilePattern string, excludedPatterns ...string) ([]string, error) {
+	_ = "STUB: not implemented"
+	// 分割输入参数为目录和文件名
+	return nil, nil
+}
+
+// 遍历目录
+
+// 如果是文件，且文件名匹配输入参数
+
+// 跳过该子目录
+
+// IsExist checks if a path exists
+func (f *LocalFileStorage) IsExist(path string) bool { _ = "STUB: not implemented"; return false }
+
+// CreateDirs creates directories recursively
+func (f *LocalFileStorage) CreateDirs(path string) error { _ = "STUB: not implemented"; return nil }
+
+func isMatch(d os.DirEntry, patterns ...string) bool { _ = "STUB: not implemented"; return false }
 
 var DefaultFile = NewLocalFileStorage()

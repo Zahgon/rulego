@@ -28,13 +28,8 @@ package action
 //  }
 import (
 	"errors"
-	"fmt"
-
-	"github.com/rulego/rulego/utils/js"
 
 	"github.com/rulego/rulego/api/types"
-	"github.com/rulego/rulego/components/base"
-	"github.com/rulego/rulego/utils/maps"
 )
 
 const (
@@ -83,54 +78,28 @@ type LogNode struct {
 
 // Type 返回组件类型
 func (x *LogNode) Type() string {
-	return "log"
+	_ = "STUB: not implemented"
+
+	// New 创建新实例
+	return ""
 }
 
-// New 创建新实例
-func (x *LogNode) New() types.Node {
-	return &LogNode{Config: LogNodeConfiguration{
-		JsScript: `return 'Incoming message:\n' + JSON.stringify(msg) + '\nIncoming metadata:\n' + JSON.stringify(metadata);`,
-	}}
-}
+func (x *LogNode) New() types.Node { _ = "STUB: not implemented"; return *new(types.Node) }
 
 // Init 初始化节点
 func (x *LogNode) Init(ruleConfig types.Config, configuration types.Configuration) error {
-	err := maps.Map2Struct(configuration, &x.Config)
-	if err == nil {
-		jsScript := fmt.Sprintf(JsLogFuncTemplate, x.Config.JsScript)
-		x.jsEngine, err = js.NewGojaJsEngine(ruleConfig, jsScript, base.NodeUtils.GetVars(configuration))
-	}
-	x.logger = ruleConfig.Logger
-	return err
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // OnMsg 处理消息，执行JavaScript脚本格式化并记录日志
 func (x *LogNode) OnMsg(ctx types.RuleContext, msg types.RuleMsg) {
+	_ = "STUB: not implemented"
 	// 准备传递给JS脚本的数据
-	data := base.NodeUtils.GetDataByType(msg, true)
-
-	var metadataValues map[string]string
-	if msg.Metadata != nil {
-		metadataValues = msg.Metadata.Values()
-	} else {
-		metadataValues = make(map[string]string)
-	}
-
-	// 执行JavaScript脚本
-	out, err := x.jsEngine.Execute(ctx, JsLogFuncName, data, metadataValues, msg.Type, msg.DataType)
-	if err != nil {
-		ctx.TellFailure(msg, err)
-	} else {
-		if formatData, ok := out.(string); ok {
-			x.logger.Printf(formatData)
-			ctx.TellSuccess(msg)
-		} else {
-			ctx.TellFailure(msg, JsLogReturnFormatErr)
-		}
-	}
+	return
 }
+
+// 执行JavaScript脚本
 
 // Destroy 清理资源
-func (x *LogNode) Destroy() {
-	x.jsEngine.Stop()
-}
+func (x *LogNode) Destroy() { _ = "STUB: not implemented"; return }

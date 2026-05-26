@@ -26,11 +26,7 @@ package common
 //        }
 //  }
 import (
-	"errors"
-	"strings"
-
 	"github.com/rulego/rulego/api/types"
-	"github.com/rulego/rulego/utils/maps"
 )
 
 // init 注册RefNode组件
@@ -109,58 +105,33 @@ type RefNode struct {
 // Type 返回组件类型
 // Type returns the component type identifier.
 func (x *RefNode) Type() string {
-	return "ref"
+	_ = "STUB: not implemented"
+
+	// New 创建新实例
+	// New creates a new instance.
+	return ""
 }
 
-// New 创建新实例
-// New creates a new instance.
 func (x *RefNode) New() types.Node {
-	return &RefNode{}
+	_ = "STUB: not implemented"
+
+	// Init 初始化组件，解析目标ID以提取链和节点标识符
+	// Init initializes the component.
+	return *new(types.Node)
 }
 
-// Init 初始化组件，解析目标ID以提取链和节点标识符
-// Init initializes the component.
 func (x *RefNode) Init(ruleConfig types.Config, configuration types.Configuration) error {
-	err := maps.Map2Struct(configuration, &x.Config)
-	if err != nil {
-		return err
-	}
-
-	if x.Config.TargetId == "" {
-		return errors.New("targetId is empty")
-	}
-
-	values := strings.Split(x.Config.TargetId, ":")
-	if len(values) == 1 {
-		x.nodeId = strings.TrimSpace(values[0])
-		if x.nodeId == "" {
-			return errors.New("nodeId is empty")
-		}
-	} else if len(values) == 2 {
-		x.chainId = strings.TrimSpace(values[0])
-		x.nodeId = strings.TrimSpace(values[1])
-		if x.chainId == "" || x.nodeId == "" {
-			return errors.New("chainId or nodeId is empty")
-		}
-	} else {
-		return errors.New("invalid targetId format, expected 'nodeId' or 'chainId:nodeId'")
-	}
+	_ = "STUB: not implemented"
 	return nil
 }
 
 // OnMsg 处理消息，通过执行引用的节点来处理传入消息
 // OnMsg processes incoming messages by executing the referenced node.
 func (x *RefNode) OnMsg(ctx types.RuleContext, msg types.RuleMsg) {
-	ctx.TellChainNode(ctx.GetContext(), x.chainId, x.nodeId, msg, !x.Config.TellChain, func(newCtx types.RuleContext, newMsg types.RuleMsg, err error, relationType string) {
-		if err != nil {
-			ctx.TellFailure(msg, err)
-		} else {
-			ctx.TellNext(newMsg, relationType)
-		}
-	}, nil)
+	_ = "STUB: not implemented"
+	return
 }
 
 // Destroy 清理资源
 // Destroy cleans up resources.
-func (x *RefNode) Destroy() {
-}
+func (x *RefNode) Destroy() { _ = "STUB: not implemented"; return }

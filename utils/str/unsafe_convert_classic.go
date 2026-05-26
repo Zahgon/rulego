@@ -2,12 +2,6 @@
 
 package str
 
-import (
-	"reflect"
-	"runtime"
-	"unsafe"
-)
-
 // 包级变量，在init时决定转换策略
 var (
 	useUnsafeConversion bool                // 是否使用unsafe转换
@@ -33,68 +27,39 @@ func init() {
 }
 
 // Go 1.18-1.19版本的实现，使用初始化时决定的策略
-func unsafeStringFromBytes_impl(b []byte) string {
-	if len(b) == 0 {
-		return ""
-	}
+func unsafeStringFromBytes_impl(b []byte) string { _ = "STUB: not implemented"; return "" }
 
-	// 使用初始化时决定的转换函数
-	return stringFromBytesFunc(b)
-}
+// 使用初始化时决定的转换函数
 
-func unsafeBytesFromString_impl(s string) []byte {
-	if len(s) == 0 {
-		return nil
-	}
+func unsafeBytesFromString_impl(s string) []byte { _ = "STUB: not implemented"; return nil }
 
-	// 使用初始化时决定的转换函数
-	return bytesFromStringFunc(s)
-}
+// 使用初始化时决定的转换函数
 
 // === 具体的转换实现函数 ===
 
 // unsafe转换实现
-func unsafeStringFromBytesImpl(b []byte) string {
-	return *(*string)(unsafe.Pointer(&b))
-}
+func unsafeStringFromBytesImpl(b []byte) string { _ = "STUB: not implemented"; return "" }
 
 func unsafeBytesFromStringImpl(s string) []byte {
+	_ = "STUB: not implemented"
 	// 使用reflect包安全地构造slice header
-	sh := (*reflect.StringHeader)(unsafe.Pointer(&s))
-	bh := reflect.SliceHeader{
-		Data: sh.Data,
-		Len:  sh.Len,
-		Cap:  sh.Len,
-	}
-	return *(*[]byte)(unsafe.Pointer(&bh))
+	return nil
 }
 
 // 安全转换实现
-func safeStringFromBytesImpl(b []byte) string {
-	return string(b)
-}
+func safeStringFromBytesImpl(b []byte) string { _ = "STUB: not implemented"; return "" }
 
 func safeBytesFromStringImpl(s string) []byte {
-	return []byte(s)
-}
+	_ = "STUB: not implemented"
 
-// === 平台检测函数（仅在init时调用一次）===
+	// === 平台检测函数（仅在init时调用一次）===
+	return nil
+}
 
 // 检查是否为安全的平台（适合使用unsafe转换）
-func isSafePlatform() bool {
-	switch runtime.GOOS {
-	case "linux", "darwin", "windows":
-		switch runtime.GOARCH {
-		case "amd64", "arm64":
-			return true
-		}
-	}
-	return false
-}
+func isSafePlatform() bool { _ = "STUB: not implemented"; return false }
 
 // 实现信息（动态返回实际使用的策略）
-func getImplementationInfo() string {
-	return conversionStrategy
-}
+func getImplementationInfo() string { _ = "STUB: not implemented"; return "" }
 
 const implementationInfo = "Classic unsafe (Go 1.18+)"

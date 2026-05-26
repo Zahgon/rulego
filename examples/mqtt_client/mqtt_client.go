@@ -18,12 +18,13 @@ package main
 
 import (
 	"fmt"
-	"github.com/rulego/rulego"
-	"github.com/rulego/rulego/api/types"
 	"log"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/rulego/rulego"
+	"github.com/rulego/rulego/api/types"
 )
 
 // 数据经过js转换后，增加deviceId变量，然后往主题 topic: /device/msg/${deviceId}发送处理后msg数据

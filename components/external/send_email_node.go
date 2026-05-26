@@ -17,17 +17,11 @@
 package external
 
 import (
-	"crypto/tls"
-	"errors"
-	"fmt"
-	"github.com/rulego/rulego/api/types"
-	"github.com/rulego/rulego/components/base"
-	"github.com/rulego/rulego/utils/el"
-	"github.com/rulego/rulego/utils/maps"
-	"net"
 	"net/smtp"
-	"strings"
 	"time"
+
+	"github.com/rulego/rulego/api/types"
+	"github.com/rulego/rulego/utils/el"
 )
 
 // 分隔符
@@ -56,181 +50,77 @@ type Email struct {
 // EmailTemplates 邮件模板结构体，统一管理所有邮件字段的模板
 type EmailTemplates struct {
 	// fromTemplate 发件人模板
-	fromTemplate    el.Template
+	fromTemplate el.Template
 	// toTemplate 收件人模板
-	toTemplate      el.Template
+	toTemplate el.Template
 	// ccTemplate 抄送人模板
-	ccTemplate      el.Template
+	ccTemplate el.Template
 	// bccTemplate 密送人模板
-	bccTemplate     el.Template
+	bccTemplate el.Template
 	// subjectTemplate 主题模板
 	subjectTemplate el.Template
 	// bodyTemplate 正文模板
-	bodyTemplate    el.Template
+	bodyTemplate el.Template
 	// hasVar 标识模板是否包含变量
-	hasVar          bool
+	hasVar bool
 }
 
 // initTemplates 初始化邮件模板
 // Initialize email templates
 // initTemplates 初始化所有邮件字段的模板
 func (x *SendEmailNode) initTemplates() error {
-	var err error
-	
+	_ = "STUB: not implemented"
+
 	// 创建发件人模板
-	if x.templates.fromTemplate, err = el.NewTemplate(x.Config.Email.From); err != nil {
-		return err
-	}
-	
-	// 创建收件人模板
-	if x.templates.toTemplate, err = el.NewTemplate(x.Config.Email.To); err != nil {
-		return err
-	}
-	
-	// 创建抄送人模板
-	if x.templates.ccTemplate, err = el.NewTemplate(x.Config.Email.Cc); err != nil {
-		return err
-	}
-	
-	// 创建密送人模板
-	if x.templates.bccTemplate, err = el.NewTemplate(x.Config.Email.Bcc); err != nil {
-		return err
-	}
-	
-	// 创建主题模板
-	if x.templates.subjectTemplate, err = el.NewTemplate(x.Config.Email.Subject); err != nil {
-		return err
-	}
-
-	// 创建正文模板
-	if x.templates.bodyTemplate, err = el.NewTemplate(x.Config.Email.Body); err != nil {
-		return err
-	}
-
-	// 检查是否包含变量
-	x.templates.hasVar = x.templates.fromTemplate.HasVar() || x.templates.toTemplate.HasVar() || 
-						 x.templates.ccTemplate.HasVar() || x.templates.bccTemplate.HasVar() ||
-						 x.templates.subjectTemplate.HasVar() || x.templates.bodyTemplate.HasVar()
 	return nil
 }
 
+// 创建收件人模板
+
+// 创建抄送人模板
+
+// 创建密送人模板
+
+// 创建主题模板
+
+// 创建正文模板
+
+// 检查是否包含变量
+
 // createEmailMsg 创建邮件消息内容
 func (x *SendEmailNode) createEmailMsg(ctx types.RuleContext, ruleMsg types.RuleMsg) ([]byte, []string) {
-	var from, to, cc, bcc, subject, body string
-	var evn map[string]interface{}
-	if x.templates.hasVar {
-		evn = base.NodeUtils.GetEvnAndMetadata(ctx, ruleMsg)
-	}
-	
-	// 执行模板渲染
-	from = x.templates.fromTemplate.ExecuteAsString(evn)
-	to = x.templates.toTemplate.ExecuteAsString(evn)
-	cc = x.templates.ccTemplate.ExecuteAsString(evn)
-	bcc = x.templates.bccTemplate.ExecuteAsString(evn)
-	subject = x.templates.subjectTemplate.ExecuteAsString(evn)
-	body = x.templates.bodyTemplate.ExecuteAsString(evn)
-
-	toList := strings.Split(to, splitUserSep)
-	// 将所有的收件人、抄送和密送合并为一个切片
-	sendTo := toList
-
-	var ccList, bccList []string
-	if cc != "" {
-		ccList = strings.Split(cc, splitUserSep)
-		sendTo = append(sendTo, ccList...)
-	}
-	if bcc != "" {
-		bccList = strings.Split(bcc, splitUserSep)
-		sendTo = append(sendTo, bccList...)
-	}
-
-	// 创建一个邮件消息，符合RFC 822标准
-	msg := []byte("To: " + to + "\r\n" +
-		"From: " + from + "\r\n" +
-		"Subject: " + subject + "\r\n" +
-		"Cc: " + cc + "\r\n" +
-		"Bcc: " + bcc + "\r\n" +
-		"Content-Type: text/html; charset=UTF-8\r\n" +
-		"\r\n" +
-		body)
-	return msg, sendTo
+	_ = "STUB: not implemented"
+	return nil, nil
 }
+
+// 执行模板渲染
+
+// 将所有的收件人、抄送和密送合并为一个切片
+
+// 创建一个邮件消息，符合RFC 822标准
 
 func (x *SendEmailNode) SendEmail(ctx types.RuleContext, ruleMsg types.RuleMsg, addr string, auth smtp.Auth, connectTimeout time.Duration) error {
-	msg, sendTo := x.createEmailMsg(ctx, ruleMsg)
-	// 获取渲染后的发件人地址
-	var evn map[string]interface{}
-	if x.templates.hasVar {
-		evn = base.NodeUtils.GetEvnAndMetadata(ctx, ruleMsg)
-	}
-	from := x.templates.fromTemplate.ExecuteAsString(evn)
-	// 调用SendMail函数发送邮件
-	return smtp.SendMail(addr, auth, from, sendTo, msg)
+	_ = "STUB: not implemented"
+	return nil
 }
+
+// 获取渲染后的发件人地址
+
+// 调用SendMail函数发送邮件
 
 func (x *SendEmailNode) SendEmailWithTls(ctx types.RuleContext, ruleMsg types.RuleMsg, addr string, auth smtp.Auth, connectTimeout time.Duration) error {
-
-	msg, sendTo := x.createEmailMsg(ctx, ruleMsg)
-
-	host, _, _ := net.SplitHostPort(addr)
-
-	conn, err := net.DialTimeout("tcp", addr, connectTimeout)
-	if err != nil {
-		return err
-	}
-	// TLS
-	tlsConfig := &tls.Config{
-		InsecureSkipVerify: true,
-		ServerName:         host,
-	}
-	conn = tls.Client(conn, tlsConfig)
-	if err != nil {
-		return err
-	}
-
-	c, err := smtp.NewClient(conn, host)
-	if err != nil {
-		return err
-	}
-	defer c.Close()
-	// Auth
-	if err = c.Auth(auth); err != nil {
-		return err
-	}
-
-	// To && From
-	// 获取渲染后的发件人地址
-	var evn map[string]interface{}
-	if x.templates.hasVar {
-		evn = base.NodeUtils.GetEvnAndMetadata(ctx, ruleMsg)
-	}
-	from := x.templates.fromTemplate.ExecuteAsString(evn)
-	if err = c.Mail(from); err != nil {
-		return err
-	}
-
-	for _, item := range sendTo {
-		if err = c.Rcpt(item); err != nil {
-			return err
-		}
-	}
-
-	// Data
-	w, err := c.Data()
-	if err != nil {
-		return err
-	}
-
-	if _, err = w.Write(msg); err != nil {
-		return err
-	}
-
-	if err = w.Close(); err != nil {
-		return err
-	}
-
-	return c.Quit()
+	_ = "STUB: not implemented"
+	return nil
 }
+
+// TLS
+
+// Auth
+
+// To && From
+// 获取渲染后的发件人地址
+
+// Data
 
 // SendEmailConfiguration 配置
 type SendEmailConfiguration struct {
@@ -259,61 +149,29 @@ type SendEmailNode struct {
 	smtpAddr               string
 	smtpAuth               smtp.Auth
 	// templates 邮件模板管理器
-	templates              EmailTemplates
+	templates EmailTemplates
 }
 
 // Type 组件类型
-func (x *SendEmailNode) Type() string {
-	return "sendEmail"
-}
+func (x *SendEmailNode) Type() string { _ = "STUB: not implemented"; return "" }
 
-func (x *SendEmailNode) New() types.Node {
-	return &SendEmailNode{
-		Config: SendEmailConfiguration{
-			ConnectTimeout: 10,
-		},
-	}
-}
+func (x *SendEmailNode) New() types.Node { _ = "STUB: not implemented"; return *new(types.Node) }
 
 // Init 初始化
 func (x *SendEmailNode) Init(ruleConfig types.Config, configuration types.Configuration) error {
-	err := maps.Map2Struct(configuration, &x.Config)
-	if err == nil {
-		if x.Config.Email.To == "" {
-			return errors.New("to address can not empty")
-		}
-		// 初始化邮件模板
-		err = x.initTemplates()
-		if err != nil {
-			return err
-		}
-		x.smtpAddr = fmt.Sprintf("%s:%d", x.Config.SmtpHost, x.Config.SmtpPort)
-		// 创建一个PLAIN认证
-		x.smtpAuth = smtp.PlainAuth("", x.Config.Username, x.Config.Password, x.Config.SmtpHost)
-		if x.Config.ConnectTimeout <= 0 {
-			x.Config.ConnectTimeout = 10
-		}
-		x.ConnectTimeoutDuration = time.Duration(x.Config.ConnectTimeout) * time.Second
-	}
-	return err
+	_ = "STUB: not implemented"
+	return nil
 }
+
+// 初始化邮件模板
+
+// 创建一个PLAIN认证
 
 // OnMsg 处理消息
 func (x *SendEmailNode) OnMsg(ctx types.RuleContext, msg types.RuleMsg) {
-	var err error
-	if x.Config.EnableTls {
-		err = x.SendEmailWithTls(ctx, msg, x.smtpAddr, x.smtpAuth, x.ConnectTimeoutDuration)
-	} else {
-		err = x.SendEmail(ctx, msg, x.smtpAddr, x.smtpAuth, x.ConnectTimeoutDuration)
-
-	}
-	if err != nil {
-		ctx.TellFailure(msg, err)
-	} else {
-		ctx.TellSuccess(msg)
-	}
+	_ = "STUB: not implemented"
+	return
 }
 
 // Destroy 销毁
-func (x *SendEmailNode) Destroy() {
-}
+func (x *SendEmailNode) Destroy() { _ = "STUB: not implemented"; return }

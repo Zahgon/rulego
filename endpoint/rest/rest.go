@@ -145,26 +145,16 @@
 package rest
 
 import (
-	"context"
-	"errors"
-	"fmt"
-	"io"
 	"net"
 	"net/http"
 	"net/textproto"
-	"regexp"
-	"strings"
 	"sync"
-	"time"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/rulego/rulego/api/types"
 	"github.com/rulego/rulego/api/types/endpoint"
 	nodeBase "github.com/rulego/rulego/components/base"
 	"github.com/rulego/rulego/endpoint/impl"
-	"github.com/rulego/rulego/utils/maps"
-	"github.com/rulego/rulego/utils/runtime"
-	"github.com/rulego/rulego/utils/str"
 )
 
 // Constants for HTTP headers and content types used throughout the REST endpoint.
@@ -246,18 +236,7 @@ type RequestMessage struct {
 //
 // Note: The request body stream is automatically closed after reading
 // 注意：读取后请求体流会自动关闭
-func (r *RequestMessage) Body() []byte {
-	if r.body == nil && r.request != nil {
-		defer func() {
-			if r.request.Body != nil {
-				_ = r.request.Body.Close()
-			}
-		}()
-		entry, _ := io.ReadAll(r.request.Body)
-		r.body = entry
-	}
-	return r.body
-}
+func (r *RequestMessage) Body() []byte { _ = "STUB: not implemented"; return nil }
 
 // Headers returns the HTTP request headers as a textproto.MIMEHeader.
 // This provides access to all HTTP headers in a standardized format.
@@ -268,10 +247,8 @@ func (r *RequestMessage) Body() []byte {
 // Returns / 返回：
 // • textproto.MIMEHeader: HTTP headers map, nil if no request  HTTP 头映射，如果没有请求则为 nil
 func (r *RequestMessage) Headers() textproto.MIMEHeader {
-	if r.request == nil {
-		return nil
-	}
-	return textproto.MIMEHeader(r.request.Header)
+	_ = "STUB: not implemented"
+	return *new(textproto.MIMEHeader)
 }
 
 // From returns the complete request URL as a string.
@@ -282,12 +259,7 @@ func (r *RequestMessage) Headers() textproto.MIMEHeader {
 //
 // Returns / 返回：
 // • string: Complete request URL, empty string if no request  完整请求 URL，如果没有请求则为空字符串
-func (r RequestMessage) From() string {
-	if r.request == nil {
-		return ""
-	}
-	return r.request.URL.String()
-}
+func (r RequestMessage) From() string { _ = "STUB: not implemented"; return "" }
 
 // GetParam retrieves a parameter value by key from path parameters or query parameters.
 // It first checks path parameters (URL segments), then falls back to query parameters.
@@ -306,16 +278,7 @@ func (r RequestMessage) From() string {
 // Priority Order / 优先级顺序：
 // 1. Path parameters (e.g., /users/{id})  路径参数
 // 2. Query parameters (e.g., ?name=value)  查询参数
-func (r *RequestMessage) GetParam(key string) string {
-	if r.request == nil {
-		return ""
-	}
-	if v := r.Params.ByName(key); v == "" {
-		return r.request.FormValue(key)
-	} else {
-		return v
-	}
-}
+func (r *RequestMessage) GetParam(key string) string { _ = "STUB: not implemented"; return "" }
 
 // SetMsg sets the RuleMsg for this request message.
 // This is typically used during message processing to cache the converted message.
@@ -323,44 +286,26 @@ func (r *RequestMessage) GetParam(key string) string {
 // SetMsg 为此请求消息设置 RuleMsg。
 // 这通常在消息处理期间用于缓存转换后的消息。
 func (r *RequestMessage) SetMsg(msg *types.RuleMsg) {
-	r.msg = msg
+	_ = "STUB: not implemented"
+
+	// GetMsg converts the HTTP request to a RuleMsg for rule chain processing.
+	// The conversion includes automatic data type detection and metadata population.
+	//
+	// GetMsg 将 HTTP 请求转换为 RuleMsg 以进行规则链处理。
+	// 转换包括自动数据类型检测和元数据填充。
+	//
+	// Returns / 返回：
+	// • *types.RuleMsg: Converted rule message ready for processing  转换后的规则消息，可供处理
+	//
+	// Conversion Logic / 转换逻辑：
+	// • GET requests: Query parameters as JSON data  GET 请求：查询参数作为 JSON 数据
+	// • Other methods: Request body as data  其他方法：请求体作为数据
+	// • Content-Type detection: JSON vs TEXT based on Content-Type header  内容类型检测：基于 Content-Type 头的 JSON vs TEXT
+	// • Metadata: Additional request information  元数据：额外的请求信息
+	return
 }
 
-// GetMsg converts the HTTP request to a RuleMsg for rule chain processing.
-// The conversion includes automatic data type detection and metadata population.
-//
-// GetMsg 将 HTTP 请求转换为 RuleMsg 以进行规则链处理。
-// 转换包括自动数据类型检测和元数据填充。
-//
-// Returns / 返回：
-// • *types.RuleMsg: Converted rule message ready for processing  转换后的规则消息，可供处理
-//
-// Conversion Logic / 转换逻辑：
-// • GET requests: Query parameters as JSON data  GET 请求：查询参数作为 JSON 数据
-// • Other methods: Request body as data  其他方法：请求体作为数据
-// • Content-Type detection: JSON vs TEXT based on Content-Type header  内容类型检测：基于 Content-Type 头的 JSON vs TEXT
-// • Metadata: Additional request information  元数据：额外的请求信息
-func (r *RequestMessage) GetMsg() *types.RuleMsg {
-	if r.msg == nil {
-		dataType := types.TEXT
-		var data string
-		if r.request != nil && r.request.Method == http.MethodGet {
-			dataType = types.JSON
-			data = str.ToString(r.request.URL.Query())
-		} else {
-			if contentType := r.Headers().Get(ContentTypeKey); strings.HasPrefix(contentType, JsonContextType) {
-				dataType = types.JSON
-			}
-			data = string(r.Body())
-		}
-		if r.Metadata == nil {
-			r.Metadata = types.NewMetadata()
-		}
-		ruleMsg := types.NewMsg(0, r.From(), dataType, r.Metadata, data)
-		r.msg = &ruleMsg
-	}
-	return r.msg
-}
+func (r *RequestMessage) GetMsg() *types.RuleMsg { _ = "STUB: not implemented"; return nil }
 
 // SetStatusCode is a no-op for request messages as status codes are set on responses.
 // This method exists to satisfy the Message interface.
@@ -368,70 +313,83 @@ func (r *RequestMessage) GetMsg() *types.RuleMsg {
 // SetStatusCode 对于请求消息是无操作，因为状态码在响应上设置。
 // 此方法存在是为了满足 Message 接口。
 func (r *RequestMessage) SetStatusCode(statusCode int) {
+	_ = "STUB: not implemented"
+
+	// SetBody sets the request body content.
+	// This is typically used for testing or message transformation scenarios.
+	//
+	// SetBody 设置请求体内容。
+	// 这通常用于测试或消息转换场景。
+	return
 }
 
-// SetBody sets the request body content.
-// This is typically used for testing or message transformation scenarios.
-//
-// SetBody 设置请求体内容。
-// 这通常用于测试或消息转换场景。
 func (r *RequestMessage) SetBody(body []byte) {
-	r.body = body
+	_ = "STUB: not implemented"
+
+	// SetError sets an error associated with this request message.
+	// This is used to track errors during request processing.
+	//
+	// SetError 设置与此请求消息关联的错误。
+	// 用于跟踪请求处理期间的错误。
+	return
 }
 
-// SetError sets an error associated with this request message.
-// This is used to track errors during request processing.
-//
-// SetError 设置与此请求消息关联的错误。
-// 用于跟踪请求处理期间的错误。
 func (r *RequestMessage) SetError(err error) {
-	r.err = err
+	_ = "STUB: not implemented"
+
+	// GetError returns any error associated with this request message.
+	//
+	// GetError 返回与此请求消息关联的任何错误。
+	return
 }
 
-// GetError returns any error associated with this request message.
-//
-// GetError 返回与此请求消息关联的任何错误。
 func (r *RequestMessage) GetError() error {
-	return r.err
+	_ = "STUB: not implemented"
+
+	// Request returns the underlying HTTP request object.
+	// This provides direct access to the original HTTP request for advanced scenarios.
+	//
+	// Request 返回底层的 HTTP 请求对象。
+	// 这为高级场景提供对原始 HTTP 请求的直接访问。
+	return nil
 }
 
-// Request returns the underlying HTTP request object.
-// This provides direct access to the original HTTP request for advanced scenarios.
-//
-// Request 返回底层的 HTTP 请求对象。
-// 这为高级场景提供对原始 HTTP 请求的直接访问。
 func (r *RequestMessage) Request() *http.Request {
-	return r.request
+	_ = "STUB: not implemented"
+
+	// Response returns the HTTP response writer.
+	// This allows direct writing to the HTTP response if needed.
+	//
+	// Response 返回 HTTP 响应写入器。
+	// 如果需要，这允许直接写入 HTTP 响应。
+	return nil
 }
 
-// Response returns the HTTP response writer.
-// This allows direct writing to the HTTP response if needed.
-//
-// Response 返回 HTTP 响应写入器。
-// 如果需要，这允许直接写入 HTTP 响应。
 func (r *RequestMessage) Response() http.ResponseWriter {
-	return r.response
+	_ = "STUB: not implemented"
+
+	// ResponseMessage represents an outgoing HTTP response message in the RuleGo processing pipeline.
+	// It handles the conversion of rule processing results back into HTTP responses,
+	// including status codes, headers, and response body content.
+	//
+	// ResponseMessage 表示 RuleGo 处理管道中的传出 HTTP 响应消息。
+	// 它处理规则处理结果转换回 HTTP 响应，包括状态码、头部和响应体内容。
+	//
+	// Thread Safety / 线程安全：
+	// ResponseMessage is thread-safe and can be safely accessed from multiple goroutines.
+	// All write operations are protected by a mutex to prevent race conditions.
+	// ResponseMessage 是线程安全的，可以安全地从多个协程访问。
+	// 所有写操作都受互斥锁保护以防止竞态条件。
+	//
+	// Key Features / 主要特性：
+	// • Thread-Safe Operations: All methods are protected by mutex for concurrent access  线程安全操作：所有方法都受互斥锁保护以支持并发访问
+	// • Automatic Response Writing: Body content is automatically written to HTTP response  自动响应写入：正文内容自动写入 HTTP 响应
+	// • Status Code Management: Support for HTTP status code setting  状态码管理：支持 HTTP 状态码设置
+	// • Header Management: Access to HTTP response headers  头部管理：访问 HTTP 响应头
+	// • Error Handling: Built-in error tracking and reporting  错误处理：内置错误跟踪和报告
+	return *new(http.ResponseWriter)
 }
 
-// ResponseMessage represents an outgoing HTTP response message in the RuleGo processing pipeline.
-// It handles the conversion of rule processing results back into HTTP responses,
-// including status codes, headers, and response body content.
-//
-// ResponseMessage 表示 RuleGo 处理管道中的传出 HTTP 响应消息。
-// 它处理规则处理结果转换回 HTTP 响应，包括状态码、头部和响应体内容。
-//
-// Thread Safety / 线程安全：
-// ResponseMessage is thread-safe and can be safely accessed from multiple goroutines.
-// All write operations are protected by a mutex to prevent race conditions.
-// ResponseMessage 是线程安全的，可以安全地从多个协程访问。
-// 所有写操作都受互斥锁保护以防止竞态条件。
-//
-// Key Features / 主要特性：
-// • Thread-Safe Operations: All methods are protected by mutex for concurrent access  线程安全操作：所有方法都受互斥锁保护以支持并发访问
-// • Automatic Response Writing: Body content is automatically written to HTTP response  自动响应写入：正文内容自动写入 HTTP 响应
-// • Status Code Management: Support for HTTP status code setting  状态码管理：支持 HTTP 状态码设置
-// • Header Management: Access to HTTP response headers  头部管理：访问 HTTP 响应头
-// • Error Handling: Built-in error tracking and reporting  错误处理：内置错误跟踪和报告
 type ResponseMessage struct {
 	//原始 HTTP 请求对象  Original HTTP request object  原始 HTTP 请求对象
 	request *http.Request
@@ -463,11 +421,7 @@ type ResponseMessage struct {
 //
 // Returns / 返回：
 // • []byte: Current response body content  当前响应体内容
-func (r *ResponseMessage) Body() []byte {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-	return r.body
-}
+func (r *ResponseMessage) Body() []byte { _ = "STUB: not implemented"; return nil }
 
 // Headers returns the HTTP response headers in a thread-safe manner.
 // This provides access to the response headers for reading or modification.
@@ -478,12 +432,8 @@ func (r *ResponseMessage) Body() []byte {
 // Returns / 返回：
 // • textproto.MIMEHeader: Response headers map, nil if no response writer  响应头映射，如果没有响应写入器则为 nil
 func (r *ResponseMessage) Headers() textproto.MIMEHeader {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-	if r.response == nil {
-		return nil
-	}
-	return textproto.MIMEHeader(r.response.Header())
+	_ = "STUB: not implemented"
+	return *new(textproto.MIMEHeader)
 }
 
 // AddHeader appends a response header value in a thread-safe manner.
@@ -491,56 +441,28 @@ func (r *ResponseMessage) Headers() textproto.MIMEHeader {
 //
 // AddHeader 以线程安全方式追加响应头值。
 // 它用于依赖 HeaderModifier 接口的输出处理器。
-func (r *ResponseMessage) AddHeader(key, value string) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-	if r.response == nil {
-		return
-	}
-	r.response.Header().Add(key, value)
-}
+func (r *ResponseMessage) AddHeader(key, value string) { _ = "STUB: not implemented"; return }
 
 // SetHeader sets a response header value in a thread-safe manner.
 // It is used by output processors that rely on the HeaderModifier interface.
 //
 // SetHeader 以线程安全方式设置响应头值。
 // 它用于依赖 HeaderModifier 接口的输出处理器。
-func (r *ResponseMessage) SetHeader(key, value string) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-	if r.response == nil {
-		return
-	}
-	r.response.Header().Set(key, value)
-}
+func (r *ResponseMessage) SetHeader(key, value string) { _ = "STUB: not implemented"; return }
 
 // DelHeader removes a response header value in a thread-safe manner.
 // It is used by output processors that rely on the HeaderModifier interface.
 //
 // DelHeader 以线程安全方式删除响应头值。
 // 它用于依赖 HeaderModifier 接口的输出处理器。
-func (r *ResponseMessage) DelHeader(key string) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-	if r.response == nil {
-		return
-	}
-	r.response.Header().Del(key)
-}
+func (r *ResponseMessage) DelHeader(key string) { _ = "STUB: not implemented"; return }
 
 // GetMetadata returns response-scoped metadata, initializing it lazily when needed.
 // This keeps rest.ResponseMessage compatible with the HeaderModifier interface.
 //
 // GetMetadata 返回响应作用域元数据，并在需要时延迟初始化。
 // 这使 rest.ResponseMessage 与 HeaderModifier 接口保持兼容。
-func (r *ResponseMessage) GetMetadata() *types.Metadata {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-	if r.metadata == nil {
-		r.metadata = types.NewMetadata()
-	}
-	return r.metadata
-}
+func (r *ResponseMessage) GetMetadata() *types.Metadata { _ = "STUB: not implemented"; return nil }
 
 // From returns the original request URL for context.
 // This is useful for logging and debugging purposes.
@@ -550,14 +472,7 @@ func (r *ResponseMessage) GetMetadata() *types.Metadata {
 //
 // Returns / 返回：
 // • string: Original request URL, empty if no request  原始请求 URL，如果没有请求则为空
-func (r *ResponseMessage) From() string {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-	if r.request == nil {
-		return ""
-	}
-	return r.request.URL.String()
-}
+func (r *ResponseMessage) From() string { _ = "STUB: not implemented"; return "" }
 
 // GetParam retrieves a parameter from the original request.
 // This provides access to request parameters for response processing.
@@ -570,14 +485,7 @@ func (r *ResponseMessage) From() string {
 //
 // Returns / 返回：
 // • string: Parameter value, empty if not found or no request  参数值，如果未找到或没有请求则为空
-func (r *ResponseMessage) GetParam(key string) string {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-	if r.request == nil {
-		return ""
-	}
-	return r.request.FormValue(key)
-}
+func (r *ResponseMessage) GetParam(key string) string { _ = "STUB: not implemented"; return "" }
 
 // SetMsg sets the rule message for this response in a thread-safe manner.
 // This is typically called during rule processing to set the processing result.
@@ -587,11 +495,7 @@ func (r *ResponseMessage) GetParam(key string) string {
 //
 // Parameters / 参数：
 // • msg: The rule message containing processing results  包含处理结果的规则消息
-func (r *ResponseMessage) SetMsg(msg *types.RuleMsg) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-	r.msg = msg
-}
+func (r *ResponseMessage) SetMsg(msg *types.RuleMsg) { _ = "STUB: not implemented"; return }
 
 // GetMsg returns the rule message associated with this response.
 // This provides access to the processing results for response generation.
@@ -601,11 +505,7 @@ func (r *ResponseMessage) SetMsg(msg *types.RuleMsg) {
 //
 // Returns / 返回：
 // • *types.RuleMsg: The rule message with processing results  包含处理结果的规则消息
-func (r *ResponseMessage) GetMsg() *types.RuleMsg {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-	return r.msg
-}
+func (r *ResponseMessage) GetMsg() *types.RuleMsg { _ = "STUB: not implemented"; return nil }
 
 // SetStatusCode sets the HTTP response status code.
 // The status code is immediately written to the HTTP response.
@@ -618,23 +518,7 @@ func (r *ResponseMessage) GetMsg() *types.RuleMsg {
 //
 // Note: This should be called before SetBody to ensure proper HTTP response format
 // 注意：应在 SetBody 之前调用以确保正确的 HTTP 响应格式
-func (r *ResponseMessage) SetStatusCode(statusCode int) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-	r.statusCode = statusCode
-	if r.response != nil {
-		if r.headerWritten {
-			return
-		}
-		defer func() {
-			if err := recover(); err != nil {
-				r.err = fmt.Errorf("write header panic: %v", err)
-			}
-		}()
-		r.response.WriteHeader(statusCode)
-		r.headerWritten = true
-	}
-}
+func (r *ResponseMessage) SetStatusCode(statusCode int) { _ = "STUB: not implemented"; return }
 
 // SetBody sets the response body content and immediately writes it to the HTTP response.
 // This method combines both storing the body content and sending it to the client.
@@ -653,26 +537,7 @@ func (r *ResponseMessage) SetStatusCode(statusCode int) {
 // Thread Safety / 线程安全：
 // This method is thread-safe and can be called concurrently
 // 此方法是线程安全的，可以并发调用
-func (r *ResponseMessage) SetBody(body []byte) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-	r.body = body
-	if r.response != nil {
-		if len(body) > 0 {
-			defer func() {
-				if err := recover(); err != nil {
-					r.err = fmt.Errorf("write body panic: %v", err)
-				}
-			}()
-			_, err := r.response.Write(body)
-			if err != nil {
-				r.err = err
-				return
-			}
-			r.headerWritten = true
-		}
-	}
-}
+func (r *ResponseMessage) SetBody(body []byte) { _ = "STUB: not implemented"; return }
 
 // SetError sets an error associated with this response message.
 // This is used for error tracking and debugging purposes.
@@ -682,11 +547,7 @@ func (r *ResponseMessage) SetBody(body []byte) {
 //
 // Parameters / 参数：
 // • err: Error to associate with this response  要与此响应关联的错误
-func (r *ResponseMessage) SetError(err error) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-	r.err = err
-}
+func (r *ResponseMessage) SetError(err error) { _ = "STUB: not implemented"; return }
 
 // GetError returns any error associated with this response message.
 // This is useful for error handling and debugging.
@@ -696,43 +557,28 @@ func (r *ResponseMessage) SetError(err error) {
 //
 // Returns / 返回：
 // • error: Associated error, nil if no error  关联的错误，如果没有错误则为 nil
-func (r *ResponseMessage) GetError() error {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-	return r.err
-}
+func (r *ResponseMessage) GetError() error { _ = "STUB: not implemented"; return nil }
 
-func (r *ResponseMessage) Request() *http.Request {
-	return r.request
-}
+func (r *ResponseMessage) Request() *http.Request { _ = "STUB: not implemented"; return nil }
 
 func (r *ResponseMessage) Response() http.ResponseWriter {
-	return r.response
+	_ = "STUB: not implemented"
+
+	// Flush sends any buffered data to the client by calling Flush on the underlying
+	// http.ResponseWriter if it implements http.Flusher.
+	// This is particularly important for streaming responses like SSE.
+	//
+	// Flush 通过调用底层 http.ResponseWriter 的 Flush 方法（如果实现了 http.Flusher)
+	// 将缓冲数据发送到客户端。
+	// 这对于 SSE 等流式响应特别重要。
+	return *new(http.ResponseWriter)
 }
 
-// Flush sends any buffered data to the client by calling Flush on the underlying
-// http.ResponseWriter if it implements http.Flusher.
-// This is particularly important for streaming responses like SSE.
-//
-// Flush 通过调用底层 http.ResponseWriter 的 Flush 方法（如果实现了 http.Flusher)
-// 将缓冲数据发送到客户端。
-// 这对于 SSE 等流式响应特别重要。
-func (r *ResponseMessage) Flush() {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-	if r.response == nil {
-		return
-	}
-	// 使用 recover 捕获 panic， 飲止在连接已关闭时发生崩溃
-	defer func() {
-		if err := recover(); err != nil {
-			// 记录错误但不中断执行
-		}
-	}()
-	if flusher, ok := r.response.(http.Flusher); ok {
-		flusher.Flush()
-	}
-}
+func (r *ResponseMessage) Flush() { _ = "STUB: not implemented"; return }
+
+// 使用 recover 捕获 panic， 飲止在连接已关闭时发生崩溃
+
+// 记录错误但不中断执行
 
 // Config defines the configuration structure for the REST endpoint server.
 // It contains all necessary settings for HTTP server initialization and behavior control.
@@ -901,239 +747,93 @@ type Rest struct {
 }
 
 // Type 组件类型
-func (rest *Rest) Type() string {
-	return Type
-}
+func (rest *Rest) Type() string { _ = "STUB: not implemented"; return "" }
 
-func (rest *Rest) New() types.Node {
-	return &Rest{
-		Config: Config{
-			Server:       ":6333",
-			ReadTimeout:  10,
-			WriteTimeout: 10,
-			IdleTimeout:  60,
-		},
-	}
-}
+func (rest *Rest) New() types.Node { _ = "STUB: not implemented"; return *new(types.Node) }
 
 // Init 初始化
 func (rest *Rest) Init(ruleConfig types.Config, configuration types.Configuration) error {
-	err := maps.Map2Struct(configuration, &rest.Config)
-	if err != nil {
-		return err
-	}
-	rest.RuleConfig = ruleConfig
-	return rest.SharedNode.InitWithClose(rest.RuleConfig, rest.Type(), rest.Config.Server, false, func() (*Rest, error) {
-		return rest.initServer()
-	}, func(server *Rest) error {
-		if server != nil {
-			return server.Close()
-		}
-		return nil
-	})
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // Destroy 销毁
 func (rest *Rest) Destroy() {
-	_ = rest.Close()
+	_ = "STUB: not implemented"
+
+	// shutdownServer 统一的服务器关闭逻辑
+	// Unified server shutdown logic
+	// 统一的服务器关闭逻辑
+	return
 }
 
-// shutdownServer 统一的服务器关闭逻辑
-// Unified server shutdown logic
-// 统一的服务器关闭逻辑
 func (rest *Rest) shutdownServer() error {
+	_ = "STUB: not implemented"
 	// 使用锁保护并发安全
-	rest.Lock()
-	defer rest.Unlock()
-
-	// 检查服务器是否已经关闭（幂等性保证）
-	if rest.Server == nil {
-		return nil
-	}
-
-	// 增加关闭超时时间到2秒，确保有足够时间完成优雅关闭
-	// Increase shutdown timeout to 2 seconds to ensure graceful shutdown completion
-	// 增加关闭超时时间到2秒
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-	defer cancel()
-
-	var shutdownErr error
-	// 优雅关闭服务器
-	// Gracefully shutdown the server
-	// 优雅关闭服务器
-	if err := rest.Server.Shutdown(ctx); err != nil {
-		// 如果优雅关闭失败，强制关闭
-		// Force close if graceful shutdown fails
-		// 如果优雅关闭失败，强制关闭
-		rest.Printf("graceful shutdown failed, forcing close: %v", err)
-		if closeErr := rest.Server.Close(); closeErr != nil {
-			rest.Printf("force close failed: %v", closeErr)
-		}
-		shutdownErr = err
-	}
-
-	// 先标记为停止状态
-	rest.started = false
-	// 清理服务器引用，防止重复关闭
-	// Clear server reference to prevent duplicate shutdown
-	// 清理服务器引用
-	rest.Server = nil
-
-	// 等待一小段时间确保端口完全释放
-	// Wait a moment to ensure port is fully released
-	// 等待确保端口完全释放
-	time.Sleep(100 * time.Millisecond)
-
-	return shutdownErr
+	return nil
 }
+
+// 检查服务器是否已经关闭（幂等性保证）
+
+// 增加关闭超时时间到2秒，确保有足够时间完成优雅关闭
+// Increase shutdown timeout to 2 seconds to ensure graceful shutdown completion
+// 增加关闭超时时间到2秒
+
+// 优雅关闭服务器
+// Gracefully shutdown the server
+// 优雅关闭服务器
+
+// 如果优雅关闭失败，强制关闭
+// Force close if graceful shutdown fails
+// 如果优雅关闭失败，强制关闭
+
+// 先标记为停止状态
+
+// 清理服务器引用，防止重复关闭
+// Clear server reference to prevent duplicate shutdown
+// 清理服务器引用
+
+// 等待一小段时间确保端口完全释放
+// Wait a moment to ensure port is fully released
+// 等待确保端口完全释放
 
 func (rest *Rest) Restart() error {
+	_ = "STUB: not implemented"
 	// 使用统一的关闭方法，忽略错误继续重启流程
-	_ = rest.shutdownServer()
-
-	if rest.SharedNode.InstanceId != "" {
-		if shared, err := rest.SharedNode.GetSafely(); err == nil {
-			return shared.Restart()
-		} else {
-			return err
-		}
-	}
-	if rest.router != nil {
-		rest.newRouter()
-	}
-	var oldRouter = make(map[string]endpoint.Router)
-
-	rest.Lock()
-	for id, router := range rest.RouterStorage {
-		if !router.IsDisable() {
-			oldRouter[id] = router
-		}
-	}
-	rest.Unlock()
-
-	rest.RouterStorage = make(map[string]endpoint.Router)
-
-	if err := rest.Start(); err != nil {
-		return err
-	}
-
-	if rest.OnEvent != nil {
-		rest.OnEvent(endpoint.EventRestart, oldRouter)
-	}
-
-	for _, router := range oldRouter {
-		if len(router.GetParams()) == 0 {
-			router.SetParams("GET")
-		}
-		if !rest.HasRouter(router.GetId()) {
-			if _, err := rest.AddRouter(router, router.GetParams()...); err != nil {
-				rest.Printf("rest add router path:=%s error:%v", router.FromToString(), err)
-				continue
-			}
-		}
-
-	}
-	if rest.resourceMapping != "" {
-		rest.RegisterStaticFiles(rest.resourceMapping)
-	}
 	return nil
 }
 
 func (rest *Rest) Close() error {
+	_ = "STUB: not implemented"
 	// 使用统一的关闭方法，保留错误处理
-	if err := rest.shutdownServer(); err != nil {
-		// 在Close()方法中，我们需要继续清理，即使关闭失败
-		rest.Printf("server shutdown error during close: %v", err)
-	}
-
-	if rest.router != nil {
-		rest.newRouter()
-	}
-	if rest.SharedNode.InstanceId != "" {
-		if shared, err := rest.SharedNode.GetSafely(); err == nil {
-			rest.RLock()
-			defer rest.RUnlock()
-			for key := range rest.RouterStorage {
-				shared.deleteRouter(key)
-			}
-			//如果共享服务已经停止，则不需要重启
-			if !shared.Started() {
-				return nil
-			}
-			//重启共享服务
-			return shared.Restart()
-		}
-	}
-
-	rest.BaseEndpoint.Destroy()
 	return nil
 }
 
-func (rest *Rest) Id() string {
-	return rest.Config.Server
-}
+// 在Close()方法中，我们需要继续清理，即使关闭失败
+
+//如果共享服务已经停止，则不需要重启
+
+//重启共享服务
+
+func (rest *Rest) Id() string { _ = "STUB: not implemented"; return "" }
 
 func (rest *Rest) AddRouter(router endpoint.Router, params ...interface{}) (id string, err error) {
-	if len(params) <= 0 {
-		return "", errors.New("need to specify HTTP method")
-	} else if router == nil {
-		return "", errors.New("router can not nil")
-	} else {
-		defer func() {
-			if e := recover(); e != nil {
-				err = fmt.Errorf("addRouter err :%v", e)
-			}
-		}()
-		err2 := rest.addRouter(strings.ToUpper(str.ToString(params[0])), router)
-		return router.GetId(), err2
-	}
+	_ = "STUB: not implemented"
+	return "", nil
 }
 
 func (rest *Rest) RemoveRouter(routerId string, params ...interface{}) error {
-	routerId = strings.TrimSpace(routerId)
-	rest.Lock()
-	defer rest.Unlock()
-	if rest.RouterStorage != nil {
-		if router, ok := rest.RouterStorage[routerId]; ok && !router.IsDisable() {
-			router.Disable(true)
-			return nil
-		} else {
-			return fmt.Errorf("router: %s not found", routerId)
-		}
-	}
+	_ = "STUB: not implemented"
 	return nil
 }
 
-func (rest *Rest) deleteRouter(routerId string) {
-	routerId = strings.TrimSpace(routerId)
-	rest.Lock()
-	defer rest.Unlock()
-	if rest.RouterStorage != nil {
-		delete(rest.RouterStorage, routerId)
-	}
-}
+func (rest *Rest) deleteRouter(routerId string) { _ = "STUB: not implemented"; return }
 
-func (rest *Rest) Start() error {
-	if err := rest.checkIsInitSharedNode(); err != nil {
-		return err
-	}
-	if netResource, err := rest.SharedNode.GetSafely(); err == nil {
-		return netResource.startServer()
-	} else {
-		return err
-	}
-}
+func (rest *Rest) Start() error { _ = "STUB: not implemented"; return nil }
 
 func (rest *Rest) Listen() (net.Listener, error) {
-	addr := rest.Server.Addr
-	if addr == "" {
-		if rest.Config.CertKeyFile != "" && rest.Config.CertFile != "" {
-			addr = ":https"
-		} else {
-			addr = ":http"
-		}
-	}
-	return net.Listen("tcp", addr)
+	_ = "STUB: not implemented"
+	return *new(net.Listener), nil
 }
 
 // addRouter 注册1个或者多个路由
@@ -1141,357 +841,142 @@ func (rest *Rest) Listen() (net.Listener, error) {
 // For GET, POST, PUT, PATCH and DELETE requests the respective shortcut
 // functions can be used.
 func (rest *Rest) addRouter(method string, routers ...endpoint.Router) error {
-	method = strings.ToUpper(method)
-
-	rest.Lock()
-	defer rest.Unlock()
-
-	if rest.RouterStorage == nil {
-		rest.RouterStorage = make(map[string]endpoint.Router)
-	}
-	for _, item := range routers {
-		path := strings.TrimSpace(item.FromToString())
-		if id := item.GetId(); id == "" {
-			item.SetId(rest.RouterKey(method, path))
-		}
-		//存储路由
-		item.SetParams(method)
-		rest.RouterStorage[item.GetId()] = item
-		if rest.SharedNode.InstanceId != "" {
-			if shared, err := rest.SharedNode.GetSafely(); err == nil {
-				return shared.addRouter(method, item)
-			} else {
-				return err
-			}
-		} else {
-			if rest.router == nil {
-				rest.newRouter()
-			}
-			isWait := false
-			if from := item.GetFrom(); from != nil {
-				if to := from.GetTo(); to != nil {
-					isWait = to.IsWait()
-				}
-			}
-			// 转换路径参数格式：将 {id} 格式转换为 :id 格式
-			path = rest.convertPathParams(path)
-			rest.router.Handle(method, path, rest.handler(item, isWait))
-		}
-
-	}
+	_ = "STUB: not implemented"
 	return nil
 }
 
+//存储路由
+
+// 转换路径参数格式：将 {id} 格式转换为 :id 格式
+
 func (rest *Rest) GET(routers ...endpoint.Router) endpoint.HttpEndpoint {
-	rest.addRouter(http.MethodGet, routers...)
-	return rest
+	_ = "STUB: not implemented"
+	return *new(endpoint.HttpEndpoint)
 }
 
 func (rest *Rest) HEAD(routers ...endpoint.Router) endpoint.HttpEndpoint {
-	rest.addRouter(http.MethodHead, routers...)
-	return rest
+	_ = "STUB: not implemented"
+	return *new(endpoint.HttpEndpoint)
 }
 
 func (rest *Rest) OPTIONS(routers ...endpoint.Router) endpoint.HttpEndpoint {
-	rest.addRouter(http.MethodOptions, routers...)
-	return rest
+	_ = "STUB: not implemented"
+	return *new(endpoint.HttpEndpoint)
 }
 
 func (rest *Rest) POST(routers ...endpoint.Router) endpoint.HttpEndpoint {
-	rest.addRouter(http.MethodPost, routers...)
-	return rest
+	_ = "STUB: not implemented"
+	return *new(endpoint.HttpEndpoint)
 }
 
 func (rest *Rest) PUT(routers ...endpoint.Router) endpoint.HttpEndpoint {
-	rest.addRouter(http.MethodPut, routers...)
-	return rest
+	_ = "STUB: not implemented"
+	return *new(endpoint.HttpEndpoint)
 }
 
 func (rest *Rest) PATCH(routers ...endpoint.Router) endpoint.HttpEndpoint {
-	rest.addRouter(http.MethodPatch, routers...)
-	return rest
+	_ = "STUB: not implemented"
+	return *new(endpoint.HttpEndpoint)
 }
 
 func (rest *Rest) DELETE(routers ...endpoint.Router) endpoint.HttpEndpoint {
-	rest.addRouter(http.MethodDelete, routers...)
-	return rest
+	_ = "STUB: not implemented"
+	return *new(endpoint.HttpEndpoint)
 }
 
 func (rest *Rest) GlobalOPTIONS(handler http.Handler) endpoint.HttpEndpoint {
-	rest.Router().GlobalOPTIONS = handler
-	return rest
+	_ = "STUB: not implemented"
+	return *new(endpoint.HttpEndpoint)
 }
 
 func (rest *Rest) RegisterStaticFiles(resourceMapping string) endpoint.HttpEndpoint {
-	if resourceMapping != "" {
-		rest.resourceMapping = resourceMapping
-		mapping := strings.Split(resourceMapping, ",")
-		for _, item := range mapping {
-			files := strings.Split(item, "=")
-			if len(files) == 2 {
-				urlPath := strings.TrimSpace(files[0])
-				localDir := strings.TrimSpace(files[1])
-
-				// 移除 /*filepath 后缀以获取基础路径
-				basePath := urlPath
-				if strings.HasSuffix(urlPath, "/*filepath") {
-					basePath = urlPath[:len(urlPath)-10]
-				}
-
-				// 确保路径以 /{filepath:*} 结尾，这是 fasthttp router 的要求
-				if !strings.HasSuffix(urlPath, "/*filepath") {
-					if strings.HasSuffix(basePath, "/") {
-						urlPath = basePath + "*filepath"
-					} else {
-						urlPath = basePath + "/*filepath"
-					}
-				}
-				rest.Router().ServeFiles(strings.TrimSpace(urlPath), http.Dir(strings.TrimSpace(localDir)))
-			}
-		}
-	}
-	return rest
+	_ = "STUB: not implemented"
+	return *new(endpoint.HttpEndpoint)
 }
 
-func (rest *Rest) checkIsInitSharedNode() error {
-	if !rest.SharedNode.IsInit() {
-		err := rest.SharedNode.InitWithClose(rest.RuleConfig, rest.Type(), rest.Config.Server, false, func() (*Rest, error) {
-			return rest.initServer()
-		}, func(server *Rest) error {
-			if server != nil {
-				return server.Close()
-			}
-			return nil
-		})
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
+// 移除 /*filepath 后缀以获取基础路径
 
-func (rest *Rest) Router() *httprouter.Router {
-	rest.checkIsInitSharedNode()
+// 确保路径以 /{filepath:*} 结尾，这是 fasthttp router 的要求
 
-	if fromPool, err := rest.SharedNode.GetSafely(); err != nil {
-		rest.Printf("get router err :%v", err)
-		return rest.newRouter()
-	} else {
-		return fromPool.router
-	}
-}
+func (rest *Rest) checkIsInitSharedNode() error { _ = "STUB: not implemented"; return nil }
+
+func (rest *Rest) Router() *httprouter.Router { _ = "STUB: not implemented"; return nil }
 
 func (rest *Rest) RouterKey(method string, from string) string {
-	return method + ":" + from
+	_ = "STUB: not implemented"
+	return ""
 }
 
 func (rest *Rest) handler(router endpoint.Router, isWait bool) httprouter.Handle {
-	return func(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-		defer func() {
-			//捕捉异常
-			if e := recover(); e != nil {
-				rest.Printf("http endpoint handler err :\n%v", runtime.Stack())
-			}
-		}()
-		if router.IsDisable() {
-			http.NotFound(w, r)
-			return
-		}
-		metadata := types.NewMetadata()
-		exchange := &endpoint.Exchange{
-			In: &RequestMessage{
-				request:  r,
-				response: w,
-				Params:   params,
-				Metadata: metadata,
-			},
-			Out: &ResponseMessage{
-				request:  r,
-				response: w,
-			},
-		}
-
-		//把路径参数放到msg元数据中
-		for _, param := range params {
-			metadata.PutValue(param.Key, param.Value)
-		}
-
-		//把url?参数放到msg元数据中
-		for key, value := range r.URL.Query() {
-			if len(value) > 1 {
-				metadata.PutValue(key, str.ToString(value))
-			} else {
-				metadata.PutValue(key, value[0])
-			}
-
-		}
-		var ctx = r.Context()
-		if !isWait {
-			//异步不能使用request context，否则后续执行会取消
-			ctx = context.Background()
-		}
-		rest.DoProcess(ctx, router, exchange)
-	}
+	_ = "STUB: not implemented"
+	return *new(httprouter.Handle)
 }
 
-func (rest *Rest) Printf(format string, v ...interface{}) {
-	if rest.RuleConfig.Logger != nil {
-		rest.RuleConfig.Logger.Printf(format, v...)
-	}
-}
+//捕捉异常
+
+//把路径参数放到msg元数据中
+
+//把url?参数放到msg元数据中
+
+//异步不能使用request context，否则后续执行会取消
+
+func (rest *Rest) Printf(format string, v ...interface{}) { _ = "STUB: not implemented"; return }
 
 // Started 返回服务是否已经启动
-func (rest *Rest) Started() bool {
-	rest.RLock()
-	defer rest.RUnlock()
-	return rest.started
-}
+func (rest *Rest) Started() bool { _ = "STUB: not implemented"; return false }
 
 // GetServer 获取HTTP服务
-func (rest *Rest) GetServer() *http.Server {
-	rest.RLock()
-	defer rest.RUnlock()
-	if rest.Server != nil {
-		return rest.Server
-	} else if rest.SharedNode.InstanceId != "" {
-		if shared, err := rest.SharedNode.GetSafely(); err == nil {
-			return shared.Server
-		}
-	}
-	return nil
-}
+func (rest *Rest) GetServer() *http.Server { _ = "STUB: not implemented"; return nil }
 
-func (rest *Rest) newRouter() *httprouter.Router {
-	rest.router = httprouter.New()
-	//设置跨域
-	if rest.Config.AllowCors {
-		// 直接设置 GlobalOPTIONS 而不调用 Router() 方法，避免递归锁
-		// Set GlobalOPTIONS directly without calling Router() method to avoid recursive lock
-		// 直接设置 GlobalOPTIONS 避免递归锁
-		rest.router.GlobalOPTIONS = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if r.Header.Get(HeaderKeyAccessControlRequestMethod) != "" {
-				// 设置 CORS 相关的响应头
-				header := w.Header()
-				header.Set(HeaderKeyAccessControlAllowMethods, HeaderValueAll)
-				header.Set(HeaderKeyAccessControlAllowHeaders, HeaderValueAll)
-				header.Set(HeaderKeyAccessControlAllowOrigin, HeaderValueAll)
-			}
-			// 返回 204 状态码
-			w.WriteHeader(http.StatusNoContent)
-		})
-		// 直接操作 Interceptors 字段，避免调用 AddInterceptors 造成递归锁
-		corsInterceptor := func(router endpoint.Router, exchange *endpoint.Exchange) bool {
-			exchange.Out.Headers().Set(HeaderKeyAccessControlAllowOrigin, HeaderValueAll)
-			return true
-		}
-		rest.Interceptors = append(rest.Interceptors, corsInterceptor)
-	}
-	return rest.router
-}
+func (rest *Rest) newRouter() *httprouter.Router { _ = "STUB: not implemented"; return nil }
 
-func (rest *Rest) initServer() (*Rest, error) {
-	if rest.router == nil {
-		rest.newRouter()
-	}
-	return rest, nil
-}
+//设置跨域
 
-func (rest *Rest) startServer() error {
-	rest.RLock()
-	if rest.started {
-		rest.RUnlock()
-		return nil
-	}
-	rest.RUnlock()
-	var err error
+// 直接设置 GlobalOPTIONS 而不调用 Router() 方法，避免递归锁
+// Set GlobalOPTIONS directly without calling Router() method to avoid recursive lock
+// 直接设置 GlobalOPTIONS 避免递归锁
 
-	// 创建HTTP服务器并应用超时配置
-	rest.Server = &http.Server{
-		Addr:    rest.Config.Server,
-		Handler: rest.router,
-	}
+// 设置 CORS 相关的响应头
 
-	// 应用读取超时配置
-	if rest.Config.ReadTimeout > 0 {
-		rest.Server.ReadTimeout = time.Duration(rest.Config.ReadTimeout) * time.Second
-	} else {
-		rest.Server.ReadTimeout = 10 * time.Second // 默认10秒
-	}
+// 返回 204 状态码
 
-	// 应用写入超时配置
-	if rest.Config.WriteTimeout > 0 {
-		rest.Server.WriteTimeout = time.Duration(rest.Config.WriteTimeout) * time.Second
-	} else {
-		rest.Server.WriteTimeout = 10 * time.Second // 默认10秒
-	}
+// 直接操作 Interceptors 字段，避免调用 AddInterceptors 造成递归锁
 
-	// 应用空闲超时配置
-	if rest.Config.IdleTimeout > 0 {
-		rest.Server.IdleTimeout = time.Duration(rest.Config.IdleTimeout) * time.Second
-	} else {
-		rest.Server.IdleTimeout = 60 * time.Second // 默认60秒
-	}
+func (rest *Rest) initServer() (*Rest, error) { _ = "STUB: not implemented"; return nil, nil }
 
-	// 应用禁用keepalive配置
-	if rest.Config.DisableKeepalive {
-		rest.Server.SetKeepAlivesEnabled(false)
-	}
-	ln, err := rest.Listen()
-	if err != nil {
-		return err
-	}
-	//标记已经启动
-	rest.Lock()
-	rest.started = true
-	rest.Unlock()
+func (rest *Rest) startServer() error { _ = "STUB: not implemented"; return nil }
 
-	// 安全地访问Config字段和Server字段
-	rest.RLock()
-	isTls := rest.Config.CertKeyFile != "" && rest.Config.CertFile != ""
-	certFile := rest.Config.CertFile
-	certKeyFile := rest.Config.CertKeyFile
-	serverAddr := rest.Config.Server
-	onEvent := rest.OnEvent
-	server := rest.Server // 保存Server引用，防止在goroutine中访问时被其他goroutine修改
-	rest.RUnlock()
+// 创建HTTP服务器并应用超时配置
 
-	// 在锁外部调用OnEvent回调，避免死锁
-	if onEvent != nil {
-		onEvent(endpoint.EventInitServer, rest)
-	}
-	if isTls {
-		rest.Printf("started rest server with TLS on %s", serverAddr)
-		go func() {
-			defer ln.Close()
-			err = server.ServeTLS(ln, certFile, certKeyFile)
-			// 安全地访问OnEvent字段
-			rest.RLock()
-			onEvent := rest.OnEvent
-			rest.RUnlock()
-			if onEvent != nil {
-				onEvent(endpoint.EventCompletedServer, err)
-			}
-		}()
-	} else {
-		rest.Printf("started rest server on %s", serverAddr)
-		go func() {
-			defer ln.Close()
-			err = server.Serve(ln)
-			// 安全地访问OnEvent字段
-			rest.RLock()
-			onEvent := rest.OnEvent
-			rest.RUnlock()
-			if onEvent != nil {
-				onEvent(endpoint.EventCompletedServer, err)
-			}
-		}()
-	}
-	return err
-}
+// 应用读取超时配置
+
+// 默认10秒
+
+// 应用写入超时配置
+
+// 默认10秒
+
+// 应用空闲超时配置
+
+// 默认60秒
+
+// 应用禁用keepalive配置
+
+//标记已经启动
+
+// 安全地访问Config字段和Server字段
+
+// 保存Server引用，防止在goroutine中访问时被其他goroutine修改
+
+// 在锁外部调用OnEvent回调，避免死锁
+
+// 安全地访问OnEvent字段
+
+// 安全地访问OnEvent字段
 
 // convertPathParams 转换路径参数格式：将 {id}格式转换为 :id  格式
 func (rest *Rest) convertPathParams(path string) string {
+	_ = "STUB: not implemented"
 	// 使用正则表达式匹配 :参数名 格式并转换为 {参数名} 格式
-	re := regexp.MustCompile(`{([a-zA-Z_][a-zA-Z0-9_]*)}`)
-	return re.ReplaceAllString(path, ":$1")
+	return ""
 }

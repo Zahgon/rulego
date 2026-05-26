@@ -16,10 +16,6 @@
 
 package types
 
-import (
-	"sort"
-)
-
 // Aspect defines the base interface for implementing Aspect-Oriented Programming (AOP) in RuleGo.
 // AOP provides cross-cutting functionality that can intercept and enhance rule chain execution
 // without modifying the original business logic of components.
@@ -494,88 +490,24 @@ type AspectList []Aspect
 
 // GetNodeAspects 获取节点执行类型增强点切面列表
 func (list AspectList) GetNodeAspects() ([]AroundAspect, []BeforeAspect, []AfterAspect) {
+	_ = "STUB: not implemented"
 
 	//从小到大排序
-	sort.Slice(list, func(i, j int) bool {
-		return list[i].Order() < list[j].Order()
-	})
-
-	var aroundAspects []AroundAspect
-	var beforeAspects []BeforeAspect
-	var afterAspects []AfterAspect
-
-	for _, item := range list {
-		if a, ok := item.(AroundAspect); ok {
-			aroundAspects = append(aroundAspects, a)
-		}
-		if a, ok := item.(BeforeAspect); ok {
-			beforeAspects = append(beforeAspects, a)
-		}
-		if a, ok := item.(AfterAspect); ok {
-			afterAspects = append(afterAspects, a)
-		}
-	}
-
-	return aroundAspects, beforeAspects, afterAspects
+	return nil, nil, nil
 }
 
 // GetChainAspects 获取规则链执行类型增强点切面列表
 func (list AspectList) GetChainAspects() ([]StartAspect, []EndAspect, []CompletedAspect) {
+	_ = "STUB: not implemented"
 
 	//从小到大排序
-	sort.Slice(list, func(i, j int) bool {
-		return list[i].Order() < list[j].Order()
-	})
-
-	var startAspects []StartAspect
-	var endAspects []EndAspect
-	var completedAspects []CompletedAspect
-	for _, item := range list {
-		if a, ok := item.(StartAspect); ok {
-			startAspects = append(startAspects, a)
-		}
-		if a, ok := item.(EndAspect); ok {
-			endAspects = append(endAspects, a)
-		}
-		if a, ok := item.(CompletedAspect); ok {
-			completedAspects = append(completedAspects, a)
-		}
-	}
-
-	return startAspects, endAspects, completedAspects
+	return nil, nil, nil
 }
 
 // GetEngineAspects 获取规则引擎类型增强点切面列表
 func (list AspectList) GetEngineAspects() ([]OnChainBeforeInitAspect, []OnNodeBeforeInitAspect, []OnCreatedAspect, []OnReloadAspect, []OnDestroyAspect) {
+	_ = "STUB: not implemented"
 
 	//从小到大排序
-	sort.Slice(list, func(i, j int) bool {
-		return list[i].Order() < list[j].Order()
-	})
-
-	var chainBeforeInitAspects []OnChainBeforeInitAspect
-	var nodeBeforeInitAspects []OnNodeBeforeInitAspect
-	var createdAspects []OnCreatedAspect
-	var afterReloadAspects []OnReloadAspect
-	var destroyAspects []OnDestroyAspect
-
-	for _, item := range list {
-		if a, ok := item.(OnChainBeforeInitAspect); ok {
-			chainBeforeInitAspects = append(chainBeforeInitAspects, a)
-		}
-		if a, ok := item.(OnNodeBeforeInitAspect); ok {
-			nodeBeforeInitAspects = append(nodeBeforeInitAspects, a)
-		}
-		if a, ok := item.(OnCreatedAspect); ok {
-			createdAspects = append(createdAspects, a)
-		}
-		if a, ok := item.(OnReloadAspect); ok {
-			afterReloadAspects = append(afterReloadAspects, a)
-		}
-		if a, ok := item.(OnDestroyAspect); ok {
-			destroyAspects = append(destroyAspects, a)
-		}
-	}
-
-	return chainBeforeInitAspects, nodeBeforeInitAspects, createdAspects, afterReloadAspects, destroyAspects
+	return nil, nil, nil, nil, nil
 }

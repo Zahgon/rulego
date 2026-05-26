@@ -17,17 +17,7 @@
 package common
 
 import (
-	"context"
-	"errors"
-	"fmt"
-	"strings"
-	"sync"
-	"sync/atomic"
-	"time"
-
 	"github.com/rulego/rulego/api/types"
-	"github.com/rulego/rulego/utils/maps"
-	"github.com/rulego/rulego/utils/str"
 )
 
 // init 注册GroupActionNode组件
@@ -98,227 +88,87 @@ type GroupActionNode struct {
 
 // Type 返回组件类型
 // Type returns the component type identifier.
-func (x *GroupActionNode) Type() string {
-	return "groupAction"
-}
+func (x *GroupActionNode) Type() string { _ = "STUB: not implemented"; return "" }
 
 // New 创建新实例
 // New creates a new instance.
-func (x *GroupActionNode) New() types.Node {
-	return &GroupActionNode{Config: GroupActionNodeConfiguration{MatchRelationType: types.Success, MatchNum: 0}}
-}
+func (x *GroupActionNode) New() types.Node { _ = "STUB: not implemented"; return *new(types.Node) }
 
 // Init 初始化组件
 // Init initializes the component.
 func (x *GroupActionNode) Init(ruleConfig types.Config, configuration types.Configuration) error {
-	err := maps.Map2Struct(configuration, &x.Config)
-	var nodeIds []string
-	if v, ok := x.Config.NodeIds.(string); ok {
-		nodeIds = strings.Split(v, ",")
-	} else if v, ok := x.Config.NodeIds.([]string); ok {
-		nodeIds = v
-	} else if v, ok := x.Config.NodeIds.([]interface{}); ok {
-		for _, item := range v {
-			nodeIds = append(nodeIds, str.ToString(item))
-		}
-	}
-	for _, nodeId := range nodeIds {
-		if v := strings.TrimSpace(nodeId); v != "" {
-			x.NodeIdList = append(x.NodeIdList, v)
-		}
-	}
-	x.Config.MatchRelationType = strings.TrimSpace(x.Config.MatchRelationType)
-
-	if x.Config.MatchRelationType == "" {
-		x.Config.MatchRelationType = types.Success
-	}
-	if x.Config.MatchNum <= 0 || x.Config.MatchNum > len(x.NodeIdList) {
-		x.Config.MatchNum = len(x.NodeIdList)
-	}
-	x.Length = int32(len(x.NodeIdList))
-	return err
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // OnMsg 处理消息，并发执行节点组并根据匹配条件确定成功
 // OnMsg processes incoming messages by executing the configured group of nodes in parallel.
 func (x *GroupActionNode) OnMsg(ctx types.RuleContext, msg types.RuleMsg) {
-	if x.Length == 0 {
-		ctx.TellFailure(msg, errors.New("nodeIds is empty"))
-		return
-	}
-	//完成执行节点数量
-	var endCount int32
-	//匹配节点数量
-	var currentMatchedCount int32
-	//是否已经完成
-	var completed int32
-	c := make(chan bool, 1)
-	var chanCtx context.Context
-	var cancel context.CancelFunc
-	if x.Config.Timeout > 0 {
-		chanCtx, cancel = context.WithTimeout(ctx.GetContext(), time.Duration(x.Config.Timeout)*time.Second)
-	} else {
-		chanCtx, cancel = context.WithCancel(ctx.GetContext())
-	}
-
-	defer cancel()
-
-	var wrapperMsg = msg.Copy()
-	//每个节点执行结果列表
-	var msgs = make([]types.WrapperMsg, len(x.NodeIdList))
-	//保护msgs数组的互斥锁
-	var msgsMutex sync.Mutex
-
-	//执行节点列表逻辑
-	for i, nodeId := range x.NodeIdList {
-		index := i
-		ctx.TellNode(chanCtx, nodeId, msg.Copy(), true, func(callbackCtx types.RuleContext, onEndMsg types.RuleMsg, err error, relationType string) {
-			// 检查context是否已被取消，避免无意义的计算
-			select {
-			case <-chanCtx.Done():
-				return // 提前退出，避免资源浪费
-			default:
-			}
-
-			// 安全地写入msgs数组
-			errStr := ""
-			if err != nil {
-				errStr = err.Error()
-			}
-			selfId := callbackCtx.GetSelfId()
-
-			msgsMutex.Lock()
-			msgs[index] = types.WrapperMsg{
-				Msg:    onEndMsg,
-				Err:    errStr,
-				NodeId: selfId,
-			}
-			msgsMutex.Unlock()
-
-			// 直接使用原子操作获取当前计数，避免竞态窗口
-			currentEndCount := atomic.AddInt32(&endCount, 1)
-			var currentMatchCount int32
-			if x.Config.MatchRelationType == relationType {
-				currentMatchCount = atomic.AddInt32(&currentMatchedCount, 1)
-			} else {
-				currentMatchCount = atomic.LoadInt32(&currentMatchedCount)
-			}
-
-			// 判断是否应该结束并发送结果
-			var shouldComplete bool
-			var result bool
-
-			// 如果已经达到匹配数量，立即返回成功
-			if currentMatchCount >= int32(x.Config.MatchNum) {
-				shouldComplete = true
-				result = true
-			} else if currentEndCount >= x.Length {
-				// 所有节点都完成，但没有达到匹配数量，返回失败
-				shouldComplete = true
-				result = false
-			}
-
-			// 使用CAS确保只有一个goroutine能发送结果
-			if shouldComplete && atomic.CompareAndSwapInt32(&completed, 0, 1) {
-				// 安全地读取msgs数组进行处理
-				msgsMutex.Lock()
-				msgsCopy := make([]types.WrapperMsg, len(msgs))
-				copy(msgsCopy, msgs)
-				msgsMutex.Unlock()
-
-				if x.Config.MergeToMap {
-					wrapperMsg.SetDataType(types.JSON)
-					mergedMap := make(map[string]interface{})
-					for _, val := range msgsCopy {
-						if val.NodeId != "" {
-							// 根据数据类型进行不同的处理
-							switch val.Msg.DataType {
-							case types.JSON:
-								if dataMap, err := val.Msg.GetJsonData(); err == nil {
-									if m, ok := dataMap.(map[string]interface{}); ok {
-										for k, v := range m {
-											mergedMap[k] = v
-										}
-									} else {
-										mergedMap[val.NodeId] = dataMap
-									}
-								} else {
-									mergedMap[val.NodeId] = val.Msg.GetData()
-								}
-							default:
-								mergedMap[val.NodeId] = val.Msg.GetData()
-							}
-						}
-					}
-					wrapperMsg.SetData(str.ToString(mergedMap))
-				} else {
-					wrapperMsg.SetData(str.ToString(filterEmptyAndRemoveMeta(msgsCopy)))
-				}
-				_ = mergeMetadata(msgsCopy, &wrapperMsg)
-
-				// 使用非阻塞发送，防止在超时情况下channel阻塞
-				select {
-				case c <- result:
-					// 发送成功
-				default:
-					// Channel已满或无接收者（可能主函数已超时退出），放弃发送
-				}
-			}
-		}, nil)
-	}
-
-	// 等待执行结束或者超时
-	select {
-	case <-chanCtx.Done():
-		ctx.TellFailure(wrapperMsg, chanCtx.Err())
-	case r := <-c:
-		if r {
-			ctx.TellSuccess(wrapperMsg)
-		} else {
-			ctx.TellNext(wrapperMsg, types.Failure)
-		}
-	}
+	_ = "STUB: not implemented"
+	return
 }
+
+//完成执行节点数量
+
+//匹配节点数量
+
+//是否已经完成
+
+//每个节点执行结果列表
+
+//保护msgs数组的互斥锁
+
+//执行节点列表逻辑
+
+// 检查context是否已被取消，避免无意义的计算
+
+// 提前退出，避免资源浪费
+
+// 安全地写入msgs数组
+
+// 直接使用原子操作获取当前计数，避免竞态窗口
+
+// 判断是否应该结束并发送结果
+
+// 如果已经达到匹配数量，立即返回成功
+
+// 所有节点都完成，但没有达到匹配数量，返回失败
+
+// 使用CAS确保只有一个goroutine能发送结果
+
+// 安全地读取msgs数组进行处理
+
+// 根据数据类型进行不同的处理
+
+// 使用非阻塞发送，防止在超时情况下channel阻塞
+
+// 发送成功
+
+// Channel已满或无接收者（可能主函数已超时退出），放弃发送
+
+// 等待执行结束或者超时
 
 // Destroy 清理资源
 // Destroy cleans up resources.
 func (x *GroupActionNode) Destroy() {
+	_ = "STUB: not implemented"
 	// 无资源需要清理
 	// No resources to clean up
+	return
 }
 
 // filterEmptyAndRemoveMeta 过滤空消息并清除元数据
 // filterEmptyAndRemoveMeta filters out empty messages and removes metadata for cleaner output.
 func filterEmptyAndRemoveMeta(msgs []types.WrapperMsg) []types.WrapperMsg {
-	var result []types.WrapperMsg
-	for _, msg := range msgs {
-		if msg.NodeId != "" {
-			if msg.Msg.Metadata != nil {
-				msg.Msg.Metadata.Clear()
-			}
-			result = append(result, msg)
-		}
-	}
-	return result
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // mergeMetadata 合并成功执行的元数据到包装消息中
 // mergeMetadata merges metadata from successful group executions into the wrapper message.
 func mergeMetadata(msgs []types.WrapperMsg, wrapperMsg *types.RuleMsg) error {
-	var errStr string
-	for _, msg := range msgs {
-		if msg.NodeId != "" && msg.Err == "" {
-			msg.Msg.Metadata.ForEach(func(k, v string) bool {
-				wrapperMsg.Metadata.PutValue(k, v)
-				return true // continue iteration
-			})
-		} else if msg.Err != "" {
-			errStr += fmt.Sprintf("NodeId=%s,Err=%s ", msg.NodeId, msg.Err)
-		}
-	}
-	if errStr != "" {
-		return errors.New(errStr)
-	} else {
-		return nil
-	}
+	_ = "STUB: not implemented"
+	return nil
 }
+
+// continue iteration

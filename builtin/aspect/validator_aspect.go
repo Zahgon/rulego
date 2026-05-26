@@ -73,48 +73,50 @@ type Validator struct {
 // Order 返回此切面的执行顺序。值越低，执行越早。
 // Validator 的顺序为 10，确保验证在其他切面之前进行。
 func (aspect *Validator) Order() int {
-	return 10
+	_ = "STUB: not implemented"
+
+	// New creates a new instance of the validation aspect.
+	// Each rule engine gets its own validator instance.
+	//
+	// New 创建验证切面的新实例。
+	// 每个规则引擎都获得自己的验证器实例。
+	return 0
 }
 
-// New creates a new instance of the validation aspect.
-// Each rule engine gets its own validator instance.
-//
-// New 创建验证切面的新实例。
-// 每个规则引擎都获得自己的验证器实例。
 func (aspect *Validator) New() types.Aspect {
-	return &Validator{}
+	_ = "STUB: not implemented"
+	return *
+
+	// Type returns the unique identifier for this aspect type.
+	//
+	// Type 返回此切面类型的唯一标识符。
+	new(types.Aspect)
 }
 
-// Type returns the unique identifier for this aspect type.
-//
-// Type 返回此切面类型的唯一标识符。
 func (aspect *Validator) Type() string {
-	return "validator"
+	_ = "STUB: not implemented"
+
+	// OnChainBeforeInit is called before rule chain initialization. It executes
+	// all registered validation rules and returns an error if any validation fails.
+	// This prevents invalid rule chains from being created.
+	//
+	// OnChainBeforeInit 在规则链初始化之前调用。它执行所有注册的验证规则，
+	// 如果任何验证失败则返回错误。这防止创建无效的规则链。
+	//
+	// Parameters:
+	// 参数：
+	//   - config: Rule engine configuration  规则引擎配置
+	//   - def: Rule chain definition to validate  要验证的规则链定义
+	//
+	// Returns:
+	// 返回：
+	//   - error: Validation error if any rule fails, nil if all pass
+	//     error：如果任何规则失败则返回验证错误，如果全部通过则为 nil
+	return ""
 }
 
-// OnChainBeforeInit is called before rule chain initialization. It executes
-// all registered validation rules and returns an error if any validation fails.
-// This prevents invalid rule chains from being created.
-//
-// OnChainBeforeInit 在规则链初始化之前调用。它执行所有注册的验证规则，
-// 如果任何验证失败则返回错误。这防止创建无效的规则链。
-//
-// Parameters:
-// 参数：
-//   - config: Rule engine configuration  规则引擎配置
-//   - def: Rule chain definition to validate  要验证的规则链定义
-//
-// Returns:
-// 返回：
-//   - error: Validation error if any rule fails, nil if all pass
-//     error：如果任何规则失败则返回验证错误，如果全部通过则为 nil
 func (aspect *Validator) OnChainBeforeInit(config types.Config, def *types.RuleChain) error {
-	ruleList := Rules.Rules()
-	for _, rule := range ruleList {
-		if err := rule(config, def); err != nil {
-			return err
-		}
-	}
+	_ = "STUB: not implemented"
 	return nil
 }
 
@@ -165,27 +167,13 @@ type rules struct {
 // 返回：
 //   - *rules: Configured rules registry  配置好的规则注册表
 func NewRules() *rules {
-	r := &rules{}
-	//子规则链不允许创建endpoint组件
-	r.AddRule(func(config types.Config, def *types.RuleChain) error {
-		if def != nil {
-			if !def.RuleChain.Root && len(def.Metadata.Endpoints) > 0 {
-				return ErrNotAllowEndpointNode
-			}
-		}
-		return nil
-	})
-	//建环检测
-	r.AddRule(func(config types.Config, def *types.RuleChain) error {
-		if def != nil {
-			if !config.AllowCycle {
-				return CheckCycles(def.Metadata)
-			}
-		}
-		return nil
-	})
-	return r
+	_ = "STUB: not implemented"
+
+	// 子规则链不允许创建endpoint组件
+	return nil
 }
+
+//建环检测
 
 // AddRule adds one or more validation rule functions to the registry.
 // New rules are appended to the existing list and will be executed
@@ -205,9 +193,8 @@ func NewRules() *rules {
 // concurrent modifications don't corrupt the rules list.
 // 此方法是线程安全的，使用写锁确保并发修改不会破坏规则列表。
 func (r *rules) AddRule(fn ...func(config types.Config, def *types.RuleChain) error) {
-	r.Lock()
-	defer r.Unlock()
-	r.rules = append(r.rules, fn...)
+	_ = "STUB: not implemented"
+	return
 }
 
 // Rules returns a copy of all validation rule functions.
@@ -227,9 +214,8 @@ func (r *rules) AddRule(fn ...func(config types.Config, def *types.RuleChain) er
 // preventing reads during rule modifications.
 // 此方法使用读锁允许并发读取，同时防止在规则修改期间读取。
 func (r *rules) Rules() []func(config types.Config, def *types.RuleChain) error {
-	r.RLock()
-	defer r.RUnlock()
-	return append([]func(config types.Config, def *types.RuleChain) error(nil), r.rules...)
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // CheckCycles performs cycle detection in rule chains using topological sorting algorithm.
@@ -262,56 +248,17 @@ func (r *rules) Rules() []func(config types.Config, def *types.RuleChain) error 
 // Space Complexity: O(V + E) for adjacency list and degree tracking
 // 空间复杂度：O(V + E) 用于邻接表和度数跟踪
 func CheckCycles(metadata types.RuleMetadata) error {
+	_ = "STUB: not implemented"
 	// 创建邻接表和入度表
-	adj := make(map[string][]string)
-	inDegree := make(map[string]int)
-	for _, node := range metadata.Nodes {
-		if node == nil {
-			continue
-		}
-		adj[node.Id] = []string{}
-		inDegree[node.Id] = 0
-	}
-
-	for _, connection := range metadata.Connections {
-		from := connection.FromId
-		to := connection.ToId
-		if adj[from] != nil { // 确保节点存在
-			if adj[to] == nil {
-				continue // 如果目标节点不存在，跳过
-			}
-			adj[from] = append(adj[from], to)
-			inDegree[to] += 1
-		}
-	}
-
-	// 初始化队列，收集入度为0的节点
-	var queue []string
-	for node, degree := range inDegree {
-		if degree == 0 {
-			queue = append(queue, node)
-		}
-	}
-
-	// 记录处理过的节点数量
-	processed := 0
-	for len(queue) > 0 {
-		node := queue[0]
-		queue = queue[1:]
-		processed++
-
-		for _, neighbor := range adj[node] {
-			inDegree[neighbor] -= 1
-			if inDegree[neighbor] == 0 {
-				queue = append(queue, neighbor)
-			}
-		}
-	}
-
-	// 如果处理过的节点数少于总节点数，说明存在环
-	if processed < len(metadata.Nodes) {
-		return ErrCycleDetected
-	}
-
 	return nil
 }
+
+// 确保节点存在
+
+// 如果目标节点不存在，跳过
+
+// 初始化队列，收集入度为0的节点
+
+// 记录处理过的节点数量
+
+// 如果处理过的节点数少于总节点数，说明存在环

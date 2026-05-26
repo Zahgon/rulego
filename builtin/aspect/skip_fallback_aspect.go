@@ -19,7 +19,6 @@ package aspect
 import (
 	"errors"
 	"sync"
-	"sync/atomic"
 	"time"
 
 	"github.com/rulego/rulego/api/types"
@@ -133,168 +132,97 @@ type SkipFallbackAspect struct {
 // Order 返回此切面的执行顺序。值越低，执行越早。
 // SkipFallbackAspect 的顺序为 10，确保它在大多数其他切面之前运行。
 func (aspect *SkipFallbackAspect) Order() int {
-	return 10
+	_ = "STUB: not implemented"
+
+	// New creates a new instance of the circuit breaker aspect with validated configuration.
+	// It applies default values if ErrorCountLimit or LimitDuration are not specified.
+	//
+	// New 创建具有验证配置的熔断器切面新实例。
+	// 如果未指定 ErrorCountLimit 或 LimitDuration，它会应用默认值。
+	//
+	// Default Values:
+	// 默认值：
+	//   - ErrorCountLimit: 3 consecutive errors  连续 3 次错误
+	//   - LimitDuration: 10 seconds  10 秒
+	//
+	// Returns:
+	// 返回：
+	//   - types.Aspect: Configured circuit breaker aspect instance
+	//     types.Aspect：配置好的熔断器切面实例
+	return 0
 }
 
-// New creates a new instance of the circuit breaker aspect with validated configuration.
-// It applies default values if ErrorCountLimit or LimitDuration are not specified.
-//
-// New 创建具有验证配置的熔断器切面新实例。
-// 如果未指定 ErrorCountLimit 或 LimitDuration，它会应用默认值。
-//
-// Default Values:
-// 默认值：
-//   - ErrorCountLimit: 3 consecutive errors  连续 3 次错误
-//   - LimitDuration: 10 seconds  10 秒
-//
-// Returns:
-// 返回：
-//   - types.Aspect: Configured circuit breaker aspect instance
-//     types.Aspect：配置好的熔断器切面实例
 func (aspect *SkipFallbackAspect) New() types.Aspect {
-	var errorCountLimit = aspect.ErrorCountLimit
-	var limitDuration = aspect.LimitDuration
-	if errorCountLimit == 0 {
-		errorCountLimit = 3
-	}
-	if limitDuration == 0 {
-		limitDuration = time.Second * 10
-	}
-	return &SkipFallbackAspect{ErrorCountLimit: errorCountLimit, LimitDuration: limitDuration}
+	_ = "STUB: not implemented"
+	return *new(types.Aspect)
 }
 
 // Type returns the unique identifier for this aspect type.
 //
 // Type 返回此切面类型的唯一标识符。
 func (aspect *SkipFallbackAspect) Type() string {
-	return "fallback"
+	_ = "STUB: not implemented"
+
+	// PointCut determines which nodes should have circuit breaker logic applied.
+	// It can be customized using PointCutFunc to target specific node types.
+	// If PointCutFunc is nil, circuit breaker applies to all nodes by default.
+	//
+	// PointCut 确定哪些节点应该应用熔断器逻辑。
+	// 可以使用 PointCutFunc 自定义以针对特定节点类型。
+	// 如果 PointCutFunc 为 nil，熔断器默认应用于所有节点。
+	//
+	// Parameters:
+	// 参数：
+	//   - ctx: Rule context for the current execution
+	//     ctx：当前执行的规则上下文
+	//   - msg: Rule message being processed
+	//     msg：正在处理的规则消息
+	//   - relationType: Type of relation triggering the execution
+	//     relationType：触发执行的关系类型
+	//
+	// Returns:
+	// 返回：
+	//   - bool: true to apply circuit breaker, false to skip
+	//     bool：true 应用熔断器，false 跳过
+	return ""
 }
 
-// PointCut determines which nodes should have circuit breaker logic applied.
-// It can be customized using PointCutFunc to target specific node types.
-// If PointCutFunc is nil, circuit breaker applies to all nodes by default.
-//
-// PointCut 确定哪些节点应该应用熔断器逻辑。
-// 可以使用 PointCutFunc 自定义以针对特定节点类型。
-// 如果 PointCutFunc 为 nil，熔断器默认应用于所有节点。
-//
-// Parameters:
-// 参数：
-//   - ctx: Rule context for the current execution
-//     ctx：当前执行的规则上下文
-//   - msg: Rule message being processed
-//     msg：正在处理的规则消息
-//   - relationType: Type of relation triggering the execution
-//     relationType：触发执行的关系类型
-//
-// Returns:
-// 返回：
-//   - bool: true to apply circuit breaker, false to skip
-//     bool：true 应用熔断器，false 跳过
 func (aspect *SkipFallbackAspect) PointCut(ctx types.RuleContext, msg types.RuleMsg, relationType string) bool {
-	if aspect.PointCutFunc != nil {
-		return aspect.PointCutFunc(ctx, msg, relationType)
-	}
-	return true
+	_ = "STUB: not implemented"
+	return false
 }
 
 // Around 判断是否执行降级逻辑
 func (aspect *SkipFallbackAspect) Around(ctx types.RuleContext, msg types.RuleMsg, relationType string) (types.RuleMsg, bool) {
-	chainId := ctx.RuleChain().GetNodeId().Id
-	if chainError, ok := aspect.getChainError(chainId); ok {
-		if nodeError, ok := aspect.getNodeError(chainError, ctx.GetSelfId()); ok &&
-			nodeError.errorCount >= aspect.ErrorCountLimit {
-			if nodeError.lastErrorTime+aspect.LimitDuration.Milliseconds() < time.Now().UnixMilli() {
-				//超过时间，清除错误记录
-				chainError.nodeErrorCache.Delete(ctx.GetSelfId())
-			} else {
-				//出错次数达到阈值，执行降级
-				ctx.TellFailure(msg, FallbackErr)
-				return msg, false
-			}
-
-		}
-	}
-
-	return msg, true
+	_ = "STUB: not implemented"
+	return *new(types.RuleMsg), false
 }
+
+//超过时间，清除错误记录
+
+//出错次数达到阈值，执行降级
 
 // After 如果出现错误，则记录错误次数
 func (aspect *SkipFallbackAspect) After(ctx types.RuleContext, msg types.RuleMsg, err error, relationType string) types.RuleMsg {
-	if relationType == types.Failure {
-		chainId := ctx.RuleChain().GetNodeId().Id
-		var ok bool
-		var chainError *chainNodeErrorCache
-		if chainError, ok = aspect.getChainError(chainId); !ok {
-			aspect.lock.Lock()
-			if chainError, ok = aspect.getChainError(chainId); !ok {
-				chainError = &chainNodeErrorCache{}
-				aspect.chainNodeErrorCache.Store(chainId, chainError)
-			}
-			aspect.lock.Unlock()
-		}
-
-		var nodeError *NodeError
-		if nodeError, ok = aspect.getNodeError(chainError, ctx.GetSelfId()); !ok {
-			aspect.lock.Lock()
-			if nodeError, ok = aspect.getNodeError(chainError, ctx.GetSelfId()); !ok {
-				nodeError = &NodeError{
-					errorCount:    1,
-					lastErrorTime: time.Now().UnixMilli(),
-				}
-				chainError.nodeErrorCache.Store(ctx.GetSelfId(), nodeError)
-			} else {
-				atomic.AddInt64(&nodeError.errorCount, 1)
-				atomic.StoreInt64(&nodeError.lastErrorTime, time.Now().UnixMilli())
-			}
-			aspect.lock.Unlock()
-
-		} else {
-			atomic.AddInt64(&nodeError.errorCount, 1)
-			atomic.StoreInt64(&nodeError.lastErrorTime, time.Now().UnixMilli())
-		}
-
-	}
-	return msg
+	_ = "STUB: not implemented"
+	return *new(types.RuleMsg)
 }
 
 // OnReload 节点更新清除错误缓存
 func (aspect *SkipFallbackAspect) OnReload(parentCtx types.NodeCtx, ctx types.NodeCtx) error {
-	nodeId := ctx.GetNodeId()
-	if nodeId.Type == types.CHAIN {
-		aspect.chainNodeErrorCache.Delete(nodeId.Id)
-	} else {
-		if chainCache, ok := aspect.chainNodeErrorCache.Load(parentCtx.GetNodeId().Id); ok {
-			if chainError, ok := chainCache.(*chainNodeErrorCache); ok {
-				chainError.nodeErrorCache.Delete(nodeId.Id)
-			}
-		}
-	}
+	_ = "STUB: not implemented"
 	return nil
 }
 
-func (aspect *SkipFallbackAspect) OnDestroy(ctx types.NodeCtx) {
-	nodeId := ctx.GetNodeId()
-	if nodeId.Type == types.CHAIN {
-		aspect.chainNodeErrorCache.Delete(nodeId.Id)
-	}
-}
+func (aspect *SkipFallbackAspect) OnDestroy(ctx types.NodeCtx) { _ = "STUB: not implemented"; return }
 
 func (aspect *SkipFallbackAspect) getChainError(chainId string) (*chainNodeErrorCache, bool) {
-	if chainCache, ok := aspect.chainNodeErrorCache.Load(chainId); ok {
-		if chainError, ok := chainCache.(*chainNodeErrorCache); ok {
-			return chainError, true
-		}
-	}
+	_ = "STUB: not implemented"
 	return nil, false
 }
 
 func (aspect *SkipFallbackAspect) getNodeError(chainCache *chainNodeErrorCache, nodeId string) (*NodeError, bool) {
-	if nodeCache, ok := chainCache.nodeErrorCache.Load(nodeId); ok {
-		if nodeError, ok := nodeCache.(*NodeError); ok {
-			return nodeError, true
-		}
-	}
+	_ = "STUB: not implemented"
 	return nil, false
 }
 

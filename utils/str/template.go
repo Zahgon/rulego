@@ -35,10 +35,8 @@ type Template interface {
 // Deprecated: Use github.com/rulego/rulego/utils/el.NewTemplate instead.
 // This function will be removed in a future version.
 func NewTemplate(tmpl string, params ...any) Template {
-	if CheckHasVar(tmpl) {
-		return &VarTemplate{Tmpl: tmpl}
-	}
-	return &NotTemplate{Tmpl: tmpl}
+	_ = "STUB: not implemented"
+	return *new(Template)
 }
 
 // VarTemplate 模板变量支持 这种方式 ${xx}
@@ -49,46 +47,36 @@ type VarTemplate struct {
 	Tmpl string
 }
 
-func (t *VarTemplate) Parse() error {
-	return nil
-}
+func (t *VarTemplate) Parse() error { _ = "STUB: not implemented"; return nil }
 
-func (t *VarTemplate) Execute(data map[string]any) string {
-	return ExecuteTemplate(t.Tmpl, data)
-}
+func (t *VarTemplate) Execute(data map[string]any) string { _ = "STUB: not implemented"; return "" }
 
 func (t *VarTemplate) ExecuteFn(loadDataFunc func() map[string]any) string {
-	var data map[string]any
-	if loadDataFunc != nil {
-		data = loadDataFunc()
-	}
-	return ExecuteTemplate(t.Tmpl, data)
+	_ = "STUB: not implemented"
+	return ""
 }
 
 func (t *VarTemplate) IsNotVar() bool {
+	_ = "STUB: not implemented"
+
+	// NotTemplate 原样输出
+	//
+	// Deprecated: Use github.com/rulego/rulego/utils/el.Template instead.
+	// This type will be removed in a future version.
 	return false
 }
 
-// NotTemplate 原样输出
-//
-// Deprecated: Use github.com/rulego/rulego/utils/el.Template instead.
-// This type will be removed in a future version.
 type NotTemplate struct {
 	Tmpl string
 }
 
-func (t *NotTemplate) Parse() error {
-	return nil
-}
+func (t *NotTemplate) Parse() error { _ = "STUB: not implemented"; return nil }
 
-func (t *NotTemplate) Execute(data map[string]any) string {
-	return t.Tmpl
-}
+func (t *NotTemplate) Execute(data map[string]any) string { _ = "STUB: not implemented"; return "" }
 
 func (t *NotTemplate) ExecuteFn(loadDataFunc func() map[string]any) string {
-	return t.Tmpl
+	_ = "STUB: not implemented"
+	return ""
 }
 
-func (t *NotTemplate) IsNotVar() bool {
-	return true
-}
+func (t *NotTemplate) IsNotVar() bool { _ = "STUB: not implemented"; return false }

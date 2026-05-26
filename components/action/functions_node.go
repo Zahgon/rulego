@@ -27,13 +27,10 @@ package action
 //        }
 //  }
 import (
-	"fmt"
 	"sync"
 
 	"github.com/rulego/rulego/api/types"
-	"github.com/rulego/rulego/components/base"
 	"github.com/rulego/rulego/utils/el"
-	"github.com/rulego/rulego/utils/maps"
 )
 
 // Functions 全局函数注册表，用于注册和查找自定义处理函数
@@ -84,91 +81,34 @@ type FunctionsRegistry struct {
 // params[0] label
 // params[1] desc
 func (x *FunctionsRegistry) Register(functionName string, f func(ctx types.RuleContext, msg types.RuleMsg), params ...string) {
-	def := FunctionDef{
-		Name: functionName,
-		F:    f,
-	}
-	if len(params) > 0 {
-		def.Label = params[0]
-	}
-	if len(params) > 1 {
-		def.Desc = params[1]
-	}
-	x.RegisterDef(def)
+	_ = "STUB: not implemented"
+	return
 }
 
 // RegisterDef 注册函数定义到注册表
 // RegisterDef adds a new function definition to the registry.
-func (x *FunctionsRegistry) RegisterDef(def FunctionDef) {
-	x.Lock()
-	defer x.Unlock()
-	if x.functions == nil {
-		x.functions = make(map[string]FunctionDef)
-		x.functionNames = make([]string, 0)
-	}
-	if _, ok := x.functions[def.Name]; !ok {
-		x.functionNames = append(x.functionNames, def.Name)
-	}
-	x.functions[def.Name] = def
-}
+func (x *FunctionsRegistry) RegisterDef(def FunctionDef) { _ = "STUB: not implemented"; return }
 
 // UnRegister 从注册表移除函数
 // UnRegister removes a function from the registry by name.
-func (x *FunctionsRegistry) UnRegister(functionName string) {
-	x.Lock()
-	defer x.Unlock()
-	if x.functions != nil {
-		if _, ok := x.functions[functionName]; ok {
-			delete(x.functions, functionName)
-			// remove from slice
-			for i, name := range x.functionNames {
-				if name == functionName {
-					x.functionNames = append(x.functionNames[:i], x.functionNames[i+1:]...)
-					break
-				}
-			}
-		}
-	}
-}
+func (x *FunctionsRegistry) UnRegister(functionName string) { _ = "STUB: not implemented"; return }
+
+// remove from slice
 
 // Get 从注册表获取函数
 // Get retrieves a function from the registry by name.
 func (x *FunctionsRegistry) Get(functionName string) (func(ctx types.RuleContext, msg types.RuleMsg), bool) {
-	x.RLock()
-	defer x.RUnlock()
-	if x.functions == nil {
-		return nil, false
-	}
-	f, ok := x.functions[functionName]
-	if ok {
-		return f.F, true
-	}
+	_ = "STUB: not implemented"
 	return nil, false
 }
 
 // List 返回所有已注册的函数定义列表
 // List returns a list of all registered function definitions.
-func (x *FunctionsRegistry) List() []FunctionDef {
-	x.RLock()
-	defer x.RUnlock()
-	var defs = make([]FunctionDef, 0, len(x.functions))
-	for _, name := range x.functionNames {
-		if v, ok := x.functions[name]; ok {
-			defs = append(defs, v)
-		}
-	}
-	return defs
-}
+func (x *FunctionsRegistry) List() []FunctionDef { _ = "STUB: not implemented"; return nil }
 
 // Names 返回所有已注册的函数名称列表
 // Names returns a list of all registered function names.
-func (x *FunctionsRegistry) Names() []string {
-	x.RLock()
-	defer x.RUnlock()
-	var keys = make([]string, len(x.functionNames))
-	copy(keys, x.functionNames)
-	return keys
-}
+func (x *FunctionsRegistry) Names() []string { _ = "STUB: not implemented"; return nil }
 
 // FunctionsNodeConfiguration FunctionsNode配置结构
 // FunctionsNodeConfiguration defines the configuration structure for the FunctionsNode component.
@@ -216,73 +156,53 @@ type FunctionsNode struct {
 // Type 返回组件类型
 // Type returns the component type identifier.
 func (x *FunctionsNode) Type() string {
-	return "functions"
+	_ = "STUB: not implemented"
+
+	// New 创建新实例
+	// New creates a new instance.
+	return ""
 }
 
-// New 创建新实例
-// New creates a new instance.
-func (x *FunctionsNode) New() types.Node {
-	return &FunctionsNode{Config: FunctionsNodeConfiguration{
-		FunctionName: "test",
-	}}
-}
+func (x *FunctionsNode) New() types.Node { _ = "STUB: not implemented"; return *new(types.Node) }
 
 // Init 初始化组件
 // Init initializes the component.
 func (x *FunctionsNode) Init(ruleConfig types.Config, configuration types.Configuration) error {
-	err := maps.Map2Struct(configuration, &x.Config)
-	if err != nil {
-		return err
-	}
-
-	// 初始化函数名模板
-	// Initialize function name template
-	x.functionNameTemplate, err = el.NewTemplate(x.Config.FunctionName)
-	if err != nil {
-		return fmt.Errorf("failed to create function name template: %w", err)
-	}
-	// 初始化参数模板
-	// Initialize parameter template
-	if x.Config.Param != "" {
-		x.paramTemplate, err = el.NewTemplate(x.Config.Param)
-		if err != nil {
-			return fmt.Errorf("failed to create param template: %w", err)
-		}
-	}
+	_ = "STUB: not implemented"
 	return nil
 }
+
+// 初始化函数名模板
+// Initialize function name template
+
+// 初始化参数模板
+// Initialize parameter template
 
 // OnMsg 处理消息，调用指定的函数
 // OnMsg processes incoming messages by invoking the specified function from the registry.
 func (x *FunctionsNode) OnMsg(ctx types.RuleContext, msg types.RuleMsg) {
-	funcName := x.getFunctionName(ctx, msg)
-	if f, ok := Functions.Get(funcName); ok {
-		// Handle parameter
-		if x.paramTemplate != nil {
-			evn := base.NodeUtils.GetEvnAndMetadata(ctx, msg)
-			param := x.paramTemplate.ExecuteAsString(evn)
-			msg.SetData(param)
-		}
-		// 调用函数
-		f(ctx, msg)
-	} else {
-		ctx.TellFailure(msg, fmt.Errorf("can not found the function=%s", funcName))
-	}
+	_ = "STUB: not implemented"
+	return
 }
+
+// Handle parameter
+
+// 调用函数
 
 // Destroy 清理资源
 // Destroy cleans up resources.
 func (x *FunctionsNode) Destroy() {
+	_ = "STUB: not implemented"
 	// 无资源需要清理
 	// No resources to clean up
+	return
 }
 
 // getFunctionName 解析函数名称，处理静态和动态情况，支持跨节点取值
 // getFunctionName resolves the function name, handling both static and dynamic cases with cross-node access support.
 func (x *FunctionsNode) getFunctionName(ctx types.RuleContext, msg types.RuleMsg) string {
-	if x.functionNameTemplate != nil {
-		// Execute template
-		return x.functionNameTemplate.ExecuteAsString(base.NodeUtils.GetEvnAndMetadata(ctx, msg))
-	}
-	return x.Config.FunctionName
+	_ = "STUB: not implemented"
+	return ""
 }
+
+// Execute template

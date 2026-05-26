@@ -20,24 +20,8 @@ func init() {
 }
 
 // Builtins 获取内置组件配置选项
-func Builtins() map[string]interface{} {
-	lock.RLock()
-	defer lock.RUnlock()
-	data := make(map[string]interface{})
-	for k, v := range builtins {
-		if f, ok := v.(func() interface{}); ok {
-			data[k] = f()
-		} else {
-			data[k] = v
-		}
-	}
-	return data
-}
+func Builtins() map[string]interface{} { _ = "STUB: not implemented"; return nil }
 
 // RegisterBuiltin 注册内置组件配置选项
 // value 可以是静态值，也可以是 func() interface{} 类型的函数，用于实时获取数据
-func RegisterBuiltin(name string, value interface{}) {
-	lock.Lock()
-	defer lock.Unlock()
-	builtins[name] = value
-}
+func RegisterBuiltin(name string, value interface{}) { _ = "STUB: not implemented"; return }

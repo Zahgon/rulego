@@ -1,8 +1,6 @@
 package aspect
 
 import (
-	"sync/atomic"
-
 	"github.com/rulego/rulego/api/types"
 )
 
@@ -54,9 +52,8 @@ var _ types.CompletedAspect = (*ConcurrencyLimiterAspect)(nil)
 //   - *ConcurrencyLimiterAspect: Configured concurrency limiter aspect
 //     *ConcurrencyLimiterAspect：配置好的并发限制切面
 func NewConcurrencyLimiterAspect(max int) *ConcurrencyLimiterAspect {
-	return &ConcurrencyLimiterAspect{
-		Max: int64(max),
-	}
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // Order returns the execution priority of this aspect. Lower values execute earlier.
@@ -65,19 +62,19 @@ func NewConcurrencyLimiterAspect(max int) *ConcurrencyLimiterAspect {
 // Order 返回此切面的执行优先级。值越低，执行越早。
 // 此切面的顺序为 10，使其成为最先执行的切面之一。
 func (a *ConcurrencyLimiterAspect) Order() int {
-	return 10
+	_ = "STUB: not implemented"
+
+	// New creates a new instance of the aspect for each rule engine instance.
+	// Each instance maintains its own concurrency counter starting from zero.
+	//
+	// New 为每个规则引擎实例创建切面的新实例。
+	// 每个实例维护自己的并发计数器，从零开始。
+	return 0
 }
 
-// New creates a new instance of the aspect for each rule engine instance.
-// Each instance maintains its own concurrency counter starting from zero.
-//
-// New 为每个规则引擎实例创建切面的新实例。
-// 每个实例维护自己的并发计数器，从零开始。
 func (a *ConcurrencyLimiterAspect) New() types.Aspect {
-	return &ConcurrencyLimiterAspect{
-		Max:          a.Max,
-		currentCount: 0,
-	}
+	_ = "STUB: not implemented"
+	return *new(types.Aspect)
 }
 
 // PointCut determines which nodes this aspect applies to.
@@ -86,43 +83,39 @@ func (a *ConcurrencyLimiterAspect) New() types.Aspect {
 // PointCut 确定此切面应用于哪些节点。
 // 对所有节点返回 true，全局应用并发限制。
 func (a *ConcurrencyLimiterAspect) PointCut(ctx types.RuleContext, msg types.RuleMsg, relationType string) bool {
-	return true
+	_ = "STUB: not implemented"
+
+	// Start is called at the beginning of rule processing. It implements a thread-safe
+	// concurrency check using atomic operations and compare-and-swap to ensure the
+	// current execution count doesn't exceed the maximum limit.
+	//
+	// Start 在规则处理开始时调用。它使用原子操作和比较并交换实现线程安全的并发检查，
+	// 确保当前执行计数不超过最大限制。
+	//
+	// Algorithm:
+	// 算法：
+	//  1. Load current count atomically  原子加载当前计数
+	//  2. Check if limit would be exceeded  检查是否会超过限制
+	//  3. Use CAS to increment if within limit  如果在限制内则使用 CAS 增加
+	//  4. Retry if CAS fails due to concurrent modification  如果由于并发修改导致 CAS 失败则重试
+	//
+	// Returns:
+	// 返回：
+	//   - types.RuleMsg: The original message unchanged  原始消息不变
+	//   - error: ErrConcurrencyLimitReached if limit exceeded, nil otherwise
+	//     error：如果超过限制则返回 ErrConcurrencyLimitReached，否则为 nil
+	return false
 }
 
-// Start is called at the beginning of rule processing. It implements a thread-safe
-// concurrency check using atomic operations and compare-and-swap to ensure the
-// current execution count doesn't exceed the maximum limit.
-//
-// Start 在规则处理开始时调用。它使用原子操作和比较并交换实现线程安全的并发检查，
-// 确保当前执行计数不超过最大限制。
-//
-// Algorithm:
-// 算法：
-//  1. Load current count atomically  原子加载当前计数
-//  2. Check if limit would be exceeded  检查是否会超过限制
-//  3. Use CAS to increment if within limit  如果在限制内则使用 CAS 增加
-//  4. Retry if CAS fails due to concurrent modification  如果由于并发修改导致 CAS 失败则重试
-//
-// Returns:
-// 返回：
-//   - types.RuleMsg: The original message unchanged  原始消息不变
-//   - error: ErrConcurrencyLimitReached if limit exceeded, nil otherwise
-//     error：如果超过限制则返回 ErrConcurrencyLimitReached，否则为 nil
 func (a *ConcurrencyLimiterAspect) Start(ctx types.RuleContext, msg types.RuleMsg) (types.RuleMsg, error) {
+	_ = "STUB: not implemented"
 	// 使用原子操作确保检查和增加操作的原子性
-	for {
-		current := atomic.LoadInt64(&a.currentCount)
-		if current >= a.Max {
-			return msg, types.ErrConcurrencyLimitReached
-		}
-		// 尝试原子地增加计数器，如果成功则退出循环
-		if atomic.CompareAndSwapInt64(&a.currentCount, current, current+1) {
-			break
-		}
-		// 如果CAS失败，说明有其他goroutine修改了计数器，重试
-	}
-	return msg, nil
+	return *new(types.RuleMsg), nil
 }
+
+// 尝试原子地增加计数器，如果成功则退出循环
+
+// 如果CAS失败，说明有其他goroutine修改了计数器，重试
 
 // Completed is called when rule processing is finished. It atomically decrements
 // the current execution count, allowing new executions to proceed.
@@ -132,8 +125,8 @@ func (a *ConcurrencyLimiterAspect) Start(ctx types.RuleContext, msg types.RuleMs
 // This method ensures proper cleanup and maintains accurate concurrency tracking.
 // 此方法确保正确清理并维护准确的并发跟踪。
 func (a *ConcurrencyLimiterAspect) Completed(ctx types.RuleContext, msg types.RuleMsg) types.RuleMsg {
-	atomic.AddInt64(&a.currentCount, -1)
-	return msg
+	_ = "STUB: not implemented"
+	return *new(types.RuleMsg)
 }
 
 // incrementCurrent atomically increments the current execution count.
@@ -141,15 +134,11 @@ func (a *ConcurrencyLimiterAspect) Completed(ctx types.RuleContext, msg types.Ru
 //
 // incrementCurrent 原子地增加当前执行计数。
 // 这是用于测试目的的内部辅助方法。
-func (a *ConcurrencyLimiterAspect) incrementCurrent() {
-	atomic.AddInt64(&a.currentCount, 1)
-}
+func (a *ConcurrencyLimiterAspect) incrementCurrent() { _ = "STUB: not implemented"; return }
 
 // decrementCurrent atomically decrements the current execution count.
 // This is an internal helper method for testing purposes.
 //
 // decrementCurrent 原子地减少当前执行计数。
 // 这是用于测试目的的内部辅助方法。
-func (a *ConcurrencyLimiterAspect) decrementCurrent() {
-	atomic.AddInt64(&a.currentCount, -1)
-}
+func (a *ConcurrencyLimiterAspect) decrementCurrent() { _ = "STUB: not implemented"; return }

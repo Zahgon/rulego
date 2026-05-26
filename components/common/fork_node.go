@@ -62,28 +62,35 @@ type ForkNode struct {
 // Type 返回组件类型
 // Type returns the component type identifier.
 func (x *ForkNode) Type() string {
-	return "fork"
+	_ = "STUB: not implemented"
+
+	// New 创建新实例
+	// New creates a new instance.
+	return ""
 }
 
-// New 创建新实例
-// New creates a new instance.
 func (x *ForkNode) New() types.Node {
-	return &ForkNode{}
+	_ = "STUB: not implemented"
+
+	// Init 初始化组件
+	// Init initializes the component.
+	return *new(types.Node)
 }
 
-// Init 初始化组件
-// Init initializes the component.
 func (x *ForkNode) Init(ruleConfig types.Config, configuration types.Configuration) error {
+	_ = "STUB: not implemented"
+
+	// OnMsg 处理消息，将消息广播到所有连接的出站关系进行并行处理
+	// OnMsg processes incoming messages by broadcasting them to all connected outbound relations.
 	return nil
 }
 
-// OnMsg 处理消息，将消息广播到所有连接的出站关系进行并行处理
-// OnMsg processes incoming messages by broadcasting them to all connected outbound relations.
 func (x *ForkNode) OnMsg(ctx types.RuleContext, msg types.RuleMsg) {
-	ctx.TellSuccess(msg)
+	_ = "STUB: not implemented"
+	return
+
+	// Destroy 清理资源
+	// Destroy cleans up resources.
 }
 
-// Destroy 清理资源
-// Destroy cleans up resources.
-func (x *ForkNode) Destroy() {
-}
+func (x *ForkNode) Destroy() { _ = "STUB: not implemented"; return }

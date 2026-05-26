@@ -28,17 +28,11 @@ package action
 //        }
 //  }
 import (
-	"fmt"
-	"strconv"
-	"strings"
 	"sync"
 	"sync/atomic"
 
 	"github.com/rulego/rulego/api/types"
-	"github.com/rulego/rulego/components/base"
 	"github.com/rulego/rulego/utils/el"
-	"github.com/rulego/rulego/utils/maps"
-	"github.com/rulego/rulego/utils/str"
 )
 
 var DelayNodeMsgType = "DELAY_NODE_MSG_TYPE"
@@ -106,169 +100,71 @@ type DelayNode struct {
 }
 
 // Type 组件类型
-func (x *DelayNode) Type() string {
-	return "delay"
-}
+func (x *DelayNode) Type() string { _ = "STUB: not implemented"; return "" }
 
-func (x *DelayNode) New() types.Node {
-	return &DelayNode{Config: DelayNodeConfiguration{MaxPendingMsgs: 1000, DelayMs: "60000"}}
-}
+func (x *DelayNode) New() types.Node { _ = "STUB: not implemented"; return *new(types.Node) }
 
 // Init 初始化
 func (x *DelayNode) Init(ruleConfig types.Config, configuration types.Configuration) error {
-	x.PendingMsgs = make(map[string]types.RuleMsg)
-	x.Config = DelayNodeConfiguration{} //清空配置，否则会保留默认值
-	err := maps.Map2Struct(configuration, &x.Config)
-	if err != nil {
-		return err
-	}
-	if x.Config.MaxPendingMsgs <= 0 {
-		x.Config.MaxPendingMsgs = 1000
-	}
-	x.LastPendingMsgId.Store("")
-
-	// 初始化延迟时间解析
-	// Initialize delay time parsing
-	x.Config.DelayMs = strings.TrimSpace(x.Config.DelayMs)
-	if x.Config.DelayMs != "" {
-		// 尝试直接解析为数值
-		if value, err := strconv.ParseInt(x.Config.DelayMs, 10, 64); err == nil {
-			// 是纯数字，存储预解析的值
-			x.delayMsValue = value
-		} else {
-			// 不是纯数字，创建模板
-			x.delayMsTemplate, err = el.NewTemplate(x.Config.DelayMs)
-			if err != nil {
-				return fmt.Errorf("failed to create delay time template: %w", err)
-			}
-		}
-	}
-
+	_ = "STUB: not implemented"
 	return nil
 }
+
+//清空配置，否则会保留默认值
+
+// 初始化延迟时间解析
+// Initialize delay time parsing
+
+// 尝试直接解析为数值
+
+// 是纯数字，存储预解析的值
+
+// 不是纯数字，创建模板
 
 // getDelayMilliseconds 获取延迟时间（毫秒），支持数值和模板两种方式
 // getDelayMilliseconds gets the delay time in milliseconds, supporting both numeric and template modes
 func (x *DelayNode) getDelayMilliseconds(ctx types.RuleContext, msg types.RuleMsg) (int64, error) {
+	_ = "STUB: not implemented"
 	// 优先使用新的DelayMs参数
-	if x.Config.DelayMs != "" {
-		// 如果有预解析的数值，直接返回
-		if x.delayMsValue > 0 {
-			return x.delayMsValue, nil
-		}
-		// 如果有模板，使用模板解析
-		if x.delayMsTemplate != nil {
-			evn := base.NodeUtils.GetEvnAndMetadata(ctx, msg)
-			delayStr := x.delayMsTemplate.ExecuteAsString(evn)
-			if v, err := strconv.ParseInt(delayStr, 10, 64); err != nil {
-				return 0, fmt.Errorf("failed to parse delay time from template result '%s': %w", delayStr, err)
-			} else {
-				return v, nil
-			}
-		}
-		return 0, fmt.Errorf("no delay time configured")
-	}
-
-	// 兼容旧的秒级参数
-	periodInSeconds := x.Config.PeriodInSeconds
-	//从变量中获取延迟时间
-	if x.Config.PeriodInSecondsPattern != "" {
-		evn := base.NodeUtils.GetEvnAndMetadata(ctx, msg)
-		if v, err := strconv.Atoi(str.ExecuteTemplate(x.Config.PeriodInSecondsPattern, evn)); err != nil {
-			return 0, err
-		} else {
-			periodInSeconds = v
-		}
-	}
-	return int64(periodInSeconds * 1000), nil
+	return 0, nil
 }
+
+// 如果有预解析的数值，直接返回
+
+// 如果有模板，使用模板解析
+
+// 兼容旧的秒级参数
+
+//从变量中获取延迟时间
 
 // getOffsetMilliseconds 从元数据中获取延迟偏移时间（毫秒）
 // getOffsetMilliseconds reads delay offset time in milliseconds from message metadata
 func (x *DelayNode) getOffsetMilliseconds(msg types.RuleMsg) (int64, error) {
-	if msg.Metadata == nil {
-		return 0, nil
-	}
-	v := msg.Metadata.GetValue(KeyDelayOffsetMs)
-	if v == "" {
-		return 0, nil
-	}
-	if offset, err := strconv.ParseInt(strings.TrimSpace(v), 10, 64); err != nil {
-		return 0, fmt.Errorf("failed to parse offset ms from metadata '%s': %w", v, err)
-	} else {
-		return offset, nil
-	}
+	_ = "STUB: not implemented"
+	return 0, nil
 }
 
 // OnMsg 处理消息，实现延迟队列逻辑
 func (x *DelayNode) OnMsg(ctx types.RuleContext, msg types.RuleMsg) {
-
-	if msg.Type == DelayNodeMsgType {
-		x.mu.Lock()
-		defer x.mu.Unlock()
-		pendingMsg, ok := x.PendingMsgs[msg.Id]
-		if ok {
-			//清除周期内的消息
-			if x.Config.Overwrite {
-				x.LastPendingMsgId.Store("")
-			}
-
-			delete(x.PendingMsgs, msg.Id)
-			ctx.TellSuccess(pendingMsg)
-		} else {
-			ctx.TellFailure(msg, fmt.Errorf("msg not found"))
-		}
-
-	} else if oldMsgId := x.LastPendingMsgId.Load().(string); oldMsgId != "" {
-		//如果是覆盖模式，替换队列里的消息
-		x.mu.Lock()
-		defer x.mu.Unlock()
-		x.PendingMsgs[oldMsgId] = msg
-	} else {
-		//获取队列长度
-		x.mu.Lock()
-		length := len(x.PendingMsgs)
-		x.mu.Unlock()
-
-		if length < x.Config.MaxPendingMsgs {
-			// 获取延迟时间
-			periodInMilliseconds, err := x.getDelayMilliseconds(ctx, msg)
-			if err != nil {
-				ctx.TellFailure(msg, err)
-				return
-			}
-			// 从元数据读取偏移时间
-			offsetMs, err := x.getOffsetMilliseconds(msg)
-			if err != nil {
-				ctx.TellFailure(msg, err)
-				return
-			}
-			// 计算实际延迟
-			adjustedDelay := periodInMilliseconds - offsetMs
-			if adjustedDelay <= 0 {
-				// 少于等于0，立即执行，不再进入延迟队列
-				ctx.TellSuccess(msg)
-				return
-			}
-
-			//如果是覆盖模式
-			if x.Config.Overwrite {
-				x.LastPendingMsgId.Store(msg.Id)
-			}
-			x.mu.Lock()
-			x.PendingMsgs[msg.Id] = msg
-			x.mu.Unlock()
-
-			ackMsg := msg.Copy()
-			ackMsg.Type = DelayNodeMsgType
-			ctx.TellSelf(ackMsg, adjustedDelay)
-		} else {
-			ctx.TellFailure(msg, fmt.Errorf("max limit of pending messages"))
-		}
-	}
-
+	_ = "STUB: not implemented"
+	return
 }
+
+//清除周期内的消息
+
+//如果是覆盖模式，替换队列里的消息
+
+//获取队列长度
+
+// 获取延迟时间
+
+// 从元数据读取偏移时间
+
+// 计算实际延迟
+
+// 少于等于0，立即执行，不再进入延迟队列
+
+//如果是覆盖模式
 
 // Destroy 销毁
-func (x *DelayNode) Destroy() {
-}
+func (x *DelayNode) Destroy() { _ = "STUB: not implemented"; return }

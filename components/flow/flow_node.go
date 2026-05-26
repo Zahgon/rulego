@@ -26,11 +26,7 @@ package flow
 //        }
 //  }
 import (
-	"sync"
-
 	"github.com/rulego/rulego/api/types"
-	"github.com/rulego/rulego/utils/maps"
-	"github.com/rulego/rulego/utils/str"
 )
 
 // init 注册ChainNode组件
@@ -96,94 +92,56 @@ type ChainNode struct {
 // Type 返回组件类型
 // Type returns the component type identifier.
 func (x *ChainNode) Type() string {
-	return "flow"
+	_ = "STUB: not implemented"
+
+	// New 创建新实例
+	// New creates a new instance.
+	return ""
 }
 
-// New 创建新实例
-// New creates a new instance.
 func (x *ChainNode) New() types.Node {
-	return &ChainNode{}
+	_ = "STUB: not implemented"
+	return *
+
+	// Init 初始化组件
+	// Init initializes the component.
+	new(types.Node)
 }
 
-// Init 初始化组件
-// Init initializes the component.
 func (x *ChainNode) Init(ruleConfig types.Config, configuration types.Configuration) error {
-	return maps.Map2Struct(configuration, &x.Config)
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // OnMsg 处理消息，通过执行配置的子规则链来处理传入消息
 // OnMsg processes incoming messages by executing the configured sub-rule chain.
 func (x *ChainNode) OnMsg(ctx types.RuleContext, msg types.RuleMsg) {
-	if x.Config.Extend {
-		x.TellFlowAndNoMerge(ctx, msg)
-	} else {
-		x.TellFlowAndMerge(ctx, msg)
-	}
+	_ = "STUB: not implemented"
+	return
 }
 
 // TellFlowAndNoMerge 执行子规则链而不合并结果，每个输出单独转发
 // TellFlowAndNoMerge executes the sub-rule chain without merging results.
 func (x *ChainNode) TellFlowAndNoMerge(ctx types.RuleContext, msg types.RuleMsg) {
-	ctx.TellFlow(x.Config.TargetId, msg, types.WithContext(ctx.GetContext()), types.WithOnEnd(func(nodeCtx types.RuleContext, onEndMsg types.RuleMsg, err error, relationType string) {
-		if err != nil {
-			ctx.TellFailure(onEndMsg, err)
-		} else {
-			ctx.TellNext(onEndMsg, relationType)
-		}
-
-	}))
+	_ = "STUB: not implemented"
+	return
 }
 
 // TellFlowAndMerge 执行子规则链并将所有结果合并为单个输出
 // TellFlowAndMerge executes the sub-rule chain and merges all results into a single output.
 func (x *ChainNode) TellFlowAndMerge(ctx types.RuleContext, msg types.RuleMsg) {
-	var wrapperMsg = msg.Copy()
-	var msgs []types.WrapperMsg
-	var targetRelationType = types.Success
-	var targetErr error
-	//使用一个互斥锁来保护对msgs切片的并发写入和metadata合并
-	var mu sync.Mutex
-	ctx.TellFlow(x.Config.TargetId, msg, types.WithContext(ctx.GetContext()), types.WithOnEnd(func(nodeCtx types.RuleContext, onEndMsg types.RuleMsg, err error, relationType string) {
-		mu.Lock()
-		defer mu.Unlock()
-		errStr := ""
-		if err == nil {
-			// use zero-copy ForEach for better metadata merging performance
-			onEndMsg.Metadata.ForEach(func(k, v string) bool {
-				wrapperMsg.Metadata.PutValue(k, v)
-				return true // continue iteration
-			})
-		} else {
-			errStr = err.Error()
-		}
-		selfId := nodeCtx.GetSelfId()
-
-		if relationType == types.Failure {
-			targetRelationType = relationType
-			targetErr = err
-		}
-		//删除掉元数据
-		if onEndMsg.Metadata != nil {
-			onEndMsg.Metadata.Clear()
-		}
-		msgs = append(msgs, types.WrapperMsg{
-			Msg:    onEndMsg,
-			Err:    errStr,
-			NodeId: selfId,
-		})
-
-	}), types.WithOnAllNodeCompleted(func() {
-		wrapperMsg.DataType = types.JSON
-		wrapperMsg.SetData(str.ToString(msgs))
-		if targetRelationType == types.Failure {
-			ctx.TellFailure(wrapperMsg, targetErr)
-		} else {
-			ctx.TellSuccess(wrapperMsg)
-		}
-	}))
+	_ = "STUB: not implemented"
+	return
 }
+
+//使用一个互斥锁来保护对msgs切片的并发写入和metadata合并
+
+// use zero-copy ForEach for better metadata merging performance
+
+// continue iteration
+
+//删除掉元数据
 
 // Destroy 清理资源
 // Destroy cleans up resources.
-func (x *ChainNode) Destroy() {
-}
+func (x *ChainNode) Destroy() { _ = "STUB: not implemented"; return }

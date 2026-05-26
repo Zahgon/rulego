@@ -17,15 +17,7 @@
 package filter
 
 import (
-	"context"
-	"errors"
-	"strings"
-	"sync/atomic"
-	"time"
-
 	"github.com/rulego/rulego/api/types"
-	"github.com/rulego/rulego/utils/maps"
-	"github.com/rulego/rulego/utils/str"
 )
 
 // init 注册GroupFilterNode组件
@@ -90,130 +82,52 @@ type GroupFilterNode struct {
 
 // Type 返回组件类型
 // Type returns the component type identifier.
-func (x *GroupFilterNode) Type() string {
-	return "groupFilter"
-}
+func (x *GroupFilterNode) Type() string { _ = "STUB: not implemented"; return "" }
 
 // New 创建新实例
 // New creates a new instance.
-func (x *GroupFilterNode) New() types.Node {
-	return &GroupFilterNode{Config: GroupFilterNodeConfiguration{AllMatches: false}}
-}
+func (x *GroupFilterNode) New() types.Node { _ = "STUB: not implemented"; return *new(types.Node) }
 
 // Init 初始化组件
 // Init initializes the component.
 func (x *GroupFilterNode) Init(ruleConfig types.Config, configuration types.Configuration) error {
-	err := maps.Map2Struct(configuration, &x.Config)
-	var nodeIds []string
-	if v, ok := x.Config.NodeIds.(string); ok {
-		nodeIds = strings.Split(v, ",")
-	} else if v, ok := x.Config.NodeIds.([]string); ok {
-		nodeIds = v
-	} else if v, ok := x.Config.NodeIds.([]interface{}); ok {
-		for _, item := range v {
-			nodeIds = append(nodeIds, str.ToString(item))
-		}
-	}
-	for _, nodeId := range nodeIds {
-		if v := strings.Trim(nodeId, ""); v != "" {
-			x.NodeIdList = append(x.NodeIdList, v)
-		}
-	}
-	x.Length = int32(len(x.NodeIdList))
-	return err
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // OnMsg 处理消息，并发执行所有配置的过滤器节点并根据配置的逻辑聚合结果
 // OnMsg processes incoming messages by executing all configured filter nodes concurrently.
 func (x *GroupFilterNode) OnMsg(ctx types.RuleContext, msg types.RuleMsg) {
-	if x.Length == 0 {
-		ctx.TellFailure(msg, errors.New("nodeIds is empty"))
-		return
-	}
-	var endCount int32
-	var trueCount int32 // 新增：跟踪True结果数量
-	var completed int32
-	c := make(chan bool, 1)
-	var chanCtx context.Context
-	var cancel context.CancelFunc
-	if x.Config.Timeout > 0 {
-		chanCtx, cancel = context.WithTimeout(ctx.GetContext(), time.Duration(x.Config.Timeout)*time.Second)
-	} else {
-		chanCtx, cancel = context.WithCancel(ctx.GetContext())
-	}
-
-	defer cancel()
-
-	//执行节点列表逻辑
-	for _, nodeId := range x.NodeIdList {
-		ctx.TellNode(chanCtx, nodeId, msg, true, func(callbackCtx types.RuleContext, msg types.RuleMsg, err error, relationType string) {
-			// 检查context是否已被取消，避免无意义的计算
-			select {
-			case <-chanCtx.Done():
-				return // 提前退出，避免资源浪费
-			default:
-			}
-
-			// 直接使用原子操作获取当前计数，避免竞态窗口
-			currentEndCount := atomic.AddInt32(&endCount, 1)
-			var currentTrueCount int32
-			if relationType == types.True {
-				currentTrueCount = atomic.AddInt32(&trueCount, 1)
-			} else {
-				currentTrueCount = atomic.LoadInt32(&trueCount)
-			}
-
-			// 判断是否应该结束并发送结果
-			var shouldComplete bool
-			var result bool
-
-			if x.Config.AllMatches {
-				// AllMatches=true: 有任何False就立即返回False，所有都是True才返回True
-				if relationType != types.True {
-					shouldComplete = true
-					result = false
-				} else if currentEndCount >= x.Length && currentTrueCount >= x.Length {
-					shouldComplete = true
-					result = true
-				}
-			} else {
-				// AllMatches=false: 有任何True就立即返回True，所有都完成且无True才返回False
-				if relationType == types.True {
-					shouldComplete = true
-					result = true
-				} else if currentEndCount >= x.Length && currentTrueCount == 0 {
-					shouldComplete = true
-					result = false
-				}
-			}
-
-			// 使用CAS确保只有一个goroutine能发送结果
-			if shouldComplete && atomic.CompareAndSwapInt32(&completed, 0, 1) {
-				// 使用非阻塞发送，防止在超时情况下channel阻塞
-				select {
-				case c <- result:
-					// 发送成功
-				default:
-					// Channel已满或无接收者（可能主函数已超时退出），放弃发送
-				}
-			}
-		}, nil)
-	}
-
-	// 等待执行结束或者超时
-	select {
-	case <-chanCtx.Done():
-		ctx.TellFailure(msg, chanCtx.Err())
-	case r := <-c:
-		if r {
-			ctx.TellNext(msg, types.True)
-		} else {
-			ctx.TellNext(msg, types.False)
-		}
-	}
+	_ = "STUB: not implemented"
+	return
 }
+
+// 新增：跟踪True结果数量
+
+//执行节点列表逻辑
+
+// 检查context是否已被取消，避免无意义的计算
+
+// 提前退出，避免资源浪费
+
+// 直接使用原子操作获取当前计数，避免竞态窗口
+
+// 判断是否应该结束并发送结果
+
+// AllMatches=true: 有任何False就立即返回False，所有都是True才返回True
+
+// AllMatches=false: 有任何True就立即返回True，所有都完成且无True才返回False
+
+// 使用CAS确保只有一个goroutine能发送结果
+
+// 使用非阻塞发送，防止在超时情况下channel阻塞
+
+// 发送成功
+
+// Channel已满或无接收者（可能主函数已超时退出），放弃发送
+
+// 等待执行结束或者超时
 
 // Destroy 清理资源
 // Destroy cleans up resources.
-func (x *GroupFilterNode) Destroy() {
-}
+func (x *GroupFilterNode) Destroy() { _ = "STUB: not implemented"; return }

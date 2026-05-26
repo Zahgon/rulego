@@ -67,34 +67,26 @@ type MsgTypeSwitchNode struct {
 
 // Type 返回组件类型
 // Type returns the component type identifier.
-func (x *MsgTypeSwitchNode) Type() string {
-	return "msgTypeSwitch"
-}
+func (x *MsgTypeSwitchNode) Type() string { _ = "STUB: not implemented"; return "" }
 
 // New 创建新实例
 // New creates a new instance.
-func (x *MsgTypeSwitchNode) New() types.Node {
-	return &MsgTypeSwitchNode{}
-}
+func (x *MsgTypeSwitchNode) New() types.Node { _ = "STUB: not implemented"; return *new(types.Node) }
 
 // Init 初始化组件，从全局属性配置默认关系类型名称
 // Init initializes the component.
 func (x *MsgTypeSwitchNode) Init(ruleConfig types.Config, configuration types.Configuration) error {
-	if v := ruleConfig.Properties.GetValue(types.DefaultRelationTypeKey); v != "" {
-		x.defaultRelationType = v
-	} else {
-		x.defaultRelationType = types.DefaultRelationType
-	}
+	_ = "STUB: not implemented"
 	return nil
 }
 
 // OnMsg 处理消息，根据消息类型路由到匹配的关系或默认关系
 // OnMsg processes incoming messages by routing them based on their message type.
 func (x *MsgTypeSwitchNode) OnMsg(ctx types.RuleContext, msg types.RuleMsg) {
-	ctx.TellNextOrElse(msg, x.defaultRelationType, msg.Type)
+	_ = "STUB: not implemented"
+	return
 }
 
 // Destroy 清理资源
 // Destroy cleans up resources.
-func (x *MsgTypeSwitchNode) Destroy() {
-}
+func (x *MsgTypeSwitchNode) Destroy() { _ = "STUB: not implemented"; return }

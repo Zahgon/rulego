@@ -32,13 +32,8 @@ package transform
 //	}
 //}
 import (
-	"strings"
-
 	"github.com/rulego/rulego/api/types"
-	"github.com/rulego/rulego/components/base"
 	"github.com/rulego/rulego/utils/el"
-	"github.com/rulego/rulego/utils/maps"
-	"github.com/rulego/rulego/utils/str"
 )
 
 func init() {
@@ -83,79 +78,27 @@ type ExprTransformNodeConfiguration struct {
 // 通过`dataType`变量访问数据类型
 type ExprTransformNode struct {
 	//节点配置
-	Config         ExprTransformNodeConfiguration
-	exprTemplate   el.Template
+	Config          ExprTransformNodeConfiguration
+	exprTemplate    el.Template
 	templateMapping map[string]el.Template
 }
 
 // Type 组件类型
-func (x *ExprTransformNode) Type() string {
-	return "exprTransform"
-}
+func (x *ExprTransformNode) Type() string { _ = "STUB: not implemented"; return "" }
 
-func (x *ExprTransformNode) New() types.Node {
-	return &ExprTransformNode{Config: ExprTransformNodeConfiguration{}}
-}
+func (x *ExprTransformNode) New() types.Node { _ = "STUB: not implemented"; return *new(types.Node) }
 
 // Init 初始化
 func (x *ExprTransformNode) Init(ruleConfig types.Config, configuration types.Configuration) error {
-	err := maps.Map2Struct(configuration, &x.Config)
-	if err == nil {
-		if exprV := strings.TrimSpace(x.Config.Expr); exprV != "" {
-			if template, err := el.NewExprTemplate(exprV); err != nil {
-				return err
-			} else {
-				x.exprTemplate = template
-			}
-		} else {
-			x.templateMapping = make(map[string]el.Template)
-			for k, v := range x.Config.Mapping {
-				if template, err := el.NewExprTemplate(v); err != nil {
-					return err
-				} else {
-					x.templateMapping[k] = template
-				}
-			}
-		}
-
-	}
-	return err
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // OnMsg 处理消息
 func (x *ExprTransformNode) OnMsg(ctx types.RuleContext, msg types.RuleMsg) {
-	evn := base.NodeUtils.GetEvn(ctx, msg)
-	var result interface{}
-	if x.exprTemplate != nil {
-		if out, err := x.exprTemplate.Execute(evn); err != nil {
-			ctx.TellFailure(msg, err)
-			return
-		} else {
-			result = out
-		}
-	} else {
-		mapResult := make(map[string]interface{})
-		for fieldName, template := range x.templateMapping {
-			if out, err := template.Execute(evn); err != nil {
-				ctx.TellFailure(msg, err)
-				return
-			} else {
-				mapResult[fieldName] = out
-			}
-		}
-		result = mapResult
-		msg.DataType = types.JSON
-	}
-
-	if newValue, err := str.ToStringMaybeErr(result); err == nil {
-		msg.SetData(newValue)
-		ctx.TellSuccess(msg)
-	} else {
-		ctx.TellFailure(msg, err)
-	}
-
+	_ = "STUB: not implemented"
+	return
 }
 
 // Destroy 销毁
-func (x *ExprTransformNode) Destroy() {
-}
+func (x *ExprTransformNode) Destroy() { _ = "STUB: not implemented"; return }

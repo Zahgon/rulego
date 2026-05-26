@@ -30,23 +30,5 @@
 // Note: The stack trace includes file names and line numbers for each call in the stack.
 package runtime
 
-import (
-	"fmt"
-	"runtime"
-	"strings"
-)
-
 // Stack 获取堆栈信息
-func Stack() string {
-	var pc = make([]uintptr, 20)
-	n := runtime.Callers(3, pc)
-
-	var build strings.Builder
-	for i := 0; i < n; i++ {
-		f := runtime.FuncForPC(pc[i] - 1)
-		file, line := f.FileLine(pc[i] - 1)
-		s := fmt.Sprintf(" %s:%d \n", file[0:], line)
-		build.WriteString(s)
-	}
-	return build.String()
-}
+func Stack() string { _ = "STUB: not implemented"; return "" }

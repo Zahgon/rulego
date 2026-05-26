@@ -64,53 +64,16 @@ type FuncMap[T any] struct {
 }
 
 // NewFuncMap 创建一个新的FuncMap实例
-func NewFuncMap[T any]() *FuncMap[T] {
-	return &FuncMap[T]{v: make(map[string]T)}
-}
+func NewFuncMap[T any]() *FuncMap[T] { _ = "STUB: not implemented"; return nil }
 
-func (x *FuncMap[T]) Register(name string, value T) {
-	x.Lock()
-	defer x.Unlock()
-	x.v[name] = value
-}
+func (x *FuncMap[T]) Register(name string, value T) { _ = "STUB: not implemented"; return }
 
-func (x *FuncMap[T]) RegisterAll(values map[string]T) {
-	x.Lock()
-	defer x.Unlock()
-	for k, v := range values {
-		x.v[k] = v
-	}
-}
+func (x *FuncMap[T]) RegisterAll(values map[string]T) { _ = "STUB: not implemented"; return }
 
-func (x *FuncMap[T]) UnRegister(name string) {
-	x.Lock()
-	defer x.Unlock()
-	delete(x.v, name)
-}
+func (x *FuncMap[T]) UnRegister(name string) { _ = "STUB: not implemented"; return }
 
-func (x *FuncMap[T]) Get(name string) (T, bool) {
-	x.RLock()
-	defer x.RUnlock()
-	f, ok := x.v[name]
-	return f, ok
-}
+func (x *FuncMap[T]) Get(name string) (T, bool) { _ = "STUB: not implemented"; return *new(T), false }
 
-func (x *FuncMap[T]) GetAll() map[string]T {
-	x.RLock()
-	defer x.RUnlock()
-	cp := make(map[string]T)
-	for k, v := range x.v {
-		cp[k] = v
-	}
-	return cp
-}
+func (x *FuncMap[T]) GetAll() map[string]T { _ = "STUB: not implemented"; return nil }
 
-func (x *FuncMap[T]) Names() []string {
-	x.RLock()
-	defer x.RUnlock()
-	var keys []string
-	for k := range x.v {
-		keys = append(keys, k)
-	}
-	return keys
-}
+func (x *FuncMap[T]) Names() []string { _ = "STUB: not implemented"; return nil }

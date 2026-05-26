@@ -17,15 +17,11 @@
 package external
 
 import (
-	"context"
-	"time"
-
 	"github.com/rulego/rulego/utils/mqtt"
 
 	"github.com/rulego/rulego/api/types"
 	"github.com/rulego/rulego/components/base"
 	"github.com/rulego/rulego/utils/el"
-	"github.com/rulego/rulego/utils/maps"
 )
 
 // MqttClientNode 为MQTT代理提供MQTT客户端功能以发布消息的外部组件
@@ -108,21 +104,8 @@ type MqttClientNodeConfiguration struct {
 }
 
 func (x *MqttClientNodeConfiguration) ToMqttConfig() mqtt.Config {
-	if x.MaxReconnectInterval < 0 {
-		x.MaxReconnectInterval = 60
-	}
-	return mqtt.Config{
-		Server:               x.Server,
-		Username:             x.Username,
-		Password:             x.Password,
-		QOS:                  x.QOS,
-		MaxReconnectInterval: time.Duration(x.MaxReconnectInterval) * time.Second,
-		CleanSession:         x.CleanSession,
-		ClientID:             x.ClientID,
-		CAFile:               x.CAFile,
-		CertFile:             x.CertFile,
-		CertKeyFile:          x.CertKeyFile,
-	}
+	_ = "STUB: not implemented"
+	return *new(mqtt.Config)
 }
 
 type MqttClientNode struct {
@@ -138,68 +121,30 @@ type MqttClientNode struct {
 }
 
 // Type 组件类型
-func (x *MqttClientNode) Type() string {
-	return "mqttClient"
-}
+func (x *MqttClientNode) Type() string { _ = "STUB: not implemented"; return "" }
 
-func (x *MqttClientNode) New() types.Node {
-	return &MqttClientNode{Config: MqttClientNodeConfiguration{
-		Topic:                "/device/msg",
-		Server:               "127.0.0.1:1883",
-		QOS:                  0,
-		MaxReconnectInterval: 60,
-	}}
-}
+func (x *MqttClientNode) New() types.Node { _ = "STUB: not implemented"; return *new(types.Node) }
 
 // Init 初始化
 func (x *MqttClientNode) Init(ruleConfig types.Config, configuration types.Configuration) error {
-	err := maps.Map2Struct(configuration, &x.Config)
-	if err == nil {
-		_ = x.SharedNode.InitWithClose(ruleConfig, x.Type(), x.Config.Server, ruleConfig.NodeClientInitNow, func() (*mqtt.Client, error) {
-			return x.initClient()
-		}, func(client *mqtt.Client) error {
-			// 清理回调函数
-			return client.Close()
-		})
-		x.topicTemplate, err = el.NewTemplate(x.Config.Topic)
-		if err != nil {
-			return err
-		}
-		x.hasVar = x.topicTemplate.HasVar()
-	}
-	return err
+	_ = "STUB: not implemented"
+	return nil
 }
+
+// 清理回调函数
 
 // OnMsg 处理消息，使用变量替换解析主题并发布MQTT消息
 // OnMsg processes messages by parsing topic with variable substitution and publishing MQTT messages.
 func (x *MqttClientNode) OnMsg(ctx types.RuleContext, msg types.RuleMsg) {
-	var evn map[string]interface{}
-	if x.hasVar {
-		evn = base.NodeUtils.GetEvnAndMetadata(ctx, msg)
-	}
-	topic := x.topicTemplate.ExecuteAsString(evn)
-
-	if client, err := x.SharedNode.GetSafely(); err != nil {
-		ctx.TellFailure(msg, err)
-	} else {
-		if err := client.Publish(topic, x.Config.QOS, []byte(msg.GetData())); err != nil {
-			ctx.TellFailure(msg, err)
-		} else {
-			ctx.TellSuccess(msg)
-		}
-	}
+	_ = "STUB: not implemented"
+	return
 }
 
 // Destroy 销毁
-func (x *MqttClientNode) Destroy() {
-	_ = x.SharedNode.Close()
-}
+func (x *MqttClientNode) Destroy() { _ = "STUB: not implemented"; return }
 
 // initClient 初始化客户端
 func (x *MqttClientNode) initClient() (*mqtt.Client, error) {
-	ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
-	defer cancel()
-
-	client, err := mqtt.NewClient(ctx, x.Config.ToMqttConfig())
-	return client, err
+	_ = "STUB: not implemented"
+	return nil, nil
 }

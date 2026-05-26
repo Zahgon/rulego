@@ -17,17 +17,9 @@
 package external
 
 import (
-	"errors"
-	"strings"
-
-	"github.com/rulego/rulego/utils/json"
-
 	"github.com/rulego/rulego/utils/el"
 
 	"github.com/rulego/rulego/api/types"
-	"github.com/rulego/rulego/components/base"
-	"github.com/rulego/rulego/utils/maps"
-	"github.com/rulego/rulego/utils/str"
 )
 
 // 注册节点
@@ -157,140 +149,46 @@ type CacheGetNode struct {
 	keysTemplate []LevelKeyTemplate
 }
 
-func (x *CacheGetNode) Type() string {
-	return "cacheGet"
-}
+func (x *CacheGetNode) Type() string { _ = "STUB: not implemented"; return "" }
 
-func (x *CacheGetNode) New() types.Node {
-	return &CacheGetNode{Config: CacheGetNodeConfiguration{
-		Keys: []LevelKey{
-			{Level: CacheLevelChain, Key: "key1"},
-		},
-		OutputMode: CacheOutputModeNewMsg,
-	}}
-}
+func (x *CacheGetNode) New() types.Node { _ = "STUB: not implemented"; return *new(types.Node) }
 
 // Init 初始化组件
 func (x *CacheGetNode) Init(ruleConfig types.Config, configuration types.Configuration) error {
-	err := maps.Map2Struct(configuration, &x.Config)
-	if err != nil {
-		return err
-	}
-
-	//初始化keys模板
-	for _, item := range x.Config.Keys {
-		template, err := el.NewTemplate(item.Key)
-		if err != nil {
-			return err
-		}
-		x.keysTemplate = append(x.keysTemplate, LevelKeyTemplate{
-			level:       item.Level,
-			keyTemplate: template,
-		})
-	}
-
+	_ = "STUB: not implemented"
 	return nil
 }
 
+//初始化keys模板
+
 func (x *CacheGetNode) OnMsg(ctx types.RuleContext, msg types.RuleMsg) {
-	env := base.NodeUtils.GetEvnAndMetadata(ctx, msg)
-	//处理keys模板
-	var keys []LevelKey
-	for _, item := range x.keysTemplate {
-		keys = append(keys, LevelKey{Level: item.level, Key: item.keyTemplate.ExecuteAsString(env)})
-	}
-	x.handleGet(ctx, msg, keys)
+	_ = "STUB: not implemented"
+	return
 }
+
+//处理keys模板
 
 // Destroy 销毁组件
-func (x *CacheGetNode) Destroy() {
-}
+func (x *CacheGetNode) Destroy() { _ = "STUB: not implemented"; return }
 
 func (x *CacheGetNode) handleGet(ctx types.RuleContext, msg types.RuleMsg, keys []LevelKey) {
-	values := make(map[string]interface{})
-	var c types.Cache
-	for _, item := range keys {
-		if item.Level == CacheLevelGlobal {
-			c = ctx.GlobalCache()
-		} else {
-			c = ctx.ChainCache()
-		}
-		if strings.HasSuffix(item.Key, KeyMatchAll) {
-			matchValues := c.GetByPrefix(item.Key[:len(item.Key)-1])
-			for k, v := range matchValues {
-				values[k] = v
-			}
-		} else {
-			value, err := c.Get(item.Key)
-			if err != nil {
-				if errors.Is(err, types.ErrCacheMiss) {
-					// cache miss，由 whenKeyNotFound 控制
-					values[item.Key] = nil
-				} else {
-					// 底层报错，始终走失败链
-					ctx.TellFailure(msg, err)
-					return
-				}
-			} else {
-				values[item.Key] = value
-			}
-		}
-	}
-	x.outputResult(ctx, msg, values)
+	_ = "STUB: not implemented"
+	return
 }
+
+// cache miss，由 whenKeyNotFound 控制
+
+// 底层报错，始终走失败链
 
 func (x *CacheGetNode) outputResult(ctx types.RuleContext, msg types.RuleMsg, values map[string]interface{}) {
+	_ = "STUB: not implemented"
 	// 检查是否全部 miss
-	var notFound = true
-	for _, v := range values {
-		if v != nil {
-			notFound = false
-			break
-		}
-	}
-
-	if notFound {
-		whenKeyNotFound := strings.ToLower(x.Config.WhenKeyNotFound)
-		switch whenKeyNotFound {
-		case WhenKeyNotFoundFailure:
-			ctx.TellFailure(msg, types.ErrCacheMiss)
-			return
-		case WhenKeyNotFoundSuccess:
-			// 走成功链，继续下面的输出逻辑
-		default:
-			// 空值：保持原有行为，Mode 2 走失败链，其他模式走成功链
-			if x.Config.OutputMode == CacheOutputModeNewMsg {
-				ctx.TellFailure(msg, types.ErrCacheMiss)
-				return
-			}
-		}
-	}
-
-	if x.Config.OutputMode == CacheOutputModeMergeToMetadata {
-		for key, value := range values {
-			msg.Metadata.PutValue(key, str.ToString(value))
-		}
-		ctx.TellSuccess(msg)
-	} else if x.Config.OutputMode == CacheOutputModeMergeToMsg {
-		if msg.DataType == types.JSON {
-			var dataMap map[string]interface{}
-			if err := json.Unmarshal([]byte(msg.GetData()), &dataMap); err == nil {
-				for key, value := range values {
-					dataMap[key] = value
-				}
-				msg.SetData(str.ToString(dataMap))
-				ctx.TellSuccess(msg)
-			} else {
-				ctx.TellFailure(msg, errors.New("data must be able to be serialized into a map structure"))
-			}
-		} else {
-			ctx.TellFailure(msg, errors.New("data type must be JSON type"))
-		}
-	} else {
-		msg.SetData(str.ToString(values))
-		ctx.TellSuccess(msg)
-	}
+	return
 }
+
+// 走成功链，继续下面的输出逻辑
+
+// 空值：保持原有行为，Mode 2 走失败链，其他模式走成功链
 
 // CacheSetNodeConfiguration 缓存设置节点配置
 type CacheSetNodeConfiguration struct {
@@ -393,93 +291,31 @@ type CacheSetNode struct {
 }
 
 // Type 返回组件类型
-func (x *CacheSetNode) Type() string {
-	return "cacheSet"
-}
+func (x *CacheSetNode) Type() string { _ = "STUB: not implemented"; return "" }
 
-func (x *CacheSetNode) New() types.Node {
-	return &CacheSetNode{Config: CacheSetNodeConfiguration{
-		Items: []CacheItem{
-			{Level: CacheLevelChain, Key: "key1", Value: "value1", Ttl: "1h"},
-		},
-	}}
-}
+func (x *CacheSetNode) New() types.Node { _ = "STUB: not implemented"; return *new(types.Node) }
 
 // Init 初始化组件
 func (x *CacheSetNode) Init(ruleConfig types.Config, configuration types.Configuration) error {
-	err := maps.Map2Struct(configuration, &x.Config)
-	if err != nil {
-		return err
-	}
-	var hasVar = false
-	//初始化缓存项列表模板
-	for _, item := range x.Config.Items {
-		keyTemplate, err := el.NewTemplate(item.Key)
-		if err != nil {
-			return err
-		}
-
-		if keyTemplate.HasVar() {
-			hasVar = true
-		}
-
-		valueTemplate, err := el.NewTemplate(item.Value)
-		if err != nil {
-			return err
-		}
-		if valueTemplate.HasVar() {
-			hasVar = true
-		}
-		x.itemsTemplate = append(x.itemsTemplate, CacheItemTemplate{
-			level:         item.Level,
-			keyTemplate:   keyTemplate,
-			valueTemplate: valueTemplate,
-			ttl:           item.Ttl,
-		})
-	}
-	x.hasVar = hasVar
+	_ = "STUB: not implemented"
 	return nil
 }
 
-func (x *CacheSetNode) OnMsg(ctx types.RuleContext, msg types.RuleMsg) {
-	var evn map[string]interface{}
-	if x.hasVar {
-		evn = base.NodeUtils.GetEvnAndMetadata(ctx, msg)
-	}
-	var err error
-	var value interface{}
-	for _, item := range x.itemsTemplate {
-		key := item.keyTemplate.ExecuteAsString(evn)
-		if key == "" {
-			err = errors.New("key is empty")
-			break
-		}
-		value, err = item.valueTemplate.Execute(evn)
-		if err == nil {
-			var c = ctx.GlobalCache()
-			if item.level == CacheLevelGlobal {
-				c = ctx.GlobalCache()
-			} else {
-				c = ctx.ChainCache()
-			}
-			err = c.Set(key, value, item.ttl)
-		} else {
-			break
-		}
-	}
+//初始化缓存项列表模板
 
-	if err != nil {
-		ctx.TellFailure(msg, err)
-	} else {
-		ctx.TellSuccess(msg)
-	}
+func (x *CacheSetNode) OnMsg(ctx types.RuleContext, msg types.RuleMsg) {
+	_ = "STUB: not implemented"
+	return
 }
 
 // Destroy 销毁组件
 func (x *CacheSetNode) Destroy() {
+	_ = "STUB: not implemented"
+
+	// CacheDeleteNodeConfiguration 缓存删除节点配置
+	return
 }
 
-// CacheDeleteNodeConfiguration 缓存删除节点配置
 type CacheDeleteNodeConfiguration struct {
 	// Keys 删除的键列表
 	Keys []LevelKey `json:"keys"`
@@ -536,73 +372,29 @@ type CacheDeleteNode struct {
 	keysTemplate []LevelKeyTemplate
 }
 
-func (x *CacheDeleteNode) Type() string {
-	return "cacheDelete"
-}
+func (x *CacheDeleteNode) Type() string { _ = "STUB: not implemented"; return "" }
 
-func (x *CacheDeleteNode) New() types.Node {
-	return &CacheDeleteNode{Config: CacheDeleteNodeConfiguration{
-		Keys: []LevelKey{
-			{Level: CacheLevelChain, Key: "key1"},
-		},
-	}}
-}
+func (x *CacheDeleteNode) New() types.Node { _ = "STUB: not implemented"; return *new(types.Node) }
 
 // Init 初始化组件
 func (x *CacheDeleteNode) Init(ruleConfig types.Config, configuration types.Configuration) error {
-	err := maps.Map2Struct(configuration, &x.Config)
-	if err != nil {
-		return err
-	}
-
-	//初始化keys模板
-	for _, item := range x.Config.Keys {
-		template, err := el.NewMixedTemplate(item.Key)
-		if err != nil {
-			return err
-		}
-		x.keysTemplate = append(x.keysTemplate, LevelKeyTemplate{
-			level:       item.Level,
-			keyTemplate: template,
-		})
-	}
-
+	_ = "STUB: not implemented"
 	return nil
 }
 
+//初始化keys模板
+
 func (x *CacheDeleteNode) OnMsg(ctx types.RuleContext, msg types.RuleMsg) {
-	env := base.NodeUtils.GetEvnAndMetadata(ctx, msg)
-
-	//处理keys模板
-	var keys []LevelKey
-	for _, item := range x.keysTemplate {
-		keys = append(keys, LevelKey{Level: item.level, Key: item.keyTemplate.ExecuteAsString(env)})
-	}
-
-	x.handleDelete(ctx, msg, keys)
+	_ = "STUB: not implemented"
+	return
 }
 
+//处理keys模板
+
 func (x *CacheDeleteNode) handleDelete(ctx types.RuleContext, msg types.RuleMsg, keys []LevelKey) {
-	var c types.Cache
-	for _, item := range keys {
-		if item.Level == CacheLevelGlobal {
-			c = ctx.GlobalCache()
-		} else {
-			c = ctx.ChainCache()
-		}
-		if strings.HasSuffix(item.Key, "*") {
-			if err := c.DeleteByPrefix(item.Key[:len(item.Key)-1]); err != nil {
-				ctx.TellFailure(msg, err)
-				return
-			}
-		} else if err := c.Delete(item.Key); err != nil {
-			ctx.TellFailure(msg, err)
-			return
-		}
-	}
-	ctx.TellSuccess(msg)
+	_ = "STUB: not implemented"
+	return
 }
 
 // Destroy 销毁组件
-func (x *CacheDeleteNode) Destroy() {
-}
+func (x *CacheDeleteNode) Destroy() { _ = "STUB: not implemented"; return }

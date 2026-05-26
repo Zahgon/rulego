@@ -17,10 +17,7 @@
 package types
 
 import (
-	"math"
 	"time"
-
-	"github.com/rulego/rulego/utils/pool"
 )
 
 // Option is a function type that modifies the Config.
@@ -68,10 +65,8 @@ type Option func(*Config) error
 //	registry.Register(&MyCustomNode{})
 //	config := NewConfig(WithComponentsRegistry(registry))
 func WithComponentsRegistry(componentsRegistry ComponentRegistry) Option {
-	return func(c *Config) error {
-		c.ComponentsRegistry = componentsRegistry
-		return nil
-	}
+	_ = "STUB: not implemented"
+	return *new(Option)
 }
 
 // WithOnDebug is an option that sets the on debug callback of the Config.
@@ -108,18 +103,14 @@ func WithComponentsRegistry(componentsRegistry ComponentRegistry) Option {
 //	}
 //	config := NewConfig(WithOnDebug(debugHandler))
 func WithOnDebug(onDebug func(ruleChainId string, flowType string, nodeId string, msg RuleMsg, relationType string, err error)) Option {
-	return func(c *Config) error {
-		c.OnDebug = onDebug
-		return nil
-	}
+	_ = "STUB: not implemented"
+	return *new(Option)
 }
 
 // WithOnEndGlobal is an option that sets the global on end callback of the Config.
 func WithOnEndGlobal(onEnd func(ctx RuleContext, msg RuleMsg, err error, relationType string)) Option {
-	return func(c *Config) error {
-		c.OnEnd = onEnd
-		return nil
-	}
+	_ = "STUB: not implemented"
+	return *new(Option)
 }
 
 // WithOnEndWithFailure is an option that sets the OnEndWithFailure of the Config.
@@ -128,10 +119,8 @@ func WithOnEndGlobal(onEnd func(ctx RuleContext, msg RuleMsg, err error, relatio
 // If true, the OnEnd callback will be triggered when no connected node is found and the relation type is Failure.
 // 如果为 true，当没有找到连接的节点，并且关系类型为 Failure 时，触发 OnEnd 回调。
 func WithOnEndWithFailure(onEndWithFailure bool) Option {
-	return func(c *Config) error {
-		c.OnEndWithFailure = onEndWithFailure
-		return nil
-	}
+	_ = "STUB: not implemented"
+	return *new(Option)
 }
 
 // WithPool is an option that sets the pool of the Config.
@@ -154,12 +143,7 @@ func WithOnEndWithFailure(onEndWithFailure bool) Option {
 //	// Ants 池集成
 //	antsPool, _ := ants.NewPool(50)
 //	config := NewConfig(WithPool(antsPool))
-func WithPool(pool Pool) Option {
-	return func(c *Config) error {
-		c.Pool = pool
-		return nil
-	}
-}
+func WithPool(pool Pool) Option { _ = "STUB: not implemented"; return *new(Option) }
 
 // WithNodePool is an option that sets the netPool of the Config.
 // WithNodePool 是设置 Config 网络池的选项。
@@ -187,23 +171,11 @@ func WithPool(pool Pool) Option {
 //     数据库连接池
 //   - Message queue connection sharing
 //     消息队列连接共享
-func WithNodePool(pool NodePool) Option {
-	return func(c *Config) error {
-		c.NodePool = pool
-		return nil
-	}
-}
+func WithNodePool(pool NodePool) Option { _ = "STUB: not implemented"; return *new(Option) }
 
 // WithDefaultPool creates an option that sets a default worker pool with unlimited capacity.
 // WithDefaultPool 创建一个设置具有无限容量的默认工作器池的选项。
-func WithDefaultPool() Option {
-	return func(c *Config) error {
-		wp := &pool.WorkerPool{MaxWorkersCount: math.MaxInt32}
-		wp.Start()
-		c.Pool = wp
-		return nil
-	}
-}
+func WithDefaultPool() Option { _ = "STUB: not implemented"; return *new(Option) }
 
 // WithScriptMaxExecutionTime is an option that sets the js max execution time of the Config.
 // WithScriptMaxExecutionTime 是设置 Config 脚本最大执行时间的选项。
@@ -220,10 +192,8 @@ func WithDefaultPool() Option {
 //	// 具有宽松超时的开发环境
 //	config := NewConfig(WithScriptMaxExecutionTime(5 * time.Second))
 func WithScriptMaxExecutionTime(scriptMaxExecutionTime time.Duration) Option {
-	return func(c *Config) error {
-		c.ScriptMaxExecutionTime = scriptMaxExecutionTime
-		return nil
-	}
+	_ = "STUB: not implemented"
+	return *new(Option)
 }
 
 // WithParser is an option that sets the parser of the Config.
@@ -275,12 +245,7 @@ func WithScriptMaxExecutionTime(scriptMaxExecutionTime time.Duration) Option {
 //	// 用于敏感配置的加密解析器
 //	encryptedParser := &EncryptedJsonParser{Key: secretKey}
 //	config := NewConfig(WithParser(encryptedParser))
-func WithParser(parser Parser) Option {
-	return func(c *Config) error {
-		c.Parser = parser
-		return nil
-	}
-}
+func WithParser(parser Parser) Option { _ = "STUB: not implemented"; return *new(Option) }
 
 // WithLogger is an option that sets the logger of the Config.
 // WithLogger 是设置 Config 日志记录器的选项。
@@ -297,36 +262,19 @@ func WithParser(parser Parser) Option {
 //	// 具有监控集成的自定义日志记录器
 //	monitoringLogger := &MonitoringLogger{Service: "rulego"}
 //	config := NewConfig(WithLogger(monitoringLogger))
-func WithLogger(logger Logger) Option {
-	return func(c *Config) error {
-		c.Logger = logger
-		return nil
-	}
-}
+func WithLogger(logger Logger) Option { _ = "STUB: not implemented"; return *new(Option) }
 
 // WithSecretKey is an option that sets the secret key of the Config.
 // WithSecretKey 是设置 Config 密钥的选项。
-func WithSecretKey(secretKey string) Option {
-	return func(c *Config) error {
-		c.SecretKey = secretKey
-		return nil
-	}
-}
+func WithSecretKey(secretKey string) Option { _ = "STUB: not implemented"; return *new(Option) }
 
 // WithEndpointEnabled creates an Option to enable or disable the endpoint functionality in the Config.
 // WithEndpointEnabled 创建一个在 Config 中启用或禁用端点功能的选项。
 func WithEndpointEnabled(endpointEnabled bool) Option {
-	return func(c *Config) error {
-		c.EndpointEnabled = endpointEnabled
-		return nil
-	}
+	_ = "STUB: not implemented"
+	return *new(Option)
 }
 
 // WithCache is an option that sets the cache of the Config.
 // WithCache 是设置 Config 缓存的选项。
-func WithCache(cache Cache) Option {
-	return func(c *Config) error {
-		c.Cache = cache
-		return nil
-	}
-}
+func WithCache(cache Cache) Option { _ = "STUB: not implemented"; return *new(Option) }

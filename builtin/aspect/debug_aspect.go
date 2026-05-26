@@ -61,42 +61,50 @@ type Debug struct {
 // Order 返回此切面的执行顺序。值越高，执行越晚。
 // Debug 切面的执行顺序为 900，使其成为最后执行的切面之一。
 func (aspect *Debug) Order() int {
-	return 900
+	_ = "STUB: not implemented"
+
+	// New creates a new instance of the Debug aspect.
+	// Each rule chain gets its own Debug aspect instance.
+	//
+	// New 创建 Debug 切面的新实例。
+	// 每个规则链都会获得自己的 Debug 切面实例。
+	return 0
 }
 
-// New creates a new instance of the Debug aspect.
-// Each rule chain gets its own Debug aspect instance.
-//
-// New 创建 Debug 切面的新实例。
-// 每个规则链都会获得自己的 Debug 切面实例。
 func (aspect *Debug) New() types.Aspect {
-	return &Debug{}
+	_ = "STUB: not implemented"
+
+	// Type returns the unique identifier for this aspect type.
+	//
+	// Type 返回此切面类型的唯一标识符。
+	return *new(types.Aspect)
 }
 
-// Type returns the unique identifier for this aspect type.
-//
-// Type 返回此切面类型的唯一标识符。
 func (aspect *Debug) Type() string {
-	return "debug"
+	_ = "STUB: not implemented"
+
+	// PointCut determines which nodes this aspect applies to.
+	// The Debug aspect applies to all nodes unconditionally.
+	//
+	// PointCut 确定此切面应用于哪些节点。
+	// Debug 切面无条件地应用于所有节点。
+	return ""
 }
 
-// PointCut determines which nodes this aspect applies to.
-// The Debug aspect applies to all nodes unconditionally.
-//
-// PointCut 确定此切面应用于哪些节点。
-// Debug 切面无条件地应用于所有节点。
 func (aspect *Debug) PointCut(ctx types.RuleContext, msg types.RuleMsg, relationType string) bool {
-	return true
+	_ = "STUB: not implemented"
+
+	// Before is executed before node processing. It logs the incoming message
+	// and context information asynchronously to avoid blocking execution.
+	//
+	// Before 在节点处理之前执行。它异步记录传入消息和上下文信息，避免阻塞执行。
+	return false
 }
 
-// Before is executed before node processing. It logs the incoming message
-// and context information asynchronously to avoid blocking execution.
-//
-// Before 在节点处理之前执行。它异步记录传入消息和上下文信息，避免阻塞执行。
 func (aspect *Debug) Before(ctx types.RuleContext, msg types.RuleMsg, relationType string) types.RuleMsg {
+	_ = "STUB: not implemented"
 	//异步记录In日志
-	aspect.onDebug(ctx, types.In, msg, relationType, nil)
-	return msg
+	return *new(types.RuleMsg)
 }
 
 // After is executed after node processing. It logs the outgoing message
@@ -104,9 +112,9 @@ func (aspect *Debug) Before(ctx types.RuleContext, msg types.RuleMsg, relationTy
 //
 // After 在节点处理之后执行。它记录传出消息和处理过程中发生的任何错误。
 func (aspect *Debug) After(ctx types.RuleContext, msg types.RuleMsg, err error, relationType string) types.RuleMsg {
+	_ = "STUB: not implemented"
 	//异步记录Out日志
-	aspect.onDebug(ctx, types.Out, msg, relationType, err)
-	return msg
+	return *new(types.RuleMsg)
 }
 
 // onDebug handles the actual debug logging by calling the OnDebug callback
@@ -116,9 +124,6 @@ func (aspect *Debug) After(ctx types.RuleContext, msg types.RuleMsg, err error, 
 // onDebug 通过调用规则上下文中配置的 OnDebug 回调来处理实际的调试日志记录。
 // 它捕获全面的信息，包括链 ID、流向、节点 ID、消息内容、关系类型和错误。
 func (aspect *Debug) onDebug(ctx types.RuleContext, flowType string, msg types.RuleMsg, relationType string, err error) {
-	var chainId = ""
-	if ctx.RuleChain() != nil {
-		chainId = ctx.RuleChain().GetNodeId().Id
-	}
-	ctx.OnDebug(chainId, flowType, ctx.Self().GetNodeId().Id, msg, relationType, err)
+	_ = "STUB: not implemented"
+	return
 }

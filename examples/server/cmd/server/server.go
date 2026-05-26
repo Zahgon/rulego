@@ -23,16 +23,16 @@ import (
 	"examples/server/internal/service"
 	"flag"
 	"fmt"
-	endpointApi "github.com/rulego/rulego/api/types/endpoint"
-	"github.com/rulego/rulego/node_pool"
-	"github.com/rulego/rulego/utils/str"
-	"gopkg.in/ini.v1"
 	"log"
 	"net/http"
 	_ "net/http/pprof"
 	"os"
 	"os/signal"
 	"syscall"
+
+	endpointApi "github.com/rulego/rulego/api/types/endpoint"
+	"github.com/rulego/rulego/utils/str"
+	"gopkg.in/ini.v1"
 )
 
 const (
@@ -140,27 +140,6 @@ func main() {
 }
 
 // 初始化日志记录器
-func initLogger(c config.Config) *log.Logger {
-	if c.LogFile == "" {
-		return log.New(os.Stdout, "", log.LstdFlags)
-	} else {
-		f, err := os.OpenFile(c.LogFile, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
-		if err != nil {
-			log.Fatal(err)
-		}
-		return log.New(f, "", log.LstdFlags)
-	}
-}
+func initLogger(c config.Config) *log.Logger { _ = "STUB: not implemented"; return nil }
 
-func loadNodePool(c config.Config) error {
-	file := c.NodePoolFile
-	if file != "" {
-		if buf, err := os.ReadFile(file); err != nil {
-			return err
-		} else {
-			_, err = node_pool.DefaultNodePool.Load(buf)
-			return err
-		}
-	}
-	return nil
-}
+func loadNodePool(c config.Config) error { _ = "STUB: not implemented"; return nil }

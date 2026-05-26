@@ -17,7 +17,6 @@
 package service
 
 import (
-	"sort"
 	"sync"
 
 	"github.com/rulego/rulego/api/types"
@@ -38,38 +37,20 @@ var globalDebugDataPool = &DebugDataPool{
 }
 
 // GetDebugData 从对象池获取 DebugData 实例
-func (p *DebugDataPool) Get() *DebugData {
-	return p.pool.Get().(*DebugData)
-}
+func (p *DebugDataPool) Get() *DebugData { _ = "STUB: not implemented"; return nil }
 
 // PutDebugData 将 DebugData 实例回收到对象池
-func (p *DebugDataPool) Put(data *DebugData) {
-	if data != nil {
-		data.Reset()
-		p.pool.Put(data)
-	}
-}
+func (p *DebugDataPool) Put(data *DebugData) { _ = "STUB: not implemented"; return }
 
 // Reset 重置 DebugData 状态，为对象池复用做准备
-func (d *DebugData) Reset() {
-	d.Ts = 0
-	d.NodeId = ""
-	d.FlowType = ""
-	d.Msg = types.RuleMsg{} // 重置为零值
-	d.RelationType = ""
-	d.Err = ""
-}
+func (d *DebugData) Reset() { _ = "STUB: not implemented"; return }
+
+// 重置为零值
 
 // NewDebugData 创建新的 DebugData 实例，使用对象池优化
 func NewDebugData(ts int64, nodeId, flowType string, msg types.RuleMsg, relationType, errStr string) *DebugData {
-	data := globalDebugDataPool.Get()
-	data.Ts = ts
-	data.NodeId = nodeId
-	data.FlowType = flowType
-	data.Msg = msg
-	data.RelationType = relationType
-	data.Err = errStr
-	return data
+	_ = "STUB: not implemented"
+	return nil
 }
 
 //基于内存的日志存储，用于查询节点调试数据
@@ -86,82 +67,37 @@ type RuleChainDebugData struct {
 }
 
 // NewRuleChainDebugData 创建一个新的规则链调试数据列表数据
-func NewRuleChainDebugData(maxSize int) *RuleChainDebugData {
-	if maxSize <= 0 {
-		maxSize = 60
-	}
-	return &RuleChainDebugData{
-		Data:    make(map[string]*NodeDebugData),
-		MaxSize: maxSize,
-	}
-}
+func NewRuleChainDebugData(maxSize int) *RuleChainDebugData { _ = "STUB: not implemented"; return nil }
 
 func (d *RuleChainDebugData) Add(chainId string, nodeId string, data DebugData) {
-	d.mu.Lock()
-	ruleChainData, ok := d.Data[chainId]
-	if !ok {
-		ruleChainData = NewNodeDebugData(d.MaxSize)
-		d.Data[chainId] = ruleChainData
-	}
-	defer d.mu.Unlock()
-
-	ruleChainData.Add(nodeId, data)
+	_ = "STUB: not implemented"
+	return
 }
 
 // Get 获取指定规则链的节点调试数据列表
 func (d *RuleChainDebugData) Get(chainId string, nodeId string) *FixedQueue {
-	d.mu.RLock()
-	ruleChainData, ok := d.Data[chainId]
-	defer d.mu.RUnlock()
-	if ok {
-		return ruleChainData.Get(nodeId)
-	} else {
-		return nil
-	}
+	_ = "STUB: not implemented"
+	return nil
 }
+
 func (d *RuleChainDebugData) GetToPage(chainId string, nodeId string, pageSize, current int) DebugDataPage {
-	list := d.Get(chainId, nodeId)
-	var page = DebugDataPage{}
-	if list != nil {
-		page.Total = list.Len()
-		//ts降序排序
-		sort.Slice(list.Items, func(i, j int) bool {
-			return list.Items[i].Ts > list.Items[j].Ts
-		})
-		if pageSize == 0 {
-			pageSize = page.Total
-		}
-		if current <= 0 {
-			current = 1
-		}
-		// 计算分页索引
-		start := (current - 1) * pageSize
-		end := start + pageSize
-		page.PageSize = pageSize
-		page.Current = current
-		// 检查起始索引是否超出列表范围
-		if start >= page.Total {
-			page.Items = []DebugData{} // 如果超出范围，返回空列表
-		} else {
-			// 计算结束索引，防止超过列表最大长度
-			if end > page.Total {
-				end = page.Total
-			}
-			// 根据索引范围获取分页数据，需要解引用指针
-			items := make([]DebugData, end-start)
-			for i, ptr := range list.Items[start:end] {
-				items[i] = *ptr
-			}
-			page.Items = items
-		}
-	}
-	return page
+	_ = "STUB: not implemented"
+	return *new(DebugDataPage)
 }
-func (d *RuleChainDebugData) Clear(chainId string) {
-	d.mu.Lock()
-	defer d.mu.Unlock()
-	delete(d.Data, chainId)
-}
+
+//ts降序排序
+
+// 计算分页索引
+
+// 检查起始索引是否超出列表范围
+
+// 如果超出范围，返回空列表
+
+// 计算结束索引，防止超过列表最大长度
+
+// 根据索引范围获取分页数据，需要解引用指针
+
+func (d *RuleChainDebugData) Clear(chainId string) { _ = "STUB: not implemented"; return }
 
 // NodeDebugData 节点调试数据
 type NodeDebugData struct {
@@ -172,49 +108,18 @@ type NodeDebugData struct {
 }
 
 // NewNodeDebugData 创建一个新的节点调试数据列表数据
-func NewNodeDebugData(maxSize int) *NodeDebugData {
-	if maxSize <= 0 {
-		maxSize = 60
-	}
-	return &NodeDebugData{
-		Data:    make(map[string]*FixedQueue),
-		MaxSize: maxSize,
-	}
-}
+func NewNodeDebugData(maxSize int) *NodeDebugData { _ = "STUB: not implemented"; return nil }
 
-func (d *NodeDebugData) Add(nodeId string, data DebugData) {
-	d.mu.Lock()
-	list, ok := d.Data[nodeId]
-	if !ok {
-		list = NewFixedQueue(d.MaxSize)
-		d.Data[nodeId] = list
-	}
-	defer d.mu.Unlock()
+func (d *NodeDebugData) Add(nodeId string, data DebugData) { _ = "STUB: not implemented"; return }
 
-	// 使用对象池创建DebugData指针
-	dataPtr := globalDebugDataPool.Get()
-	*dataPtr = data // 复制数据到池化对象
-	list.Push(dataPtr)
-}
+// 使用对象池创建DebugData指针
+
+// 复制数据到池化对象
 
 // Get 获取自定节点列表数据
-func (d *NodeDebugData) Get(nodeId string) *FixedQueue {
-	d.mu.RLock()
-	defer d.mu.RUnlock()
+func (d *NodeDebugData) Get(nodeId string) *FixedQueue { _ = "STUB: not implemented"; return nil }
 
-	if list, ok := d.Data[nodeId]; ok {
-		return list
-	} else {
-		return nil
-	}
-
-}
-
-func (d *NodeDebugData) Clear(nodeId string) {
-	d.mu.Lock()
-	defer d.mu.Unlock()
-	delete(d.Data, nodeId)
-}
+func (d *NodeDebugData) Clear(nodeId string) { _ = "STUB: not implemented"; return }
 
 // DebugData 调试数据
 // OnDebug 回调函数提供的数据
@@ -255,62 +160,23 @@ type FixedQueue struct {
 }
 
 // NewFixedQueue 创建一个新的固定大小的队列
-func NewFixedQueue(maxSize int) *FixedQueue {
-	return &FixedQueue{
-		Items:   make([]*DebugData, 0, maxSize),
-		MaxSize: maxSize,
-	}
-}
+func NewFixedQueue(maxSize int) *FixedQueue { _ = "STUB: not implemented"; return nil }
 
 // Push 向队列中添加一个元素，如果超过最大大小，会删除最旧的元素
-func (q *FixedQueue) Push(item *DebugData) {
-	q.mu.Lock()
-	defer q.mu.Unlock()
-	if len(q.Items) == q.MaxSize {
-		// 回收最旧的元素到对象池
-		oldData := q.Items[0]
-		globalDebugDataPool.Put(oldData)
-		q.Items = q.Items[1:]
-	}
-	q.Items = append(q.Items, item)
-}
+func (q *FixedQueue) Push(item *DebugData) { _ = "STUB: not implemented"; return }
+
+// 回收最旧的元素到对象池
 
 // Pop 从队列中弹出一个元素，如果队列为空，返回false
-func (q *FixedQueue) Pop() (*DebugData, bool) {
-	q.mu.Lock()
-	defer q.mu.Unlock()
-	if len(q.Items) == 0 {
-		return nil, false
-	}
-	item := q.Items[0]
-	q.Items = q.Items[1:]
-	return item, true
-}
+func (q *FixedQueue) Pop() (*DebugData, bool) { _ = "STUB: not implemented"; return nil, false }
 
 // Len 返回队列中的元素个数
-func (q *FixedQueue) Len() int {
-	q.mu.RLock()
-	defer q.mu.RUnlock()
-	return len(q.Items)
-}
+func (q *FixedQueue) Len() int { _ = "STUB: not implemented"; return 0 }
 
 // Peek 返回队列中的第一个元素，但不删除它，如果队列为空，返回false
-func (q *FixedQueue) Peek() (*DebugData, bool) {
-	q.mu.RLock()
-	defer q.mu.RUnlock()
-	if len(q.Items) == 0 {
-		return nil, false
-	}
-	return q.Items[0], true
-}
+func (q *FixedQueue) Peek() (*DebugData, bool) { _ = "STUB: not implemented"; return nil, false }
 
 // Clear 清空队列中的所有元素
-func (q *FixedQueue) Clear() {
-	q.mu.Lock()
-	defer q.mu.Unlock()
-	// 回收所有元素到对象池
-	for _, item := range q.Items {
-		globalDebugDataPool.Put(item)
-	}
-	q.Items = make([]*DebugData, 0, q.MaxSize)
-}
+func (q *FixedQueue) Clear() { _ = "STUB: not implemented"; return }
+
+// 回收所有元素到对象池

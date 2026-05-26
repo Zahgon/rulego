@@ -116,10 +116,8 @@ type routerOptions struct {
 //	    return getTenantPool(tenantId)
 //	})
 func (r routerOptions) WithRuleGoFunc(f func(exchange *Exchange) types.RuleEnginePool) RouterOption {
-	return func(re OptionsSetter) error {
-		re.SetRuleEnginePoolFunc(f)
-		return nil
-	}
+	_ = "STUB: not implemented"
+	return *new(RouterOption)
 }
 
 // WithRuleGo creates a RouterOption that sets a specific rule engine pool for the router.
@@ -150,10 +148,8 @@ func (r routerOptions) WithRuleGoFunc(f func(exchange *Exchange) types.RuleEngin
 //	pool := rulego.NewPool("custom-pool")
 //	option := RouterOptions.WithRuleGo(pool)
 func (r routerOptions) WithRuleGo(ruleGo types.RuleEnginePool) RouterOption {
-	return func(re OptionsSetter) error {
-		re.SetRuleEnginePool(ruleGo)
-		return nil
-	}
+	_ = "STUB: not implemented"
+	return *new(RouterOption)
 }
 
 // WithRuleConfig creates a RouterOption that sets the rule engine configuration for the router.
@@ -187,10 +183,8 @@ func (r routerOptions) WithRuleGo(ruleGo types.RuleEnginePool) RouterOption {
 //	)
 //	option := RouterOptions.WithRuleConfig(config)
 func (r routerOptions) WithRuleConfig(config types.Config) RouterOption {
-	return func(re OptionsSetter) error {
-		re.SetConfig(config)
-		return nil
-	}
+	_ = "STUB: not implemented"
+	return *new(RouterOption)
 }
 
 // WithContextFunc creates a RouterOption that sets a context modification function for routing operations.
@@ -237,10 +231,8 @@ func (r routerOptions) WithRuleConfig(config types.Config) RouterOption {
 //	    return ctx
 //	})
 func (r routerOptions) WithContextFunc(f func(ctx context.Context, exchange *Exchange) context.Context) RouterOption {
-	return func(re OptionsSetter) error {
-		re.SetContextFunc(f)
-		return nil
-	}
+	_ = "STUB: not implemented"
+	return *new(RouterOption)
 }
 
 // WithDefinition creates a RouterOption that sets the DSL definition for the router.
@@ -279,10 +271,8 @@ func (r routerOptions) WithContextFunc(f func(ctx context.Context, exchange *Exc
 //	}
 //	option := RouterOptions.WithDefinition(dslDef)
 func (r routerOptions) WithDefinition(def *types.RouterDsl) RouterOption {
-	return func(re OptionsSetter) error {
-		re.SetDefinition(def)
-		return nil
-	}
+	_ = "STUB: not implemented"
+	return *new(RouterOption)
 }
 
 // DynamicEndpointOption defines a function type for configuring dynamic endpoint instances using the Options pattern.
@@ -382,10 +372,8 @@ type dynamicEndpointOptions struct {
 //
 //	option := DynamicEndpointOptions.WithId("user-api-endpoint")
 func (d dynamicEndpointOptions) WithId(id string) DynamicEndpointOption {
-	return func(re DynamicEndpoint) error {
-		re.SetId(id)
-		return nil
-	}
+	_ = "STUB: not implemented"
+	return *new(DynamicEndpointOption)
 }
 
 // WithConfig creates a DynamicEndpointOption that sets the rule engine configuration for the dynamic endpoint.
@@ -425,10 +413,8 @@ func (d dynamicEndpointOptions) WithId(id string) DynamicEndpointOption {
 //	)
 //	option := DynamicEndpointOptions.WithConfig(config)
 func (d dynamicEndpointOptions) WithConfig(config types.Config) DynamicEndpointOption {
-	return func(re DynamicEndpoint) error {
-		re.SetConfig(config)
-		return nil
-	}
+	_ = "STUB: not implemented"
+	return *new(DynamicEndpointOption)
 }
 
 // WithRouterOpts creates a DynamicEndpointOption that sets default router options for the dynamic endpoint.
@@ -464,10 +450,8 @@ func (d dynamicEndpointOptions) WithConfig(config types.Config) DynamicEndpointO
 //	}
 //	option := DynamicEndpointOptions.WithRouterOpts(defaultOpts...)
 func (d dynamicEndpointOptions) WithRouterOpts(opts ...RouterOption) DynamicEndpointOption {
-	return func(re DynamicEndpoint) error {
-		re.SetRouterOptions(opts...)
-		return nil
-	}
+	_ = "STUB: not implemented"
+	return *new(DynamicEndpointOption)
 }
 
 // WithOnEvent creates a DynamicEndpointOption that sets the event handler for the dynamic endpoint.
@@ -511,10 +495,8 @@ func (d dynamicEndpointOptions) WithRouterOpts(opts ...RouterOption) DynamicEndp
 //	}
 //	option := DynamicEndpointOptions.WithOnEvent(eventHandler)
 func (d dynamicEndpointOptions) WithOnEvent(onEvent OnEvent) DynamicEndpointOption {
-	return func(re DynamicEndpoint) error {
-		re.SetOnEvent(onEvent)
-		return nil
-	}
+	_ = "STUB: not implemented"
+	return *new(DynamicEndpointOption)
 }
 
 // WithRestart creates a DynamicEndpointOption that sets the restart behavior for the dynamic endpoint.
@@ -565,10 +547,8 @@ func (d dynamicEndpointOptions) WithOnEvent(onEvent OnEvent) DynamicEndpointOpti
 //	// For development environments - ensure clean state
 //	option2 := DynamicEndpointOptions.WithRestart(true)
 func (d dynamicEndpointOptions) WithRestart(restart bool) DynamicEndpointOption {
-	return func(re DynamicEndpoint) error {
-		re.SetRestart(restart)
-		return nil
-	}
+	_ = "STUB: not implemented"
+	return *new(DynamicEndpointOption)
 }
 
 // WithInterceptors creates a DynamicEndpointOption that sets global interceptors for the dynamic endpoint.
@@ -622,10 +602,8 @@ func (d dynamicEndpointOptions) WithRestart(restart bool) DynamicEndpointOption 
 //
 //	option := DynamicEndpointOptions.WithInterceptors(authInterceptor, logInterceptor)
 func (d dynamicEndpointOptions) WithInterceptors(interceptors ...Process) DynamicEndpointOption {
-	return func(re DynamicEndpoint) error {
-		re.SetInterceptors(interceptors...)
-		return nil
-	}
+	_ = "STUB: not implemented"
+	return *new(DynamicEndpointOption)
 }
 
 // WithRuleChain creates a DynamicEndpointOption that sets the original rule chain DSL definition.
@@ -677,8 +655,6 @@ func (d dynamicEndpointOptions) WithInterceptors(interceptors ...Process) Dynami
 //	}
 //	option := DynamicEndpointOptions.WithRuleChain(originalRuleChain)
 func (d dynamicEndpointOptions) WithRuleChain(ruleChain *types.RuleChain) DynamicEndpointOption {
-	return func(re DynamicEndpoint) error {
-		re.SetRuleChain(ruleChain)
-		return nil
-	}
+	_ = "STUB: not implemented"
+	return *new(DynamicEndpointOption)
 }
